@@ -3,14 +3,25 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@loadable/component": "^5.15.0",
     "@reduxjs/toolkit": "^1.6.2",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
+    "airtable": "^0.11.1",
+    "airtable-plus": "^1.0.4",
+    "dotenv": "^10.0.0",
+    "filestack-react": "^3.2.1",
+    "prop-types": "^15.7.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-icons": "^4.3.1",
     "react-redux": "^7.2.6",
-    "react-scripts": "4.0.3"
+    "react-router-dom": "^6.0.2",
+    "react-scripts": "4.0.3",
+    "react-select": "^5.2.1",
+    "spinners-react": "^1.0.6",
+    "styled-components": "^5.3.3"
   },
   "scripts": {
     "start": "react-scripts start",
