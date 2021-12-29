@@ -9,13 +9,13 @@ function Auth({ children }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const localUser = getLocalUser();
-  dispatch(setUserCredential(localUser));
 
   useEffect(() => {
+    dispatch(setUserCredential(localUser));
     if (localUser === null) {
       navigate("/login");
     }
-  } ,[localUser, navigate]);
+  }, [localUser, navigate, dispatch]);
 
   return (
     <>

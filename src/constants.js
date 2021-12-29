@@ -26,12 +26,27 @@ export const SIDENAV = [
 export const USER_CREDENTIAL = "userCredential";
 
 export const VALIDATE_RULE = {
+  fullName: {
+    pattern:
+      /^[A-ZÀÁÃẠẢĂẮẰẲẴẶÂẤẦẨẪẬÈÉẸẺẼÊỀẾỂỄỆĐÌÍĨỈỊÒÓÕỌỎÔỐỒỔỖỘƠỚỜỞỠỢÙÚŨỤỦƯỨỪỬỮỰỲỴỶỸÝ]+[a-zàáãạảăắằẳẵặâấầẩẫậèéẹẻẽêềếểễệđìíĩỉịòóõọỏôốồổỗộơớờởỡợùúũụủưứừửữựỳỵỷỹý]*([\s][A-ZÀÁÃẠẢĂẮẰẲẴẶÂẤẦẨẪẬÈÉẸẺẼÊỀẾỂỄỆĐÌÍĨỈỊÒÓÕỌỎÔỐỒỔỖỘƠỚỜỞỠỢÙÚŨỤỦƯỨỪỬỮỰỲỴỶỸÝ]+[a-zàáãạảăắằẳẵặâấầẩẫậèéẹẻẽêềếểễệđìíĩỉịòóõọỏôốồổỗộơớờởỡợùúũụủưứừửữựỳỵỷỹý]*)+$/g,
+    minLength: 4,
+    maxLength: 30,
+  },
   email: {
-    pattern: /[0-9A-z.!#$%^&*]+@[A-z]+[.A-z]+/g,
+    pattern: /^[0-9A-z.`~!#$%^&*]+@[a-z]+.[a-z]{3}$/g,
+    minLength: 11,
+    maxLength: 30,
+  },
+  phone: {
+    // for Vietnamese internal uses only
+    pattern: /^0[0-9]{9}$/g,
   },
   password: {
-    pattern: "",
-    maxLength: 0,
-    minLength: 0,
+    pattern: /[A-z0-9`~!@#$%^&*.?]/g,
+    maxLength: 30,
+    minLength: 12,
   },
 };
+
+// used for search, sort in Table component
+export const NOT_SUPPORT_FIELD_FEATURE = ["Portrait", "Avatar"];

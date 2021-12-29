@@ -1,5 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { retrieveData } from "../../services/airtable.service";
+import {
+  mapResultToTableData,
+  retrieveData,
+} from "../../services/airtable.service";
 import Card from "../common/Card";
 import Col from "../layout/Col";
 import MainHeader from "../layout/MainHeader";
@@ -8,7 +11,7 @@ import Row from "../layout/Row";
 import Table from "../common/Table";
 import Container from "../layout/Container";
 import Button from "../common/Button";
-import AddNewStaffModal from "../specific/AddNewStaffModal";
+import StaffModal from "../specific/StaffModal";
 import Loader from "../common/Loader";
 
 function Staff() {
@@ -33,37 +36,8 @@ function Staff() {
     setShowLoader(true);
     retrieveData("Staff")
       .then((res) => {
-        let dataList = [];
-        res.forEach((recordData) => {
-          dataList.push({
-            rowId: recordData.id,
-            data: fieldList.map((field) => {
-              if (field === "Portrait") {
-                return (
-                  <div
-                    className="cellImg d-flex justify-content-start align-items-center"
-                    style={{ height: "40px", overflowY: "hidden" }}
-                  >
-                    <img
-                      src={recordData.fields[field][0].url}
-                      width={30}
-                      alt=""
-                    />
-                  </div>
-                );
-              }
-              return (
-                <div
-                  className="cellImg d-flex justify-content-start align-items-center"
-                  style={{ height: "40px", overflowY: "hidden" }}
-                >
-                  {recordData.fields[field]}
-                </div>
-              );
-            }),
-          });
-        });
-        setRecordList(dataList);
+        const dataTableList = mapResultToTableData(res, fieldList);
+        setRecordList(dataTableList);
       })
       .catch((e) => console.log(e))
       .finally(() => setShowLoader(false));
@@ -74,7 +48,7 @@ function Staff() {
         <MainHeader title="Staff" subTitle="All of your employee is here" />
         <Container fluid>
           <Row>
-            <Col columnSize={["auto"]}>
+            <Col columnSize={["12", "lg-auto"]}>
               <Card
                 cardHeader={{
                   title: "Quick New Staff",
@@ -96,6 +70,7 @@ function Staff() {
                 ]}
               />
             </Col>
+            <Col columnSize={["12", "lg-auto"]}></Col>
           </Row>
           <Row>
             <Col columnSize={["12"]}>
@@ -112,17 +87,16 @@ function Staff() {
                   <Table
                     fieldList={fieldList}
                     recordList={recordList}
-                    itemAmountPerPage={7}
-                    isSearchable
+                    isHasSettings
                   />,
                 ]}
-                noBody
+                noBodyPadding
               />
             </Col>
           </Row>
         </Container>
       </MainContent>
-      <AddNewStaffModal
+      <StaffModal
         isModalDisplay={isModalDisplay}
         setModalHide={() => setModalDisplay(false)}
         setShowLoader={(v) => setShowLoader(v)}

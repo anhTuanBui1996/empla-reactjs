@@ -13,6 +13,8 @@ function Col({ columnSize, children, className }) {
 
 Col.propTypes = {
   columnSize: PropTypes.arrayOf(PropTypes.string),
+  children: PropTypes.node,
+  className: PropTypes.string,
 };
 
 export default Col;

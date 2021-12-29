@@ -1,7 +1,8 @@
 import React from "react";
 import { MdSearch } from "react-icons/md";
+import PropTypes from "prop-types";
 
-function Search({ noBorder, ...props }) {
+function Search({ noBorder, value, placeholder, onChange }) {
   return (
     <div className="input-group input-group-rounded input-group-merge">
       <input
@@ -9,8 +10,9 @@ function Search({ noBorder, ...props }) {
         className={`form-control form-control-rounded form-control-prepended${
           noBorder ? ` border-0` : ""
         }`}
-        placeholder="Search"
-        {...props}
+        placeholder={placeholder}
+        onChange={onChange}
+        value={value}
       />
       <div className="input-group-prepend">
         <div className={`input-group-text${noBorder ? ` border-0` : ""}`}>
@@ -20,5 +22,11 @@ function Search({ noBorder, ...props }) {
     </div>
   );
 }
+
+Search.propTypes = {
+  noBorder: PropTypes.bool,
+  placeholder: PropTypes.string,
+  onChange: PropTypes.func,
+};
 
 export default Search;

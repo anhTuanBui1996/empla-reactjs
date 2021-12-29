@@ -6,19 +6,22 @@ import Home from "./components/main/Home";
 import Login from "./components/main/Login";
 import Checkin from "./components/main/Checkin";
 import Auth from "./hoc/Auth";
+import WindowResizeHandler from "./hoc/WindowResizeHandler";
 require("dotenv").config();
 
 function App() {
   return (
-    <Auth>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/staff" element={<Staff />} />
-        <Route path="/report" element={<Report />} />
-        <Route path="/checkin" element={<Checkin />} />
-        <Route path="/" element={<Home />} />
-      </Routes>
-    </Auth>
+    <WindowResizeHandler>
+      <Auth>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/staff" element={<Staff />} />
+          <Route path="/report" element={<Report />} />
+          <Route path="/checkin" element={<Checkin />} />
+          <Route path="/" element={<Home />} />
+        </Routes>
+      </Auth>
+    </WindowResizeHandler>
   );
 }
 

@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import CustomSwitch from "../common/CustomSwitch";
 
 function Report() {
   return (
@@ -50,22 +51,7 @@ function Report() {
               <div className="card-header">
                 <h4 className="card-header-title">Conversions</h4>
                 <span className="text-muted mr-3">Last year comparision:</span>
-                <div className="custom-control custom-switch">
-                  <input
-                    type="checkbox"
-                    className="custom-control-input"
-                    id="cardToggle"
-                    data-toggle="chart"
-                    data-target="#conversionsChart"
-                    data-trigger="change"
-                    data-action="add"
-                    data-dataset="1"
-                  />
-                  <label
-                    className="custom-control-label"
-                    for="cardToggle"
-                  ></label>
-                </div>
+                <CustomSwitch />
               </div>
               <div className="card-body">
                 <div className="chart">
@@ -90,11 +76,7 @@ function Report() {
                     data-action="toggle"
                     data-dataset="0"
                   >
-                    <Link
-                      to="#"
-                      className="nav-link active"
-                      data-toggle="tab"
-                    >
+                    <Link to="#" className="nav-link active" data-toggle="tab">
                       All
                     </Link>
                   </li>

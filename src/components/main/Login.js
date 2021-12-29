@@ -128,6 +128,7 @@ function Login() {
               <div className="input-group input-group-merge">
                 <input
                   type="password"
+                  autoComplete="current-password"
                   className="form-control form-control-appended"
                   placeholder="Enter your password"
                   name="password"

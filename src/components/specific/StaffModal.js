@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import PropTypes from "prop-types";
 import Modal from "../common/Modal";
 import Row from "../layout/Row";
 import Col from "../layout/Col";
@@ -9,6 +10,7 @@ import ImageUploader, { ImageReviewer } from "../common/ImageUploader";
 import { VALIDATE_RULE } from "../../constants";
 import useAutoGenerate from "../hooks/useAutoGenerate";
 import { MdRefresh, MdRemoveRedEye } from "react-icons/md";
+import DatePicker from "../common/DatePicker";
 
 // NOTE: The Select component (from react-select) that doesn't
 // support custom inner props when using component event listener
@@ -18,7 +20,12 @@ import { MdRefresh, MdRemoveRedEye } from "react-icons/md";
 // the normal input form-control still can use the custom props data-table
 // and name.
 
-function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
+function StaffModal({
+  isModalDisplay,
+  initialStateForStaffEdit,
+  setModalHide,
+  setShowLoader,
+}) {
   let [componentAvailable, setComponentAvailable] = useState(true);
   const autoGenerate = useAutoGenerate();
   const initialPasswordString = autoGenerate(12);
@@ -62,18 +69,41 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
       },
       Company: {
         fromTable: "Collaboratory",
-        list: [] /* { value: "", label: "" } */,
+        list: [] /* { "data-table": "", value: "", label: "", name: "" } */,
       },
       CurrentWorkingPlace: {
         fromTable: "WorkingPlace",
-        list: [] /* { value: "", label: "" } */,
+        list: [] /* { "data-table": "", value: "", label: "", name: "" } */,
       },
       RoleType: {
         fromTable: "Role",
-        list: [] /* { value: "", label: "" } */,
+        list: [] /* { "data-table": "", value: "", label: "", name: "" } */,
       },
     },
     Status: {
+      WorkingType: {
+        fromTable: "Status",
+        list: [
+          {
+            "data-table": "Status",
+            label: "Intern",
+            value: "Intern",
+            name: "WorkingType",
+          },
+          {
+            "data-table": "Status",
+            label: "Probation",
+            value: "Probation",
+            name: "WorkingType",
+          },
+          {
+            "data-table": "Status",
+            label: "Official",
+            value: "Official",
+            name: "WorkingType",
+          },
+        ],
+      },
       WorkingStatus: {
         fromTable: "Status",
         list: [
@@ -242,8 +272,16 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
   // they are the same
   const [newStaffForm, setNewStaffForm] = useState({
     Staff: {
-      FullName: { linkedField: "FullName", value: "", label: "" },
-      Portrait: { linkedField: "Portrait", value: "", label: "" },
+      FullName: {
+        linkedField: "FullName",
+        value: "",
+        label: "",
+      },
+      Portrait: {
+        linkedField: "Portrait",
+        value: "",
+        label: "",
+      },
       Gender: { linkedField: "Gender", value: "", label: "" },
       DOB: { linkedField: "DOB", value: "", label: "" },
       Phone: { linkedField: "Phone", value: "", label: "" },
@@ -261,7 +299,17 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
       },
     },
     Status: {
+      WorkingType: {
+        linkedField: "WorkingType",
+        value: "",
+        label: "",
+      },
       WorkingStatus: {
+        linkedField: "WorkingStatus",
+        value: "",
+        label: "",
+      },
+      StartWorkingDay: {
         linkedField: "WorkingStatus",
         value: "",
         label: "",
@@ -288,7 +336,6 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
         value: [],
         label: [],
       },
-      StaffId: { linkedField: "Staff", value: "", label: "" },
     },
     Account: {
       Username: {
@@ -328,6 +375,11 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
         Phone: "",
         Company: "",
       },
+      Status: {
+        WorkingType: "",
+        WorkingStatus: "",
+        StartWorkingDay: "",
+      },
     },
   });
 
@@ -337,6 +389,9 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
     Gender: useRef(null),
     DOB: useRef(null),
     Phone: useRef(null),
+    Company: useRef(null),
+    WorkingType: useRef(null),
+    WorkingStatus: useRef(null),
   };
 
   const countEmptySelectList = () => {
@@ -351,10 +406,12 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
     return count;
   };
 
+  /* eslint-disable */
   // retrive data from airtable into empty select list
   useEffect(() => {
     // componentAvailable use for stoping render when component is unmounted
     setShowLoader(true);
+    handleValidate();
     const selectListKeys = Object.keys(selectList);
 
     selectListKeys.forEach((tableKey) => {
@@ -398,6 +455,7 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
   }, []);
 
   // Handle the input change (valitdate right after the input change)
+  // Normal input/select handle
   const handleStaffInput = (e, action) => {
     if (e === null) {
       // when clearing a single select input
@@ -412,15 +470,26 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
     }
     e.target
       ? setNewStaffForm((state) => {
-          // used for normal input
-          const {
-            dataset: { table: dataTable },
-            name,
-            value,
-          } = e.target;
+          let dataTable = "";
+          let name = "";
+          let value = "";
+          let label = "";
+          if (e.target.dataset) {
+            // used for normal input
+            dataTable = e.target.dataset.table;
+            name = e.target.name;
+            value = e.target.value;
+            label = e.target.value;
+          } else if (e.inputType && e.inputType === "DatePicker") {
+            // used for DatePicker input
+            dataTable = e.target["data-table"];
+            name = e.target.name;
+            value = e.target.value;
+            label = e.target.label;
+          }
           const newState = { ...state };
           newState[dataTable][name].value = value;
-          newState[dataTable][name].label = value;
+          newState[dataTable][name].label = label;
           if (name === "FullName") {
             const newUsername = convertFullNameToUsername(value);
             const currentDomain = newState.Account.Domain.label;
@@ -479,6 +548,7 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
           return newState;
         });
   };
+  // Portrait handle
   const handleUploadImg = (value) => {
     setPreviewImg(value);
     setNewStaffForm({
@@ -487,7 +557,7 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
         ...newStaffForm.Staff,
         Portrait: {
           ...newStaffForm.Staff.Portrait,
-          value: value.filesUploaded[0].url,
+          value: [{ url: value.filesUploaded[0].url }],
           label: value.filesUploaded[0].url,
         },
       },
@@ -499,28 +569,71 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
     // define the validator for the form
     setErrorForm((state) => {
       let newErr = { ...state };
+      newErr.errStatus = false;
+      const staffForm = newStaffForm.Staff;
+      const statusForm = newStaffForm.Status;
       // FullName
-      if (newStaffForm.Staff.FullName.value === "") {
+      if (staffForm.FullName.value === "") {
         newErr.errMsg.Staff.FullName = "The Full Name is mustn't empty";
         newErr.errStatus = true;
+      } else {
+        const fullNameRule = VALIDATE_RULE.fullName;
+        const fullNameVal = staffForm.FullName.value;
+        if (fullNameVal.length < fullNameRule.minLength) {
+          newErr.errMsg.Staff.FullName =
+            "The Full Name length's must higher than 3";
+          newErr.errStatus = true;
+        } else if (fullNameVal.length > fullNameRule.maxLength) {
+          newErr.errMsg.Staff.FullName =
+            "The Full Name length's must less than 31";
+          newErr.errStatus = true;
+        } else if (fullNameVal.match(fullNameRule.pattern) === null) {
+          newErr.errMsg.Staff.FullName = "The Full Name is invalid";
+          newErr.errStatus = true;
+        }
       }
       // Gender
-      if (newStaffForm.Staff.Gender.value === "") {
+      if (staffForm.Gender.value === "") {
         newErr.errMsg.Staff.Gender = "The Gender is mustn't empty";
         newErr.errStatus = true;
       }
-      // Date of birth
-      if (newStaffForm.Staff.DOB.value === "") {
+      // Date Of Birth
+      if (staffForm.DOB.value === "") {
         newErr.errMsg.Staff.DOB = "The DOB is mustn't empty";
         newErr.errStatus = true;
       }
       // Phone
-      if (newStaffForm.Staff.Phone.value === "") {
+      if (staffForm.Phone.value === "") {
         newErr.errMsg.Staff.Phone = "The Phone is mustn't empty";
         newErr.errStatus = true;
-      } // Company
-      if (newStaffForm.Staff.Company.value === "") {
-        newErr.errMsg.Staff.Company = "The Phone is mustn't empty";
+      } else {
+        const phoneRule = VALIDATE_RULE.phone;
+        const phoneVal = staffForm.Phone.value;
+        if (phoneVal.match(phoneRule.pattern) === null) {
+          newErr.errMsg.Staff.Phone = "The Phone nummber is invalid";
+          newErr.errStatus = true;
+        }
+      }
+      // Company
+      if (staffForm.Company.value === "") {
+        newErr.errMsg.Staff.Company = "The Company is mustn't empty";
+        newErr.errStatus = true;
+      }
+      // Working Type
+      if (statusForm.WorkingType.value === "") {
+        newErr.errMsg.Status.WorkingType = "The Working Type is mustn't empty";
+        newErr.errStatus = true;
+      }
+      // Working Status
+      if (statusForm.WorkingStatus.value === "") {
+        newErr.errMsg.Status.WorkingStatus =
+          "The Working Status is mustn't empty";
+        newErr.errStatus = true;
+      }
+      // Start Working Day
+      if (statusForm.StartWorkingDay.value === "") {
+        newErr.errMsg.Status.StartWorkingDay =
+          "The Start Working Day is mustn't empty";
         newErr.errStatus = true;
       }
       return newErr;
@@ -531,7 +644,11 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
   const handleClearErrMsgOnFocus = (e) => {
     let name = "";
     let dataTable = "";
-    if (e.target.className === "") {
+    // DatePicker input
+    if (e.inputType && e.inputType === "DatePicker") {
+      name = e.target.name;
+      dataTable = e.target["data-table"];
+    } else if (e.target.className === "") {
       // select input
       const inputElement =
         e.target.parentElement.parentElement.parentElement.parentElement;
@@ -551,7 +668,6 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(errorForm.errStatus);
     if (errorForm.errStatus) {
       setErrorForm({ ...errorForm, isShowMsg: true });
       let findFirstErrRef = false;
@@ -567,22 +683,43 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
       });
       return;
     }
-
-    let newRecord = {};
-    Object.keys(newStaffForm).forEach((key) => {
-      newRecord[key] = {};
-      Object.values(newStaffForm[key]).forEach((field) => {
-        newRecord[key][newStaffForm[key].linkedField] =
-          key === field.linkedField ? field.value : [field.value];
+    setShowLoader(true);
+    // create new record object suitable with fields in airtable
+    let newRecord = { Staff: {}, Status: {}, Account: {} };
+    Object.keys(newRecord).forEach((key) => {
+      Object.entries(newStaffForm[key]).forEach((item) => {
+        newRecord[key][newStaffForm[key][item[0]].linkedField] =
+          item[0] === item[1].linkedField ? item[1].value : [item[1].value];
       });
     });
-    console.log(newRecord);
-
-    // createNewRecord("Staff", newRecordStaff.Staff)
-    //   .then((res) =>
-    //     console.log("Create new record in Staff table successfully!", res)
-    //   )
-    //   .catch((e) => console.log(e));
+    let countRecordCreated = 0;
+    setShowLoader(true);
+    // create new record into Staff first to get the recordId then create others
+    createNewRecord("Staff", newRecord.Staff)
+      .then((res) => {
+        console.log("Create new record in Staff table successfully!", res);
+        countRecordCreated++;
+        const recordId = res.id;
+        Object.entries(newRecord).forEach((item) => {
+          const table = item[0];
+          const fields = item[1];
+          fields.Staff = [recordId]; // add field Staff to the new record
+          table !== "Staff" &&
+            createNewRecord(table, fields)
+              .then((res) => {
+                console.log(
+                  "Create new record in " + table + " table successfully!",
+                  res
+                );
+                countRecordCreated++;
+              })
+              .catch((e) => console.log(e))
+              .finally(() => {
+                if (countRecordCreated === 3) setShowLoader(false);
+              });
+        });
+      })
+      .catch((e) => console.log(e));
   };
 
   return (
@@ -655,17 +792,16 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
           <label htmlFor="DOB" ref={refList.DOB}>
             Day of birth <span className="text-danger">*</span>
           </label>
-          <input
+          <DatePicker
+            className="form-control"
             name="DOB"
             data-table="Staff"
-            className="form-control"
-            type="date"
-            onChange={handleStaffInput}
             onFocus={handleClearErrMsgOnFocus}
+            onChange={handleStaffInput}
             onBlur={handleValidate}
           />
           {errorForm.errMsg.Staff.DOB !== "" && errorForm.isShowMsg && (
-            <div className="err-text text-danger mt-1 mt-2">
+            <div className="err-text text-danger mt-1">
               {errorForm.errMsg.Staff.DOB}
             </div>
           )}
@@ -685,7 +821,7 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
             placeholder="0123 456 789"
           />
           {errorForm.errMsg.Staff.Phone !== "" && errorForm.isShowMsg && (
-            <div className="err-text text-danger mt-1 mt-2">
+            <div className="err-text text-danger mt-1">
               {errorForm.errMsg.Staff.Phone}
             </div>
           )}
@@ -709,6 +845,7 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
           <Select
             className="Staff Company"
             onChange={handleStaffInput}
+            onFocus={handleClearErrMsgOnFocus}
             onBlur={handleValidate}
             options={selectList.Staff.Company.list}
             placeholder="Who to work for..."
@@ -719,6 +856,11 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
               }),
             }}
           />
+          {errorForm.errMsg.Staff.Company !== "" && errorForm.isShowMsg && (
+            <div className="err-text text-danger mt-1">
+              {errorForm.errMsg.Staff.Company}
+            </div>
+          )}
         </div>
         <div className="form-group">
           <label htmlFor="CurrentWorkingPlace">Working Place</label>
@@ -755,7 +897,33 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
         <hr className="navbar-divider"></hr>
         <h3 className="font-weight-bold text-center">Employee Status</h3>
         <div className="form-group">
-          <label htmlFor="WorkingStatus">Working Status</label>
+          <label htmlFor="WorkingType">
+            Working Type <span className="text-danger">*</span>
+          </label>
+          <Select
+            className="Status WorkingType"
+            onChange={handleStaffInput}
+            onBlur={handleValidate}
+            options={selectList.Status.WorkingType.list}
+            placeholder="Working type..."
+            styles={{
+              menu: (provided) => ({
+                ...provided,
+                zIndex: "1000",
+              }),
+            }}
+          />
+          {errorForm.errMsg.Status.WorkingType !== "" &&
+            errorForm.isShowMsg && (
+              <div className="err-text text-danger mt-1">
+                {errorForm.errMsg.Status.WorkingType}
+              </div>
+            )}
+        </div>
+        <div className="form-group">
+          <label htmlFor="WorkingStatus">
+            Working Status <span className="text-danger">*</span>
+          </label>
           <Select
             className="Status WorkingStatus"
             onChange={handleStaffInput}
@@ -769,6 +937,31 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
               }),
             }}
           />
+          {errorForm.errMsg.Status.WorkingStatus !== "" &&
+            errorForm.isShowMsg && (
+              <div className="err-text text-danger mt-1">
+                {errorForm.errMsg.Status.WorkingStatus}
+              </div>
+            )}
+        </div>
+        <div className="form-group">
+          <label htmlFor="StartWorkingDay">
+            Start Working Day <span className="text-danger">*</span>
+          </label>
+          <DatePicker
+            className="form-control"
+            name="StartWorkingDay"
+            data-table="Status"
+            onFocus={handleClearErrMsgOnFocus}
+            onChange={handleStaffInput}
+            onBlur={handleValidate}
+          />
+          {errorForm.errMsg.Status.StartWorkingDay !== "" &&
+            errorForm.isShowMsg && (
+              <div className="err-text text-danger mt-1">
+                {errorForm.errMsg.Status.StartWorkingDay}
+              </div>
+            )}
         </div>
         <div className="form-group">
           <label htmlFor="MarriageStatus">Marriage Status</label>
@@ -878,6 +1071,7 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
           <div className="input-group input-group-merge">
             <input
               name="Password"
+              autoComplete="none"
               data-table="Account"
               className="form-control form-control-appended"
               type={showPassword ? "text" : "password"}
@@ -916,4 +1110,11 @@ function AddNewStaffModal({ isModalDisplay, setModalHide, setShowLoader }) {
   );
 }
 
-export default AddNewStaffModal;
+StaffModal.propTypes = {
+  isModalDisplay: PropTypes.bool,
+  initialStateForStaffEdit: PropTypes.object,
+  setModalHide: PropTypes.func,
+  setShowLoader: PropTypes.func,
+};
+
+export default StaffModal;

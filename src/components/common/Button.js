@@ -7,14 +7,18 @@ const Button = styled.button`
     props.borderRadius ? props.borderRadius : " 5px"};
   font-weight: 500;
   background: transparent;
-  cursor: pointer;
+  cursor: ${(props) => (props.disabled ? "" : "pointer")};
   transition: all 0.3s ease;
   position: relative;
   display: inline-block;
-  box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, 0.5),
-    7px 7px 20px 0px rgba(0, 0, 0, 0.1), 4px 4px 5px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: ${(props) =>
+    props.disabled
+      ? ""
+      : `inset 2px 2px 2px 0px rgba(255, 255, 255, 0.5),
+    7px 7px 20px 0px rgba(0, 0, 0, 0.1), 4px 4px 5px 0px rgba(0, 0, 0, 0.1);`}
   outline: none;
-  background: ${(props) => (props.bgColor ? props.bgColor : "#2c7be5")};
+  background: ${(props) =>
+    props.disabled ? "#e7e7e7" : props.bgColor ? props.bgColor : "#2c7be5"};
   border: none;
   z-index: 1;
   &::after {
@@ -34,10 +38,10 @@ const Button = styled.button`
     transition: all 0.3s ease;
   }
   &:hover {
-    color: #fff;
+    ${(props) => (props.disabled ? "" : "color: #fff;")}
   }
   &:hover::after {
-    width: 100%;
+    ${(props) => (props.disabled ? "" : "width: 100%;")}
   }
   &:active {
     top: 2px;

@@ -2,53 +2,59 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { MdMoreVert } from "react-icons/md";
 import { Link } from "react-router-dom";
+import { SpinnerCircular } from "spinners-react";
 
-function Card({ elementList, cardHeader, cardFooter, inactive, noBody }) {
+function Card({
+  elementList,
+  cardHeader,
+  cardFooter,
+  inactive,
+  isLoading,
+  noBodyPadding,
+}) {
   const [navActivated, setActiveNav] = useState(0);
   const handleChangeTab = (e, tabIndex) => {
     e.preventDefault();
     setActiveNav(tabIndex);
   };
   return (
-    <div className={"card" + (inactive ? " inactive" : "")}>
+    <div className={"card" + (inactive ? " card-inactive" : "")}>
       {cardHeader && (
-        <>
-          <div
-            className="card-header"
-            style={{ gap: "5px", paddingRight: "5px" }}
-          >
-            <h4 className="card-header-title font-weight-bold mr-auto">
-              {cardHeader.title}
-              {cardHeader.badge && (
-                <span
-                  className={
-                    "badge font-weight-bold ml-2 badge-" +
-                    cardHeader.badge.theme
-                  }
-                >
-                  {cardHeader.badge.label}
-                </span>
-              )}
-            </h4>
-            {cardHeader.rightTitle && (
-              <span className="text-muted">{cardHeader.rightTitle}</span>
+        <div
+          className="card-header"
+          style={{ gap: "5px", paddingRight: "5px" }}
+        >
+          <h4 className="card-header-title font-weight-bold mr-auto">
+            {cardHeader.title}
+            {cardHeader.badge && (
+              <span
+                className={
+                  "badge font-weight-bold ml-2 badge-" + cardHeader.badge.theme
+                }
+              >
+                {cardHeader.badge.label}
+              </span>
             )}
-            {cardHeader.extension && <MdMoreVert size="20px" />}
-          </div>
+          </h4>
           {cardHeader.navList && (
             <ul className="nav nav-tabs nav-tabs-sm card-header-tabs">
-              {cardHeader.navList.map((nav) => (
+              {cardHeader.navList.map((navLinkTitle) => (
                 <li className="nav-item">
                   <Link className="nav-link active" onClick={handleChangeTab}>
-                    {nav}
+                    {navLinkTitle}
                   </Link>
                 </li>
               ))}
             </ul>
           )}
-        </>
+          {cardHeader.extension && <MdMoreVert size="20px" />}
+        </div>
       )}
-      {noBody ? (
+      {isLoading ? (
+        <div className="d-flex justify-content-center align-items-center py-3">
+          <SpinnerCircular size="30px" />
+        </div>
+      ) : noBodyPadding ? (
         elementList[navActivated]
       ) : (
         <div className="card-body">{elementList[navActivated]}</div>
@@ -75,13 +81,12 @@ Card.propTypes = {
       ]),
       label: PropTypes.string,
     }),
-    rightTitle: PropTypes.any,
     extension: PropTypes.any,
     navList: PropTypes.arrayOf(PropTypes.string),
   }),
   cardFooter: PropTypes.any,
   inactive: PropTypes.bool,
-  noBody: PropTypes.bool,
+  noBodyPadding: PropTypes.bool,
 };
 
 export default Card;
