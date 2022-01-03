@@ -8,7 +8,7 @@ import tableConfig from "./../utils/airtable";
  * * id: string | the record id (format: rec...)
  * @param {String} tableName table name string match with Airtable
  * @param {Object} formula object that has params for the result
- * @param {Object} config onject that has config the source data
+ * @param {Object} config object that has config the source data
  * @returns a promise that have the result data from airtable
  */
 const retrieveData = async (tableName, formula, config) => {
@@ -36,6 +36,7 @@ const mapResultToTableData = (res, fieldList) => {
   res.forEach((recordData) => {
     dataList.push({
       rowId: recordData.id,
+      fieldList,
       data: fieldList.map((field) => {
         let cellData = recordData.fields[field];
         return cellData;

@@ -5,12 +5,25 @@ import Row from "../layout/Row";
 import Col from "../layout/Col";
 import Select from "react-select";
 import Button from "../common/Button";
-import { createNewRecord, retrieveData } from "../../services/airtable.service";
-import ImageUploader, { ImageReviewer } from "../common/ImageUploader";
-import { VALIDATE_RULE } from "../../constants";
+import ImageUploader from "../common/ImageUploader";
+import { initialStaffForm, VALIDATE_RULE } from "../../constants";
 import useAutoGenerate from "../hooks/useAutoGenerate";
 import { MdRefresh, MdRemoveRedEye } from "react-icons/md";
 import DatePicker from "../common/DatePicker";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  createNewStaff,
+  selectSelectedStaffForEdit,
+  updateExistingStaff,
+} from "../../features/staffSlice";
+import {
+  fetchAllEmptySelectList,
+  selectError,
+  selectIsSuccess,
+  selectOptionList,
+} from "../../features/selectListSlice";
+import { selectSelectedStatusForEdit } from "../../features/statusSlice";
+import { selectSelectedAccountForEdit } from "../../features/accountSlice";
 
 // NOTE: The Select component (from react-select) that doesn't
 // support custom inner props when using component event listener
@@ -20,13 +33,17 @@ import DatePicker from "../common/DatePicker";
 // the normal input form-control still can use the custom props data-table
 // and name.
 
-function StaffModal({
-  isModalDisplay,
-  initialStateForStaffEdit,
-  setModalHide,
-  setShowLoader,
-}) {
+function StaffModal({ isModalDisplay, type, setModalHide }) {
   let [componentAvailable, setComponentAvailable] = useState(true);
+  const dispatch = useDispatch();
+  const retriveSelectStatus = useSelector(selectIsSuccess);
+  const retriveSelectResult = useSelector(selectOptionList);
+  const retriveSelectError = useSelector(selectError);
+
+  const selectedStaffForEdit = useSelector(selectSelectedStaffForEdit);
+  const selectedStatusForEdit = useSelector(selectSelectedStatusForEdit);
+  const selectedAccountForEdit = useSelector(selectSelectedAccountForEdit);
+
   const autoGenerate = useAutoGenerate();
   const initialPasswordString = autoGenerate(12);
   const [showPassword, setShowPassword] = useState(false);
@@ -54,10 +71,11 @@ function StaffModal({
     });
   };
 
-  // all the input form below must have this 2 properties (name, data-table)
+  // all the input form below must have this 2 properties
+  // (name, data-table)
 
   // define the select list use for dropdown form control
-  // empty select lists have to retrive data from airtable
+  // empty select lists have to retrive data from Airtable
   const [selectList, setSelectList] = useState({
     Staff: {
       Gender: {
@@ -269,99 +287,105 @@ function StaffModal({
   // the 'linkedField' property is the actual field that
   // the new record will be add by this linkedField,
   // the field key and the linkedField is looked up field if
-  // they are the same
+  // they are the sameÎ
   const [newStaffForm, setNewStaffForm] = useState({
-    Staff: {
-      FullName: {
-        linkedField: "FullName",
-        value: "",
-        label: "",
-      },
-      Portrait: {
-        linkedField: "Portrait",
-        value: "",
-        label: "",
-      },
-      Gender: { linkedField: "Gender", value: "", label: "" },
-      DOB: { linkedField: "DOB", value: "", label: "" },
-      Phone: { linkedField: "Phone", value: "", label: "" },
-      PersonalEmail: {
-        linkedField: "PersonalEmail",
-        value: "",
-        label: "",
-      },
-      RoleType: { linkedField: "Role", value: "", label: "" },
-      Company: { linkedField: "Collaboratory", value: "", label: "" },
-      CurrentWorkingPlace: {
-        linkedField: "WorkingPlace",
-        value: "",
-        label: "",
-      },
-    },
-    Status: {
-      WorkingType: {
-        linkedField: "WorkingType",
-        value: "",
-        label: "",
-      },
-      WorkingStatus: {
-        linkedField: "WorkingStatus",
-        value: "",
-        label: "",
-      },
-      StartWorkingDay: {
-        linkedField: "WorkingStatus",
-        value: "",
-        label: "",
-      },
-      MarriageStatus: {
-        linkedField: "MarriageStatus",
-        value: "",
-        label: "",
-      },
-      HealthStatus: {
-        linkedField: "HealthStatus",
-        value: "",
-        label: "",
-      },
-      Notes: { linkedField: "Notes", value: "", label: "" },
-      Covid19Vaccinated: {
-        linkedField: "Covid19Vaccinated",
-        value: "",
-        label: "",
-      },
-      Covid19VaccineType: {
-        // multi select
-        linkedField: "Covid19VaccineType",
-        value: [],
-        label: [],
-      },
-    },
+    ...initialStaffForm,
     Account: {
-      Username: {
-        linkedField: "Username",
-        value: "",
-        label: "",
-      },
-      Domain: {
-        linkedField: "Collaboratory",
-        value: "",
-        label: "",
-      },
-      UserAccount: {
-        // combination of username + domain
-        linkedField: "UserAccount",
-        value: "",
-        label: "",
-      },
+      ...initialStaffForm.Account,
       Password: {
-        linkedField: "Password",
+        ...initialStaffForm.Account.Password,
         value: initialPasswordString,
         label: initialPasswordString,
       },
     },
   });
-  const [previewImg, setPreviewImg] = useState(null); // Portrait image state
+  useEffect(() => {
+    if (
+      type === "edit" &&
+      selectedStaffForEdit &&
+      selectedStatusForEdit &&
+      selectedAccountForEdit
+    ) {
+      console.log("update");
+      setNewStaffForm((state) => {
+        let newState = state;
+        // set for Staff
+        Object.entries(newState.Staff).forEach((formField) => {
+          const valueOfFieldsSelected =
+            selectedStaffForEdit.fields[formField[0]];
+          if (formField[0] === formField[1].linkedField) {
+            if (Array.isArray(valueOfFieldsSelected)) {
+              // array of attachment
+              newState.Staff[formField[0]].value = valueOfFieldsSelected;
+              newState.Staff[formField[0]].label = valueOfFieldsSelected[0].url;
+            } else {
+              // string text value or single select
+              newState.Staff[formField[0]].value = valueOfFieldsSelected;
+              newState.Staff[formField[0]].label = valueOfFieldsSelected;
+            }
+          } else {
+            // linked field and looked up field
+            newState.Staff[formField[0]].value =
+              selectedStaffForEdit.fields[formField[1].linkedField];
+            newState.Staff[formField[0]].label = valueOfFieldsSelected;
+          }
+        });
+        Object.entries(newState.Status).forEach((formField) => {
+          const valueOfFieldsSelected =
+            selectedStatusForEdit.fields[formField[0]];
+          if (formField[0] === formField[1].linkedField) {
+            if (Array.isArray(valueOfFieldsSelected)) {
+              if (valueOfFieldsSelected[0].url) {
+                // array of attachment
+                newState.Status[formField[0]].value = valueOfFieldsSelected;
+                newState.Status[formField[0]].label =
+                  valueOfFieldsSelected[0].url;
+              } else {
+                // multi select
+                newState.Status[formField[0]].value = valueOfFieldsSelected;
+                newState.Status[formField[0]].label = valueOfFieldsSelected;
+              }
+            } else {
+              // string text value or single select
+              newState.Status[formField[0]].value = valueOfFieldsSelected;
+              newState.Status[formField[0]].label = valueOfFieldsSelected;
+            }
+          } else {
+            // linked field and looked up field
+            newState.Status[formField[0]].value =
+              selectedStatusForEdit.fields[formField[1].linkedField];
+            newState.Status[formField[0]].label = valueOfFieldsSelected;
+          }
+        });
+        Object.entries(newState.Account).forEach((formField) => {
+          const valueOfFieldsSelected =
+            selectedAccountForEdit.fields[formField[0]];
+          if (formField[0] === formField[1].linkedField) {
+            if (Array.isArray(valueOfFieldsSelected)) {
+              // array of attachment
+              newState.Account[formField[0]].value = valueOfFieldsSelected;
+              newState.Account[formField[0]].label = valueOfFieldsSelected.url;
+            } else {
+              // string text value or single select
+              newState.Account[formField[0]].value = valueOfFieldsSelected;
+              newState.Account[formField[0]].label = valueOfFieldsSelected;
+            }
+          } else {
+            // linked field and looked up field
+            newState.Account[formField[0]].value =
+              selectedAccountForEdit.fields[formField[1].linkedField];
+            newState.Account[formField[0]].label = valueOfFieldsSelected;
+          }
+        });
+        return newState;
+      });
+    }
+  }, [
+    type,
+    selectedStaffForEdit,
+    selectedStatusForEdit,
+    selectedAccountForEdit,
+  ]);
 
   // define the error status and message
   const [errorForm, setErrorForm] = useState({
@@ -392,67 +416,33 @@ function StaffModal({
     Company: useRef(null),
     WorkingType: useRef(null),
     WorkingStatus: useRef(null),
-  };
-
-  const countEmptySelectList = () => {
-    let count = 0;
-    Object.keys(selectList).forEach((tableKey) => {
-      Object.keys(selectList[tableKey]).forEach((fieldKey) => {
-        if (selectList[tableKey][fieldKey].list.length === 0) {
-          count++;
-        }
-      });
-    });
-    return count;
+    StartWorkingDay: useRef(null),
   };
 
   /* eslint-disable */
   // retrive data from airtable into empty select list
   useEffect(() => {
-    // componentAvailable use for stoping render when component is unmounted
-    setShowLoader(true);
-    handleValidate();
-    const selectListKeys = Object.keys(selectList);
-
-    selectListKeys.forEach((tableKey) => {
-      Object.keys(selectList[tableKey]).forEach((fieldKey) => {
-        if (selectList[tableKey][fieldKey].list.length === 0) {
-          retrieveData(selectList[tableKey][fieldKey].fromTable)
-            .then((res) => {
-              componentAvailable &&
-                setSelectList((state) => ({
-                  ...state,
-                  [tableKey]: {
-                    ...state[tableKey],
-                    [fieldKey]: {
-                      ...state[tableKey][fieldKey],
-                      list: res.map((item) => ({
-                        "data-table": tableKey,
-                        value: item.id,
-                        label:
-                          tableKey === "Account"
-                            ? item.fields.Domain
-                            : item.fields.Name,
-                        name: fieldKey,
-                      })),
-                    },
-                  },
-                }));
-            })
-            .catch((e) => console.log(e))
-            .finally(() => {
-              const checkEmptySelectList = countEmptySelectList();
-              if (checkEmptySelectList === 0) {
-                setShowLoader(false);
-              }
-            });
+    if (retriveSelectResult) {
+      componentAvailable && setSelectList(retriveSelectResult);
+    } else {
+      if (retriveSelectStatus) {
+        if (retriveSelectError) {
+          console.log(retriveSelectError);
         }
-      });
-    });
+      } else {
+        dispatch(fetchAllEmptySelectList(selectList));
+      }
+    }
     return () => {
       setComponentAvailable(false);
     };
-  }, []);
+  }, [
+    componentAvailable,
+    dispatch,
+    retriveSelectStatus,
+    retriveSelectResult,
+    retriveSelectError,
+  ]);
 
   // Handle the input change (valitdate right after the input change)
   // Normal input/select handle
@@ -467,9 +457,9 @@ function StaffModal({
         return newState;
       });
       return;
-    }
-    e.target
-      ? setNewStaffForm((state) => {
+    } else if (typeof e === "object") {
+      if (e.target) {
+        setNewStaffForm((state) => {
           let dataTable = "";
           let name = "";
           let value = "";
@@ -499,8 +489,21 @@ function StaffModal({
             newState.Account.UserAccount.label = newUsername + currentDomain;
           }
           return newState;
-        })
-      : setNewStaffForm((state) => {
+        });
+      } else if (e.filesFailed && e.filesUploaded) {
+        // used for image upload (Filestack handler)
+        // filesFailed, filesUploaded are arrays
+        if (e.filesUploaded.length > 0) {
+          setNewStaffForm((state) => {
+            let newState = { ...state };
+            const { name, "data-table": dataTable, filesUploaded } = e;
+            newState[dataTable][name].value = [filesUploaded[0]];
+            newState[dataTable][name].label = filesUploaded[0].url;
+            return newState;
+          });
+        }
+      } else {
+        setNewStaffForm((state) => {
           // used for select input
           let newState = { ...state };
           if (Array.isArray(e)) {
@@ -547,21 +550,8 @@ function StaffModal({
           }
           return newState;
         });
-  };
-  // Portrait handle
-  const handleUploadImg = (value) => {
-    setPreviewImg(value);
-    setNewStaffForm({
-      ...newStaffForm,
-      Staff: {
-        ...newStaffForm.Staff,
-        Portrait: {
-          ...newStaffForm.Staff.Portrait,
-          value: [{ url: value.filesUploaded[0].url }],
-          label: value.filesUploaded[0].url,
-        },
-      },
-    });
+      }
+    }
   };
 
   // Validate, Clear error message on focus and Submit
@@ -665,9 +655,9 @@ function StaffModal({
       return newState;
     });
   };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(newStaffForm);
     if (errorForm.errStatus) {
       setErrorForm({ ...errorForm, isShowMsg: true });
       let findFirstErrRef = false;
@@ -683,7 +673,6 @@ function StaffModal({
       });
       return;
     }
-    setShowLoader(true);
     // create new record object suitable with fields in airtable
     let newRecord = { Staff: {}, Status: {}, Account: {} };
     Object.keys(newRecord).forEach((key) => {
@@ -693,33 +682,47 @@ function StaffModal({
       });
     });
     let countRecordCreated = 0;
-    setShowLoader(true);
     // create new record into Staff first to get the recordId then create others
-    createNewRecord("Staff", newRecord.Staff)
-      .then((res) => {
-        console.log("Create new record in Staff table successfully!", res);
-        countRecordCreated++;
-        const recordId = res.id;
-        Object.entries(newRecord).forEach((item) => {
-          const table = item[0];
-          const fields = item[1];
-          fields.Staff = [recordId]; // add field Staff to the new record
-          table !== "Staff" &&
-            createNewRecord(table, fields)
-              .then((res) => {
-                console.log(
-                  "Create new record in " + table + " table successfully!",
-                  res
-                );
-                countRecordCreated++;
-              })
-              .catch((e) => console.log(e))
-              .finally(() => {
-                if (countRecordCreated === 3) setShowLoader(false);
-              });
-        });
-      })
-      .catch((e) => console.log(e));
+    // createNewRecord("Staff", newRecord.Staff)
+    //   .then((res) => {
+    //     console.log("Create new record in Staff table successfully!", res);
+    //     countRecordCreated++;
+    //     const recordId = res.id;
+    //     Object.entries(newRecord).forEach((item) => {
+    //       const table = item[0];
+    //       const fields = item[1];
+    //       fields.Staff = [recordId]; // add field Staff to the new record
+    //       table !== "Staff" &&
+    //         createNewRecord(table, fields)
+    //           .then((res) => {
+    //             console.log(
+    //               "Create new record in " + table + " table successfully!",
+    //               res
+    //             );
+    //             countRecordCreated++;
+    //           })
+    //           .catch((e) => console.log(e))
+    //           .finally(() => {
+    //             if (countRecordCreated === 3) dispatch(setLoading(false));
+    //           });
+    //     });
+    //   })
+    //   .catch((e) => console.log(e));
+
+    // create/update for Staff table
+    try {
+      const result = await dispatch(
+        type === "create"
+          ? createNewStaff(newRecord.Staff)
+          : updateExistingStaff(newRecord.Staff)
+      );
+      console.log(result);
+      if (result) {
+        setModalHide();
+      }
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   return (
@@ -741,6 +744,7 @@ function StaffModal({
             data-table="Staff"
             className="form-control"
             type="text"
+            value={newStaffForm.Staff.FullName.label}
             onChange={handleStaffInput}
             onFocus={handleClearErrMsgOnFocus}
             onBlur={handleValidate}
@@ -761,6 +765,14 @@ function StaffModal({
             onChange={handleStaffInput}
             onFocus={handleClearErrMsgOnFocus}
             onBlur={handleValidate}
+            value={
+              newStaffForm.Staff.Gender.value && {
+                "data-table": "Staff",
+                label: newStaffForm.Staff.Gender.label,
+                value: newStaffForm.Staff.Gender.value,
+                name: "Gender",
+              }
+            }
             options={selectList.Staff.Gender.list}
             placeholder="Select gender..."
             isClearable
@@ -779,14 +791,17 @@ function StaffModal({
         </div>
         <div className="form-group">
           <label htmlFor="Portrait">Portrait</label>
-          {previewImg ? (
-            <ImageReviewer
-              data={previewImg}
-              handleUploadSuccessfully={handleUploadImg}
-            />
-          ) : (
-            <ImageUploader handleUploadSuccessfully={handleUploadImg} />
-          )}
+          <ImageUploader
+            name="Portrait"
+            data-table="Staff"
+            imgData={newStaffForm.Staff.Portrait.value}
+            imgThumbnail={
+              newStaffForm.Staff.Portrait.value &&
+              newStaffForm.Staff.Portrait.label
+            }
+            handleUploadSuccessfully={handleStaffInput}
+            handleClearImg={handleStaffInput}
+          />
         </div>
         <div className="form-group">
           <label htmlFor="DOB" ref={refList.DOB}>
@@ -796,6 +811,7 @@ function StaffModal({
             className="form-control"
             name="DOB"
             data-table="Staff"
+            value={newStaffForm.Staff.DOB.value && newStaffForm.Staff.DOB.label}
             onFocus={handleClearErrMsgOnFocus}
             onChange={handleStaffInput}
             onBlur={handleValidate}
@@ -815,6 +831,9 @@ function StaffModal({
             data-table="Staff"
             className="form-control"
             type="tel"
+            value={
+              newStaffForm.Staff.Phone.value && newStaffForm.Staff.Phone.label
+            }
             onChange={handleStaffInput}
             onFocus={handleClearErrMsgOnFocus}
             onBlur={handleValidate}
@@ -832,6 +851,10 @@ function StaffModal({
             name="PersonalEmail"
             data-table="Staff"
             className="form-control"
+            value={
+              newStaffForm.Staff.PersonalEmail.value &&
+              newStaffForm.Staff.PersonalEmail.label
+            }
             type="email"
             onChange={handleStaffInput}
             onBlur={handleValidate}
@@ -839,7 +862,7 @@ function StaffModal({
           />
         </div>
         <div className="form-group">
-          <label htmlFor="Company">
+          <label htmlFor="Company" ref={refList.Company}>
             Company <span className="text-danger">*</span>
           </label>
           <Select
@@ -847,6 +870,14 @@ function StaffModal({
             onChange={handleStaffInput}
             onFocus={handleClearErrMsgOnFocus}
             onBlur={handleValidate}
+            value={
+              newStaffForm.Staff.Company.value && {
+                "data-table": "Staff",
+                label: newStaffForm.Staff.Company.label,
+                value: newStaffForm.Staff.Company.value,
+                name: "Company",
+              }
+            }
             options={selectList.Staff.Company.list}
             placeholder="Who to work for..."
             styles={{
@@ -868,6 +899,14 @@ function StaffModal({
             className="Staff CurrentWorkingPlace"
             onChange={handleStaffInput}
             onBlur={handleValidate}
+            value={
+              newStaffForm.Staff.CurrentWorkingPlace.value && {
+                "data-table": "Staff",
+                label: newStaffForm.Staff.CurrentWorkingPlace.label,
+                value: newStaffForm.Staff.CurrentWorkingPlace.value,
+                name: "CurrentWorkingPlace",
+              }
+            }
             options={selectList.Staff.CurrentWorkingPlace.list}
             placeholder="Where to work..."
             styles={{
@@ -884,6 +923,14 @@ function StaffModal({
             className="Staff RoleType"
             onChange={handleStaffInput}
             onBlur={handleValidate}
+            value={
+              newStaffForm.Staff.RoleType.value && {
+                "data-table": "Staff",
+                label: newStaffForm.Staff.RoleType.label,
+                value: newStaffForm.Staff.RoleType.value,
+                name: "RoleType",
+              }
+            }
             options={selectList.Staff.RoleType.list}
             placeholder="Working as a/an..."
             styles={{
@@ -897,13 +944,22 @@ function StaffModal({
         <hr className="navbar-divider"></hr>
         <h3 className="font-weight-bold text-center">Employee Status</h3>
         <div className="form-group">
-          <label htmlFor="WorkingType">
+          <label htmlFor="WorkingType" ref={refList.WorkingType}>
             Working Type <span className="text-danger">*</span>
           </label>
           <Select
             className="Status WorkingType"
             onChange={handleStaffInput}
+            onFocus={handleClearErrMsgOnFocus}
             onBlur={handleValidate}
+            value={
+              newStaffForm.Status.WorkingType.value && {
+                "data-table": "Status",
+                label: newStaffForm.Status.WorkingType.label,
+                value: newStaffForm.Status.WorkingType.value,
+                name: "WorkingType",
+              }
+            }
             options={selectList.Status.WorkingType.list}
             placeholder="Working type..."
             styles={{
@@ -921,13 +977,22 @@ function StaffModal({
             )}
         </div>
         <div className="form-group">
-          <label htmlFor="WorkingStatus">
+          <label htmlFor="WorkingStatus" ref={refList.WorkingStatus}>
             Working Status <span className="text-danger">*</span>
           </label>
           <Select
             className="Status WorkingStatus"
             onChange={handleStaffInput}
+            onFocus={handleClearErrMsgOnFocus}
             onBlur={handleValidate}
+            value={
+              newStaffForm.Status.WorkingType.value && {
+                "data-table": "Status",
+                label: newStaffForm.Status.WorkingType.label,
+                value: newStaffForm.Status.WorkingType.value,
+                name: "WorkingType",
+              }
+            }
             options={selectList.Status.WorkingStatus.list}
             placeholder="Working status..."
             styles={{
@@ -945,13 +1010,17 @@ function StaffModal({
             )}
         </div>
         <div className="form-group">
-          <label htmlFor="StartWorkingDay">
+          <label htmlFor="StartWorkingDay" ref={refList.StartWorkingDay}>
             Start Working Day <span className="text-danger">*</span>
           </label>
           <DatePicker
             className="form-control"
             name="StartWorkingDay"
             data-table="Status"
+            value={
+              newStaffForm.Status.StartWorkingDay.value &&
+              newStaffForm.Status.StartWorkingDay.label
+            }
             onFocus={handleClearErrMsgOnFocus}
             onChange={handleStaffInput}
             onBlur={handleValidate}
@@ -969,6 +1038,14 @@ function StaffModal({
             className="Status MarriageStatus"
             onChange={handleStaffInput}
             onBlur={handleValidate}
+            value={
+              newStaffForm.Status.MarriageStatus.value && {
+                "data-table": "Status",
+                label: newStaffForm.Status.MarriageStatus.label,
+                value: newStaffForm.Status.MarriageStatus.value,
+                name: "MarriageStatus",
+              }
+            }
             options={selectList.Status.MarriageStatus.list}
             placeholder="Marriage status..."
             styles={{
@@ -985,6 +1062,14 @@ function StaffModal({
             className="Status HealthStatus"
             onChange={handleStaffInput}
             onBlur={handleValidate}
+            value={
+              newStaffForm.Status.HealthStatus.value && {
+                "data-table": "Status",
+                label: newStaffForm.Status.HealthStatus.label,
+                value: newStaffForm.Status.HealthStatus.value,
+                name: "HealthStatus",
+              }
+            }
             options={selectList.Status.HealthStatus.list}
             placeholder="Health status..."
             styles={{
@@ -1001,6 +1086,9 @@ function StaffModal({
             name="Notes"
             data-table="Status"
             className="form-control"
+            value={
+              newStaffForm.Status.Notes.value && newStaffForm.Status.Notes.label
+            }
             onChange={handleStaffInput}
             onBlur={handleValidate}
             placeholder="Notes..."
@@ -1015,6 +1103,14 @@ function StaffModal({
             className="Status Covid19Vaccinated"
             onChange={handleStaffInput}
             onBlur={handleValidate}
+            value={
+              newStaffForm.Status.Covid19Vaccinated.value && {
+                "data-table": "Status",
+                label: newStaffForm.Status.Covid19Vaccinated.label,
+                value: newStaffForm.Status.Covid19Vaccinated.value,
+                name: "Covid19Vaccinated",
+              }
+            }
             options={selectList.Status.Covid19Vaccinated.list}
             placeholder="0/1/2 vaccinated..."
             styles={{
@@ -1032,6 +1128,19 @@ function StaffModal({
             onChange={handleStaffInput}
             onBlur={handleValidate}
             isMulti
+            value={
+              newStaffForm.Status.Covid19VaccineType.value &&
+              newStaffForm.Status.Covid19VaccineType.value.map(
+                (value, index) => {
+                  return {
+                    "data-table": "Status",
+                    label: newStaffForm.Status.Covid19VaccineType.label[index],
+                    value,
+                    name: "Covid19VaccineType",
+                  };
+                }
+              )
+            }
             options={selectList.Status.Covid19VaccineType.list}
             placeholder="Which type vaccine..."
             styles={{
@@ -1112,9 +1221,8 @@ function StaffModal({
 
 StaffModal.propTypes = {
   isModalDisplay: PropTypes.bool,
-  initialStateForStaffEdit: PropTypes.object,
+  type: PropTypes.oneOf(["create", "edit"]).isRequired,
   setModalHide: PropTypes.func,
-  setShowLoader: PropTypes.func,
 };
 
 export default StaffModal;

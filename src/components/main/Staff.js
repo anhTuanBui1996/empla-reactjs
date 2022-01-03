@@ -1,8 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  mapResultToTableData,
-  retrieveData,
-} from "../../services/airtable.service";
+import { mapResultToTableData } from "../../services/airtable.service";
 import Card from "../common/Card";
 import Col from "../layout/Col";
 import MainHeader from "../layout/MainHeader";
@@ -13,12 +10,50 @@ import Container from "../layout/Container";
 import Button from "../common/Button";
 import StaffModal from "../specific/StaffModal";
 import Loader from "../common/Loader";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  retriveStaffList,
+  selectLoading as staffLoading,
+  selectIsSuccess as staffIsSuccess,
+  selectError as staffError,
+  selectStaffTableData,
+} from "../../features/staffSlice";
+import {
+  retriveStatusList,
+  selectLoading as statusLoading,
+  selectIsSuccess as statusIsSuccess,
+  selectError as statusError,
+  selectStatusTableData,
+} from "../../features/statusSlice";
+import {
+  retriveAccountList,
+  selectLoading as accountLoading,
+  selectIsSuccess as accountIsSuccess,
+  selectError as accountError,
+  selectAccountTableData,
+} from "../../features/accountSlice";
 
 function Staff() {
-  const [showLoader, setShowLoader] = useState(false);
-  const [recordList, setRecordList] = useState([]);
+  const _staff_loading = useSelector(staffLoading);
+  const _staff_retriveStatus = useSelector(staffIsSuccess);
+  const _staff_retriveResult = useSelector(selectStaffTableData);
+  const _staff_retriveError = useSelector(staffError);
+  const _status_loading = useSelector(statusLoading);
+  const _status_retriveStatus = useSelector(statusIsSuccess);
+  const _status_retriveResult = useSelector(selectStatusTableData);
+  const _status_retriveError = useSelector(statusError);
+  const _account_loading = useSelector(accountLoading);
+  const _account_retriveStatus = useSelector(accountIsSuccess);
+  const _account_retriveResult = useSelector(selectAccountTableData);
+  const _account_retriveError = useSelector(accountError);
+
+  const dispatch = useDispatch();
+  const [_staff_recordList, _staff_setRecordList] = useState([]);
+  const [_status_recordList, _status_setRecordList] = useState([]);
+  const [_account_recordList, _account_setRecordList] = useState([]);
   const [isModalDisplay, setModalDisplay] = useState(false);
-  const fieldList = useMemo(() => {
+  const [modalType, setModalType] = useState("create");
+  const staffFieldList = useMemo(() => {
     return [
       "StaffId",
       "FullName",
@@ -32,16 +67,109 @@ function Staff() {
       "CurrentWorkingPlace",
     ];
   }, []);
+  const statusFieldList = useMemo(() => {
+    return [
+      "StaffId",
+      "WorkingType",
+      "WorkingStatus",
+      "StartWorkingDay",
+      "MarriageStatus",
+      "HealthStatus",
+      "Notes",
+      "Covid19Vaccinated",
+      "Covid19VaccineType",
+    ];
+  }, []);
+  const accountFieldList = useMemo(() => {
+    return [
+      "StaffId",
+      "Username",
+      "Domain",
+      "UserAccount",
+      "Password",
+      "FullName",
+      "Avatar",
+      "CreatedTime",
+      "LastModifiedTime",
+      "AccountStatus",
+    ];
+  }, []);
+
+  // Staff table retrive progression
   useEffect(() => {
-    setShowLoader(true);
-    retrieveData("Staff")
-      .then((res) => {
-        const dataTableList = mapResultToTableData(res, fieldList);
-        setRecordList(dataTableList);
-      })
-      .catch((e) => console.log(e))
-      .finally(() => setShowLoader(false));
-  }, [fieldList]);
+    if (_staff_retriveResult) {
+      const staffDataTableList = mapResultToTableData(
+        _staff_retriveResult,
+        staffFieldList
+      );
+      _staff_setRecordList(staffDataTableList);
+    } else {
+      if (_staff_retriveStatus) {
+        if (_staff_retriveError) {
+          console.log(_staff_retriveError);
+        }
+      } else {
+        dispatch(retriveStaffList());
+      }
+    }
+  }, [
+    staffFieldList,
+    _staff_retriveStatus,
+    _staff_retriveResult,
+    _staff_retriveError,
+    dispatch,
+  ]);
+
+  // Status table retrive progression
+  useEffect(() => {
+    if (_status_retriveResult) {
+      const statusDataTableList = mapResultToTableData(
+        _status_retriveResult,
+        statusFieldList
+      );
+      _status_setRecordList(statusDataTableList);
+    } else {
+      if (_status_retriveStatus) {
+        if (_status_retriveError) {
+          console.log(_status_retriveError);
+        }
+      } else {
+        dispatch(retriveStatusList());
+      }
+    }
+  }, [
+    statusFieldList,
+    _status_retriveStatus,
+    _status_retriveResult,
+    _status_retriveError,
+    dispatch,
+  ]);
+
+  // Account table retrive progression
+  useEffect(() => {
+    if (_account_retriveResult) {
+      const accountDataTableList = mapResultToTableData(
+        _account_retriveResult,
+        accountFieldList
+      );
+      _account_setRecordList(accountDataTableList);
+    } else {
+      if (_account_retriveStatus) {
+        if (_account_retriveError) {
+          console.log(_account_retriveError);
+        }
+      } else {
+        dispatch(retriveAccountList());
+      }
+    }
+  }, [
+    accountFieldList,
+    _account_retriveStatus,
+    _account_retriveResult,
+    _account_retriveError,
+    dispatch,
+  ]);
+
   return (
     <>
       <MainContent isPopupOpened={isModalDisplay}>
@@ -61,7 +189,10 @@ function Staff() {
                     <Row className="justify-content-end">
                       <Button
                         className="py-2 px-4"
-                        onClick={() => setModalDisplay(true)}
+                        onClick={() => {
+                          setModalType("create");
+                          setModalDisplay(true);
+                        }}
                       >
                         Add staff
                       </Button>
@@ -76,20 +207,46 @@ function Staff() {
             <Col columnSize={["12"]}>
               <Card
                 cardHeader={{
-                  title: "Your employee list",
-                  badge: {
-                    label: "All",
-                    theme: "secondary",
-                  },
+                  title: "Your employee information",
                   extension: true,
+                  navList: ["Staff", "Status", "Account"],
                 }}
                 elementList={[
                   <Table
-                    fieldList={fieldList}
-                    recordList={recordList}
+                    tableName="Staff"
+                    fieldList={staffFieldList}
+                    recordList={_staff_recordList}
                     isHasSettings
+                    isEditable
+                    handleOpenEditModal={() => {
+                      setModalType("edit");
+                      setModalDisplay(true);
+                    }}
+                  />,
+                  <Table
+                    tableName="Status"
+                    fieldList={statusFieldList}
+                    recordList={_status_recordList}
+                    isHasSettings
+                    isEditable
+                    handleOpenEditModal={() => {
+                      setModalType("edit");
+                      setModalDisplay(true);
+                    }}
+                  />,
+                  <Table
+                    tableName="Account"
+                    fieldList={accountFieldList}
+                    recordList={_account_recordList}
+                    isHasSettings
+                    isEditable
+                    handleOpenEditModal={() => {
+                      setModalType("edit");
+                      setModalDisplay(true);
+                    }}
                   />,
                 ]}
+                isLoading={_staff_recordList.length === 0 ? true : false}
                 noBodyPadding
               />
             </Col>
@@ -98,10 +255,10 @@ function Staff() {
       </MainContent>
       <StaffModal
         isModalDisplay={isModalDisplay}
+        type={modalType}
         setModalHide={() => setModalDisplay(false)}
-        setShowLoader={(v) => setShowLoader(v)}
       />
-      {showLoader && <Loader />}
+      {(_staff_loading || _status_loading || _account_loading) && <Loader />}
     </>
   );
 }

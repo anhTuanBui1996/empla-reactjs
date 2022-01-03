@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
 import { usePopper } from "react-popper";
@@ -15,7 +15,10 @@ function DatePicker(props) {
   });
 
   const [showPickerBox, setShowPickerBox] = useState(false);
-  const [dateValue, setDateValue] = useState(null);
+  const [dateValue, setDateValue] = useState("");
+  useEffect(() => {
+    setDateValue(props.value);
+  }, [props.value]);
   return (
     <Outclick
       onOutClick={() => {
@@ -31,25 +34,22 @@ function DatePicker(props) {
           props.className ? " " + props.className : ""
         }`}
         type="text"
-        onClick={() => {
+        value={dateValue}
+        onChange={() => {}}
+        placeholder="Click to pick a day..."
+        onFocus={() => {
           props.onFocus({
             target: {
               "data-table": props["data-table"],
               name: props.name,
-              value: dateValue ? dateValue : "",
-              label: dateValue ? dateValue.toLocaleDateString() : "",
+              value: dateValue,
+              label: dateValue,
             },
             inputType: "DatePicker",
           });
           setShowPickerBox(true);
         }}
-      >
-        {dateValue ? (
-          dateValue.toLocaleDateString()
-        ) : (
-          <span className="text-muted">Click to select a date...</span>
-        )}
-      </DatePickerInput>
+      />
       {showPickerBox && (
         <DatePickerPopper
           ref={setPopperElement}
@@ -60,13 +60,14 @@ function DatePicker(props) {
             useDarkMode
             value={props.value}
             onChange={(v) => {
-              setDateValue(v);
+              const dateString = v.toLocaleDateString();
+              setDateValue(dateString);
               props.onChange({
                 target: {
                   "data-table": props["data-table"],
                   name: props.name,
-                  value: v,
-                  label: v.toLocaleDateString(),
+                  value: dateString,
+                  label: dateString,
                 },
                 inputType: "DatePicker",
               });
@@ -85,12 +86,12 @@ DatePicker.propTypes = {
   "data-table": PropTypes.string,
   className: PropTypes.string,
   onChange: PropTypes.func,
-  onFocus: PropTypes.func,
+  onClick: PropTypes.func,
   onBlur: PropTypes.func,
-  value: PropTypes.object,
+  value: PropTypes.string,
 };
 
-const DatePickerInput = styled.div`
+const DatePickerInput = styled.input`
   cursor: pointer;
 `;
 const DatePickerPopper = styled.div`

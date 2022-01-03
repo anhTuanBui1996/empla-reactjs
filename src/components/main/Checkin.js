@@ -7,20 +7,23 @@ import Row from "../layout/Row";
 import Button from "../common/Button";
 import Container from "../layout/Container";
 import Table from "../common/Table";
-import {
-  retrieveData,
-  mapResultToTableData,
-} from "../../services/airtable.service";
+import { mapResultToTableData } from "../../services/airtable.service";
 import { getLocalUser } from "../../services/localStorage.service";
 import { selectUserCredential } from "../../features/userSlice";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Loader from "../common/Loader";
+import {
+  retriveCheckinList,
+  selectCheckinTableData,
+  selectError,
+  selectIsSuccess,
+  selectLoading,
+} from "../../features/checkinSlice";
 
 function Checkin() {
   const fieldList = useMemo(() => {
     return ["RecordId", "CreatedDate", "Type", "Notes"];
   }, []);
-  const [showLoader, setShowLoader] = useState(true);
   const [recordList, setRecordList] = useState([]);
   const [isCheckInAvailable, setCheckInStatus] = useState(true);
   const userCredential = useSelector(selectUserCredential);
@@ -28,32 +31,42 @@ function Checkin() {
     ? userCredential.StaffId[0]
     : getLocalUser().StaffId[0];
 
+  const dispatch = useDispatch();
+  const loading = useSelector(selectLoading);
+  const isSuccess = useSelector(selectIsSuccess);
+  const checkinList = useSelector(selectCheckinTableData);
+  const error = useSelector(selectError);
+
   /* eslint-disable */
   useEffect(() => {
-    retrieveData("Check-in", { filterByFormula: `StaffId = "${userId}"` })
-      .then((res) => {
-        const tableDataList = mapResultToTableData(res, fieldList);
-        setRecordList(tableDataList);
-        
-        let lastCheck = tableDataList[0];
-        tableDataList.forEach((recordData) => {
-          // the CreatedDate 's index is 1 in the fieldList
-          const createdTimeStr = recordData.data[1].cellData;
-          const lastCheckTimeStr = lastCheck.data[1].cellData;
-          if (Date.parse(createdTimeStr) > Date.parse(lastCheckTimeStr)) {
-            lastCheck = recordData;
-          }
-        });
-        // the Type 's index is 2 in the fieldList
-        if (lastCheck.data[2] === "Check-in") {
-          setCheckInStatus(false);
-        } else {
-          setCheckInStatus(true);
+    if (checkinList) {
+      console.log(checkinList);
+      const tableDataList = mapResultToTableData(checkinList, fieldList);
+      setRecordList(tableDataList);
+
+      let lastCheck = tableDataList[0];
+      tableDataList.forEach((recordData) => {
+        // the CreatedDate 's index is 1 in the fieldList
+        const createdTimeStr = recordData.data[1].cellData;
+        const lastCheckTimeStr = lastCheck.data[1].cellData;
+        if (Date.parse(createdTimeStr) > Date.parse(lastCheckTimeStr)) {
+          lastCheck = recordData;
         }
-      })
-      .catch((e) => console.log(e))
-      .finally(() => setShowLoader(false));
-  }, []);
+      });
+      // the Type's index is 2 in the fieldList
+      if (lastCheck.data[2] === "Check-in") {
+        setCheckInStatus(false);
+      } else {
+        setCheckInStatus(true);
+      }
+    } else {
+      if (error) {
+        console.log(error);
+      } else {
+        dispatch(retriveCheckinList(userId));
+      }
+    }
+  }, [isSuccess, checkinList, error]);
   const handleCheckIn = (e) => {
     console.log(e);
   };
@@ -62,7 +75,7 @@ function Checkin() {
   };
   return (
     <>
-      {showLoader && <Loader />}
+      {loading && <Loader />}
       <MainContent>
         <MainHeader
           title="Check-in"

@@ -1,9 +1,22 @@
 import PropTypes from "prop-types";
 import React, { useEffect, useMemo, useState } from "react";
 import { MdSettings } from "react-icons/md";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Select from "react-select";
+import styled from "styled-components";
 import { NOT_SUPPORT_FIELD_FEATURE } from "../../constants";
+import {
+  selectAccountTableData,
+  setSelectedAccountForEdit,
+} from "../../features/accountSlice";
+import {
+  selectStaffTableData,
+  setSelectedStaffForEdit,
+} from "../../features/staffSlice";
+import {
+  selectStatusTableData,
+  setSelectedStatusForEdit,
+} from "../../features/statusSlice";
 import { selectInnerWidth } from "../../features/windowSlice";
 import Outclick from "../../hoc/Outclick";
 import Col from "../layout/Col";
@@ -11,7 +24,15 @@ import Row from "../layout/Row";
 import CustomSwitch from "./CustomSwitch";
 import Search from "./Search";
 
-function Table({ fieldList, recordList, isHasSettings }) {
+function Table({
+  tableName,
+  fieldList,
+  recordList,
+  isHasSettings,
+  isEditable,
+  handleOpenEditModal,
+}) {
+  const dispatch = useDispatch();
   const innerWidth = useSelector(selectInnerWidth);
   const fieldsForSortAndSearch = useMemo(() => {
     const newList = [];
@@ -42,6 +63,34 @@ function Table({ fieldList, recordList, isHasSettings }) {
     { label: "descending", value: "descending" },
   ];
 
+  const staffDataTable = useSelector(selectStaffTableData);
+  const statusDataTable = useSelector(selectStatusTableData);
+  const accountDataTable = useSelector(selectAccountTableData);
+
+  const handleEditStaff = (recordSelected) => {
+    if (isEditable && handleOpenEditModal) {
+      const staffId = recordSelected.data[0];
+      const staffSelected = staffDataTable.find((record) => {
+        return record.fields["StaffId"] === staffId;
+      });
+      const statusSelected = statusDataTable.find((record) => {
+        return record.fields["StaffId"][0] === staffId;
+      });
+      const accountSelected = accountDataTable.find((record) => {
+        return record.fields["StaffId"][0] === staffId;
+      });
+      dispatch(setSelectedStaffForEdit(staffSelected));
+      dispatch(setSelectedStatusForEdit(statusSelected));
+      dispatch(setSelectedAccountForEdit(accountSelected));
+      handleOpenEditModal();
+    }
+  };
+
+  // Effects when trigger the search/sort feature
+  useEffect(() => {
+    setSearchCritea(fieldsForSortAndSearch[0]);
+    setSortCritea(fieldsForSortAndSearch[0]);
+  }, [fieldsForSortAndSearch]);
   useEffect(() => {
     let newRecordList = [];
     recordList.forEach((recordData) => {
@@ -75,15 +124,31 @@ function Table({ fieldList, recordList, isHasSettings }) {
     if (sortStatus) {
       if (sortDirection === "ascending") {
         newRecordList = newRecordList.sort((a, b) => {
-          return a.data[sortCritea.index].localeCompare(
-            b.data[sortCritea.index]
-          );
+          if (
+            Array.isArray(a.data[sortCritea.index]) ||
+            Array.isArray(b.data[sortCritea.index])
+          )
+            return a.data[sortCritea.index][0].localeCompare(
+              b.data[sortCritea.index][0]
+            );
+          else
+            return a.data[sortCritea.index].localeCompare(
+              b.data[sortCritea.index]
+            );
         });
       } else {
         newRecordList = newRecordList.sort((a, b) => {
-          return b.data[sortCritea.index].localeCompare(
-            a.data[sortCritea.index]
-          );
+          if (
+            Array.isArray(a.data[sortCritea.index]) ||
+            Array.isArray(b.data[sortCritea.index])
+          )
+            return b.data[sortCritea.index][0].localeCompare(
+              a.data[sortCritea.index][0]
+            );
+          else
+            return b.data[sortCritea.index].localeCompare(
+              a.data[sortCritea.index]
+            );
         });
       }
     }
@@ -122,8 +187,11 @@ function Table({ fieldList, recordList, isHasSettings }) {
   return (
     <>
       {isHasSettings && (
-        <Row className="justify-content-between px-2 flex-nowrap">
-          <Col columnSize={["auto"]} className="d-flex align-items-center py-2">
+        <Row className="justify-content-between flex-nowrap px-3">
+          <Col
+            columnSize={["10", "md-auto"]}
+            className="d-flex align-items-center py-2"
+          >
             {searchStatus ? (
               <Search
                 noBorder
@@ -137,10 +205,14 @@ function Table({ fieldList, recordList, isHasSettings }) {
               " "
             )}
           </Col>
-          <Col columnSize={["auto"]} className="d-flex align-items-center py-2">
+          <Col
+            columnSize={["auto"]}
+            className="d-flex align-items-center"
+            style={{ height: "52px" }}
+          >
             <div className="dropdown">
               <button
-                className="btn btn-link rounded"
+                className="btn btn-link rounded px-0 py-0"
                 onClick={() => setShowSettings(true)}
               >
                 <MdSettings size={20} />
@@ -174,6 +246,11 @@ function Table({ fieldList, recordList, isHasSettings }) {
                                 ...provided,
                                 width: "200px",
                               }),
+                            }}
+                            value={{
+                              label: searchCritea.field,
+                              value: searchCritea.field,
+                              index: searchCritea.index,
                             }}
                             options={fieldsForSortAndSearch.map(
                               (sortableField) => ({
@@ -302,11 +379,14 @@ function Table({ fieldList, recordList, isHasSettings }) {
           </thead>
           <tbody className="list">
             {recordTableList.map((recordData) => (
-              <tr key={recordData.rowId}>
+              <RowHover
+                key={recordData.rowId}
+                onClick={() => handleEditStaff(recordData)}
+              >
                 {recordData.data.map((value, cellRowIndex) => (
                   <td key={cellRowIndex}>{injectDataToJSX(value)}</td>
                 ))}
-              </tr>
+              </RowHover>
             ))}
           </tbody>
         </table>
@@ -363,6 +443,8 @@ function Table({ fieldList, recordList, isHasSettings }) {
   );
 }
 
+// ====================================================================
+
 function injectDataToJSX(cellData) {
   let cellJSX = null; // the cell data has been injected to an JSX to render
   if (typeof cellData === "string") {
@@ -371,7 +453,11 @@ function injectDataToJSX(cellData) {
     cellJSX = (
       <div
         className="cellData d-flex justify-content-start align-items-center"
-        style={{ height: "40px" }}
+        style={{
+          maxWidth: "300px",
+          height: "auto",
+          overflowWrap: "break-word",
+        }}
       >
         {cellData}
       </div>
@@ -408,11 +494,20 @@ function injectDataToJSX(cellData) {
   return cellJSX;
 }
 
+const RowHover = styled.tr`
+  cursor: pointer;
+  :hover {
+    background-color: aliceblue;
+  }
+`;
+
 Table.propTypes = {
+  tableName: PropTypes.string.isRequired,
   fieldList: PropTypes.arrayOf(PropTypes.string).isRequired,
   recordList: PropTypes.arrayOf(PropTypes.any),
-  itemAmountPerPage: PropTypes.number,
   isHasSettings: PropTypes.bool,
+  isEditable: PropTypes.bool,
+  handleOpenEditModal: PropTypes.func,
 };
 
 export default Table;

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { MdMoreVert } from "react-icons/md";
-import { Link } from "react-router-dom";
 import { SpinnerCircular } from "spinners-react";
+import styled from "styled-components";
 
 function Card({
   elementList,
@@ -21,10 +21,10 @@ function Card({
     <div className={"card" + (inactive ? " card-inactive" : "")}>
       {cardHeader && (
         <div
-          className="card-header"
-          style={{ gap: "5px", paddingRight: "5px" }}
+          className="card-header justify-content-between flex-wrap"
+          style={{ gap: "5px", paddingRight: "5px", height: "auto" }}
         >
-          <h4 className="card-header-title font-weight-bold mr-auto">
+          <h4 className="card-header-title font-weight-bold mr-auto py-2">
             {cardHeader.title}
             {cardHeader.badge && (
               <span
@@ -38,11 +38,16 @@ function Card({
           </h4>
           {cardHeader.navList && (
             <ul className="nav nav-tabs nav-tabs-sm card-header-tabs">
-              {cardHeader.navList.map((navLinkTitle) => (
-                <li className="nav-item">
-                  <Link className="nav-link active" onClick={handleChangeTab}>
+              {cardHeader.navList.map((navLinkTitle, navIndex) => (
+                <li className="nav-item mx-0" key={navIndex}>
+                  <NavLinkHover
+                    className={`nav-link bg-white px-3${
+                      navIndex === navActivated ? " active" : ""
+                    }`}
+                    onClick={(e) => handleChangeTab(e, navIndex)}
+                  >
                     {navLinkTitle}
-                  </Link>
+                  </NavLinkHover>
                 </li>
               ))}
             </ul>
@@ -52,7 +57,7 @@ function Card({
       )}
       {isLoading ? (
         <div className="d-flex justify-content-center align-items-center py-3">
-          <SpinnerCircular size="30px" />
+          <SpinnerCircular thickness={150} color="blue" />
         </div>
       ) : noBodyPadding ? (
         elementList[navActivated]
@@ -88,5 +93,9 @@ Card.propTypes = {
   inactive: PropTypes.bool,
   noBodyPadding: PropTypes.bool,
 };
+
+const NavLinkHover = styled.div`
+  cursor: pointer;
+`;
 
 export default Card;

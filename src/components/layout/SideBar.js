@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import {
   MdLogout,
@@ -8,7 +8,7 @@ import {
   MdSupervisorAccount,
 } from "react-icons/md";
 import { IconContext } from "react-icons";
-import { Link, useLocation } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { SIDENAV } from "../../constants";
 import { removeLocalUser } from "../../services/localStorage.service";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,13 +19,8 @@ import { selectInnerWidth } from "../../features/windowSlice";
 
 function SideBar() {
   const dispatch = useDispatch();
-  const location = useLocation();
-  const [activeNav, setActiveNav] = useState(location.pathname);
   const [isCollaped, setCollapse] = useState(true);
   const innerWidth = useSelector(selectInnerWidth);
-  useEffect(() => {
-    setActiveNav(location.pathname);
-  }, [location]);
   const handleLogout = () => {
     removeLocalUser();
     dispatch(setUserCredential(null));
@@ -69,48 +64,79 @@ function SideBar() {
             {innerWidth <= 767 && <h6 className="navbar-heading px-3">Menu</h6>}
             <IconContext.Provider value={{ size: "1.5em" }}>
               {SIDENAV.map((route) => (
-                <li
-                  className="nav-item"
-                  key={route.path}
-                  style={{
-                    backgroundColor: activeNav === route.path ? "#e7e7e7" : "",
-                  }}
-                >
-                  <Link
+                <li className="nav-item" key={route.path}>
+                  <NavLink
+                    style={({ isActive }) => {
+                      return {
+                        backgroundColor: isActive ? "#e7e7e7" : "",
+                      };
+                    }}
                     className="nav-link"
                     to={route.path}
                     onClick={() => {
-                      setActiveNav(route.path);
                       setCollapse(true);
                     }}
                   >
                     <IconWrapper>{route.icon}</IconWrapper>
                     {route.label}
-                  </Link>
+                  </NavLink>
                 </li>
               ))}
               {innerWidth <= 767 && (
                 <>
                   <hr className="dropdown-divider my-3" />
                   <h6 className="navbar-heading px-3">Account</h6>
-                  <Link to="/profile" className="nav-link d-flex">
+                  <NavLink
+                    style={({ isActive }) => {
+                      return {
+                        backgroundColor: isActive ? "#e7e7e7" : "",
+                      };
+                    }}
+                    to="/profile"
+                    className="nav-link d-flex"
+                    onClick={() => {
+                      setCollapse(true);
+                    }}
+                  >
                     <IconWrapper>
                       <MdSupervisorAccount size="25px" />
                     </IconWrapper>{" "}
                     Profile
-                  </Link>
-                  <Link to="/settings" className="nav-link d-flex">
+                  </NavLink>
+                  <NavLink
+                    style={({ isActive }) => {
+                      return {
+                        backgroundColor: isActive ? "#e7e7e7" : "",
+                      };
+                    }}
+                    to="/settings"
+                    className="nav-link d-flex"
+                    onClick={() => {
+                      setCollapse(true);
+                    }}
+                  >
                     <IconWrapper>
                       <MdSettings size="25px" />
                     </IconWrapper>{" "}
                     Settings
-                  </Link>
-                  <Link to="/notification" className="nav-link d-flex">
+                  </NavLink>
+                  <NavLink
+                    style={({ isActive }) => {
+                      return {
+                        backgroundColor: isActive ? "#e7e7e7" : "",
+                      };
+                    }}
+                    to="/notification"
+                    className="nav-link d-flex"
+                    onClick={() => {
+                      setCollapse(true);
+                    }}
+                  >
                     <IconWrapper>
                       <MdNotifications size="25px" />
                     </IconWrapper>{" "}
                     Notification
-                  </Link>
+                  </NavLink>
                   <hr className="dropdown-divider mx-3" />
                   <Link
                     to="/login"

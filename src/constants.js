@@ -25,6 +25,98 @@ export const SIDENAV = [
 
 export const USER_CREDENTIAL = "userCredential";
 
+export let initialStaffForm = {
+  Staff: {
+    FullName: {
+      linkedField: "FullName",
+      value: "",
+      label: "",
+    },
+    Portrait: {
+      linkedField: "Portrait",
+      value: [], // we use Filestack for image picker
+      label: "", // url string
+    },
+    Gender: { linkedField: "Gender", value: "", label: "" },
+    DOB: { linkedField: "DOB", value: "", label: "" },
+    Phone: { linkedField: "Phone", value: "", label: "" },
+    PersonalEmail: {
+      linkedField: "PersonalEmail",
+      value: "",
+      label: "",
+    },
+    RoleType: { linkedField: "Role", value: "", label: "" },
+    Company: { linkedField: "Collaboratory", value: "", label: "" },
+    CurrentWorkingPlace: {
+      linkedField: "WorkingPlace",
+      value: "",
+      label: "",
+    },
+  },
+  Status: {
+    WorkingType: {
+      linkedField: "WorkingType",
+      value: "",
+      label: "",
+    },
+    WorkingStatus: {
+      linkedField: "WorkingStatus",
+      value: "",
+      label: "",
+    },
+    StartWorkingDay: {
+      linkedField: "WorkingStatus",
+      value: "",
+      label: "",
+    },
+    MarriageStatus: {
+      linkedField: "MarriageStatus",
+      value: "",
+      label: "",
+    },
+    HealthStatus: {
+      linkedField: "HealthStatus",
+      value: "",
+      label: "",
+    },
+    Notes: { linkedField: "Notes", value: "", label: "" },
+    Covid19Vaccinated: {
+      linkedField: "Covid19Vaccinated",
+      value: "",
+      label: "",
+    },
+    Covid19VaccineType: {
+      // multi select
+      linkedField: "Covid19VaccineType",
+      value: [],
+      label: [],
+    },
+  },
+  Account: {
+    Username: {
+      linkedField: "Username",
+      value: "",
+      label: "",
+    },
+    Domain: {
+      linkedField: "Collaboratory",
+      value: "",
+      label: "",
+    },
+    UserAccount: {
+      // combination of username + domain
+      linkedField: "UserAccount",
+      value: "",
+      label: "",
+    },
+    Password: {
+      linkedField: "Password",
+      value: "",
+      label: "",
+    },
+  },
+};
+
 export const VALIDATE_RULE = {
   fullName: {
     pattern:
@@ -49,4 +141,12 @@ export const VALIDATE_RULE = {
 };
 
 // used for search, sort in Table component
-export const NOT_SUPPORT_FIELD_FEATURE = ["Portrait", "Avatar"];
+export const NOT_SUPPORT_FIELD_FEATURE = [
+  "Portrait",
+  "Avatar",
+  "DOB",
+  "StartWorkingDay",
+  "CreatedTime",
+  "CreatedDate",
+  "LastModifiedTime",
+];
