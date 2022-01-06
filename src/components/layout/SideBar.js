@@ -12,9 +12,11 @@ import { Link, NavLink } from "react-router-dom";
 import { SIDENAV } from "../../constants";
 import { removeLocalUser } from "../../services/localStorage.service";
 import { useDispatch, useSelector } from "react-redux";
-import { setUserCredential } from "../../features/userSlice";
+import {
+  selectUserCredential,
+  setUserCredential,
+} from "../../features/userSlice";
 import Search from "../common/Search";
-import dummyAvatar from "../../assets/images/avatar-dummy.png";
 import { selectInnerWidth } from "../../features/windowSlice";
 import Outclick from "../../hoc/Outclick";
 
@@ -60,10 +62,13 @@ function SideBarContent({
   handleToggleCollapse,
   forceCollapse,
 }) {
+  const userCredential = useSelector(selectUserCredential);
+  const avatarUrl = userCredential?.Avatar[0].url;
   return (
     <nav
       className="navbar navbar-vertical fixed-left navbar-expand-md navbar-light"
       id="sidebar"
+      style={{ zIndex: 999 }}
     >
       <div className="container-fluid">
         <button
@@ -192,7 +197,7 @@ function SideBarContent({
             <div className="dropdown-toggle" style={{ cursor: "pointer" }}>
               <div className="avatar avatar-sm avatar-online">
                 <img
-                  src={dummyAvatar}
+                  src={avatarUrl}
                   style={{
                     maskImage: "none",
                     WebkitMaskImage: "none",

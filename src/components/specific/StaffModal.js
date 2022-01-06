@@ -30,12 +30,16 @@ import {
   setNewStaffData,
   updateExistingStaff,
   selectError as errorStaff,
+  deleteExistingStaff,
+  selectProgressing as progressingStaff,
 } from "../../features/staffSlice";
 import {
   selectSelectedStatusForEdit,
   updateExistingStatus,
   createNewStatus,
   selectError as errorStatus,
+  deleteExistingStatus,
+  selectProgressing as progressingStatus,
 } from "../../features/statusSlice";
 import {
   selectSelectedAccountForEdit,
@@ -43,6 +47,8 @@ import {
   createNewAccount,
   selectAccountTableData,
   selectError as errorAccount,
+  deleteExistingAccount,
+  selectProgressing as progressingAccount,
 } from "../../features/accountSlice";
 import { SpinnerCircular } from "spinners-react";
 import convertFullNameToUsername from "../../utils/convertToUsername";
@@ -57,7 +63,7 @@ import { compareTwoArrayOfString } from "../../utils/arrayUtils";
 // the normal input form-control still can use the custom props data-table
 // and name.
 
-function StaffModal({ isModalDisplay, type, setModalHide, setModalType }) {
+function StaffModal({ isModalDisplay, type, setModalHide }) {
   let [componentAvailable, setComponentAvailable] = useState(true);
   const dispatch = useDispatch();
   const { addToast } = useToasts();
@@ -67,6 +73,9 @@ function StaffModal({ isModalDisplay, type, setModalHide, setModalType }) {
   const staffError = useSelector(errorStaff);
   const statusError = useSelector(errorStatus);
   const accountError = useSelector(errorAccount);
+  const staffProgression = useSelector(progressingStaff);
+  const statusProgression = useSelector(progressingStatus);
+  const accountProgression = useSelector(progressingAccount);
 
   const selectedStaffForEdit = useSelector(selectSelectedStaffForEdit);
   const selectedStatusForEdit = useSelector(selectSelectedStatusForEdit);
@@ -168,7 +177,6 @@ function StaffModal({ isModalDisplay, type, setModalHide, setModalType }) {
   // Handle the input change (valitdate right after the input change)
   // Normal input/select handle
   const handleStaffInput = (e, action) => {
-    console.log(newStaffFormForEdit.Staff.FullName.value);
     setSubmitChangeStatus(false);
     if (e === null) {
       // when clearing a single select input
@@ -334,7 +342,7 @@ function StaffModal({ isModalDisplay, type, setModalHide, setModalType }) {
             newState[dataTable][name].label = newSelectedLabel;
             // handle compare changes
             if (
-              compareTwoArrayOfString(
+              !compareTwoArrayOfString(
                 newStaffFormForEdit[dataTable][name].value,
                 newSelectedValue
               )
@@ -359,13 +367,13 @@ function StaffModal({ isModalDisplay, type, setModalHide, setModalType }) {
             if (newStaffForm[dataTable][name].linkedField === name) {
               // pure single select
               newState[dataTable][name].value = value;
-              if (newStaffFormForEdit[dataTable][name].value === value) {
+              if (newStaffFormForEdit[dataTable][name].value !== value) {
                 setSubmitChangeStatus(true);
               }
             } else {
               // looked up/linked field
               newState[dataTable][name].value = [value];
-              if (newStaffFormForEdit[dataTable][name].value[0] === value[0]) {
+              if (newStaffFormForEdit[dataTable][name].value[0] !== value[0]) {
                 setSubmitChangeStatus(true);
               }
             }
@@ -483,7 +491,7 @@ function StaffModal({ isModalDisplay, type, setModalHide, setModalType }) {
         // exclude the field that can't be updated (duplicated/computed/empty)
         if (
           field[1].isRemovedWhenSubmit ||
-          !field[1].value ||
+          field[1].value === "" ||
           field[1].value?.length === 0
         ) {
           return;
@@ -503,37 +511,17 @@ function StaffModal({ isModalDisplay, type, setModalHide, setModalType }) {
         .then((staffRes) => {
           try {
             dispatch(setNewStaffData(staffRes));
-            dispatch(setLoading(false));
             addToast("Create a new staff record successfully!", {
               appearance: "success",
             });
+            dispatch(setLoading(false));
             const newStaffRecordId = [staffRes.id];
             newRecord.Status.Staff = newStaffRecordId;
             newRecord.Account.Staff = newStaffRecordId;
             dispatch(createNewStatus(newRecord.Status));
-            if (statusError) {
-              console.log(statusError);
-              addToast("Fail to create a new status record!", {
-                appearance: "error",
-              });
-            } else {
-              addToast("Create a new status record successfully!", {
-                appearance: "success",
-              });
-            }
             dispatch(createNewAccount(newRecord.Account));
-            if (accountError) {
-              console.log(accountError);
-              addToast("Fail to create a new account record!", {
-                appearance: "error",
-              });
-            } else {
-              addToast("Create a new staff record successfully!", {
-                appearance: "success",
-              });
-            }
           } catch (e) {
-            console.log("Async thunk error", e);
+            console.log("Source code error", e);
           }
         })
         .catch((e) => {
@@ -553,52 +541,149 @@ function StaffModal({ isModalDisplay, type, setModalHide, setModalType }) {
             updateData: newRecord.Staff,
           })
         );
-        if (staffError) {
-          console.log(staffError);
-          addToast("Fail to update a staff record!", { appearance: "error" });
-        } else {
-          addToast("Update a staff record successfully!", {
-            appearance: "success",
-          });
-        }
         dispatch(
           updateExistingStatus({
             recordId: selectedStatusForEdit.id,
             updateData: newRecord.Status,
           })
         );
-        if (statusError) {
-          console.log(statusError);
-          addToast("Fail to update a status record!", { appearance: "error" });
-        } else {
-          addToast("Update a status record successfully!", {
-            appearance: "success",
-          });
-        }
         dispatch(
           updateExistingAccount({
             recordId: selectedAccountForEdit.id,
             updateData: newRecord.Account,
           })
         );
-        if (accountError) {
-          console.log(accountError);
-          addToast("Fail to update an account record!", {
-            appearance: "error",
-          });
-        } else {
-          addToast("Update an account record successfully!", {
-            appearance: "success",
-          });
-        }
       } catch (e) {
-        console.log("Async thunk error", e);
+        console.log("Source code error", e);
       } finally {
         setModalHide();
-        setModalType("create");
       }
     }
   };
+
+  // handle delete a staff
+  const handleDeleteStaff = (e) => {
+    e.preventDefault();
+    const staffRecordId = selectedStaffForEdit.id;
+    const statusRecordId = selectedStatusForEdit.id;
+    const accountRecordId = selectedAccountForEdit.id;
+    dispatch(deleteExistingStaff(staffRecordId));
+    dispatch(deleteExistingStatus(statusRecordId));
+    dispatch(deleteExistingAccount(accountRecordId));
+  };
+
+  /* eslint-disable */
+  // effect catch the create/update/delete api
+  // there are 3 prefix progression of 3 table
+  // (<staff|status|account>/<fetch|create|update|delete>)
+  // and a status behind (pending/rejected/fulfilled)
+  // (ex. staff/create/pending, status/update/rejected ,...)
+  // added toast display
+  useEffect(() => {
+    // staff progression
+    switch (staffProgression) {
+      case "staff/update/rejected":
+        console.log(staffError);
+        addToast("Fail to update the staff record!", {
+          appearance: "error",
+        });
+        break;
+      case "staff/update/fulfilled":
+        addToast("Update the staff record successfully!", {
+          appearance: "success",
+        });
+        break;
+      case "staff/delete/rejected":
+        console.log(staffError);
+        addToast("Fail to delete the staff record!", {
+          appearance: "error",
+        });
+        break;
+      case "staff/delete/fulfilled":
+        addToast("Delete the staff record successfully!", {
+          appearance: "success",
+        });
+        break;
+      default:
+        break;
+    }
+    // status progression
+    switch (statusProgression) {
+      case "status/create/rejected":
+        console.log(statusError);
+        addToast("Fail to create a new status record!", {
+          appearance: "error",
+        });
+        break;
+      case "status/create/fulfilled":
+        addToast("Create a new status record successfully!", {
+          appearance: "success",
+        });
+        break;
+      case "status/update/rejected":
+        console.log(statusError);
+        addToast("Fail to update the status record!", {
+          appearance: "error",
+        });
+        break;
+      case "status/update/fulfilled":
+        addToast("Update the status record successfully!", {
+          appearance: "success",
+        });
+        break;
+      case "status/delete/rejected":
+        console.log(statusError);
+        addToast("Fail to delete the status record!", {
+          appearance: "error",
+        });
+        break;
+      case "status/delete/fulfilled":
+        addToast("Delete the status record successfully!", {
+          appearance: "success",
+        });
+        break;
+      default:
+        break;
+    }
+    // account progression
+    switch (accountProgression) {
+      case "account/create/rejected":
+        console.log(accountError);
+        addToast("Fail to create a new account record!", {
+          appearance: "error",
+        });
+        break;
+      case "account/create/fulfilled":
+        addToast("Fail to create a new account record!", {
+          appearance: "success",
+        });
+        break;
+      case "account/update/rejected":
+        console.log(accountError);
+        addToast("Fail to update the account record!", {
+          appearance: "error",
+        });
+        break;
+      case "account/update/fulfilled":
+        addToast("Update the account record successfully!", {
+          appearance: "success",
+        });
+        break;
+      case "account/delete/rejected":
+        console.log(accountError);
+        addToast("Fail to delete the account record!", {
+          appearance: "error",
+        });
+        break;
+      case "account/delete/fulfilled":
+        addToast("Delete the staff record successfully!", {
+          appearance: "success",
+        });
+        break;
+      default:
+        break;
+    }
+  }, [staffProgression, statusProgression, accountProgression]);
 
   // update the modal initial state (newStaffForm)
   // when select a staff to edit or clear staff when click Add new staff
@@ -729,6 +814,7 @@ function StaffModal({ isModalDisplay, type, setModalHide, setModalType }) {
       // reset errorForm state, see the initialErrorFormForStaff
       setErrorForm(resetError);
     }
+    setSubmitChangeStatus(false);
   }, [selectedStaffForEdit, selectedStatusForEdit, selectedAccountForEdit]);
 
   return (
@@ -1254,6 +1340,21 @@ function StaffModal({ isModalDisplay, type, setModalHide, setModalType }) {
             </Button>
           </Col>
         </Row>
+        {type === "edit" && (
+          <Row className="justify-content-center mt-5">
+            <Col columnSize={["12"]}>
+              <Button
+                bgColor="#ff4949"
+                bgHoverColor="#ff0000"
+                className="px-4 py-3 w-100"
+                onClick={handleDeleteStaff}
+              >
+                {usernameValidation && <SpinnerCircular />}
+                Delete this staff
+              </Button>
+            </Col>
+          </Row>
+        )}
       </form>
     </Modal>
   );

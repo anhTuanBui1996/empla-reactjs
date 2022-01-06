@@ -18,6 +18,7 @@ import {
   selectError as staffError,
   selectStaffTableData,
   setSelectedStaffForEdit,
+  setProgressing as staffProgressSet,
 } from "../../features/staffSlice";
 import {
   retriveStatusList,
@@ -26,6 +27,7 @@ import {
   selectError as statusError,
   selectStatusTableData,
   setSelectedStatusForEdit,
+  setProgressing as statusProgressSet,
 } from "../../features/statusSlice";
 import {
   retriveAccountList,
@@ -34,6 +36,7 @@ import {
   selectError as accountError,
   selectAccountTableData,
   setSelectedAccountForEdit,
+  setProgressing as accountProgressSet,
 } from "../../features/accountSlice";
 
 function Staff() {
@@ -106,6 +109,7 @@ function Staff() {
         staffFieldList
       );
       _staff_setRecordList(staffDataTableList);
+      dispatch(staffProgressSet(null));
     } else {
       if (_staff_retriveStatus) {
         if (_staff_retriveError) {
@@ -131,6 +135,7 @@ function Staff() {
         statusFieldList
       );
       _status_setRecordList(statusDataTableList);
+      dispatch(statusProgressSet(null));
     } else {
       if (_status_retriveStatus) {
         if (_status_retriveError) {
@@ -156,6 +161,7 @@ function Staff() {
         accountFieldList
       );
       _account_setRecordList(accountDataTableList);
+      dispatch(accountProgressSet(null));
     } else {
       if (_account_retriveStatus) {
         if (_account_retriveError) {
@@ -276,7 +282,6 @@ function Staff() {
           dispatch(setSelectedStatusForEdit(null));
           dispatch(setSelectedAccountForEdit(null));
         }}
-        setModalType={(v) => setModalType(v)}
       />
       {(_staff_loading || _status_loading || _account_loading) && <Loader />}
     </>

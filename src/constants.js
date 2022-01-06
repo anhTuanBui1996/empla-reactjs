@@ -299,7 +299,7 @@ class initialStaffForm {
         label: "",
       },
       StartWorkingDay: {
-        linkedField: "WorkingStatus",
+        linkedField: "StartWorkingDay",
         value: "",
         label: "",
       },
@@ -342,6 +342,7 @@ class initialStaffForm {
         linkedField: "UserAccount",
         value: "",
         label: "",
+        isRemovedWhenSubmit: true,
       },
       Password: {
         linkedField: "Password",

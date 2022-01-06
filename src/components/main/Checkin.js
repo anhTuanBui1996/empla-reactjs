@@ -40,7 +40,6 @@ function Checkin() {
   /* eslint-disable */
   useEffect(() => {
     if (checkinList) {
-      console.log(checkinList);
       const tableDataList = mapResultToTableData(checkinList, fieldList);
       setRecordList(tableDataList);
 
