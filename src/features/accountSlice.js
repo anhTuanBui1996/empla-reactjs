@@ -49,7 +49,7 @@ export const accountSlice = createSlice({
     },
     setSelectedAccountForEdit: (state, action) => {
       state.selectedAccountForEdit = action.payload;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -106,8 +106,10 @@ export const selectLoading = (state) => state.account.loading;
 export const selectIsSuccess = (state) => state.account.isSuccess;
 export const selectAccountTableData = (state) => state.account.accountTableData;
 export const selectNewAccountData = (state) => state.account.newAccountData;
-export const selectUpdatedAccountData = (state) => state.account.updatedAccountData;
-export const selectSelectedAccountForEdit = (state) => state.account.selectedAccountForEdit;
+export const selectUpdatedAccountData = (state) =>
+  state.account.updatedAccountData;
+export const selectSelectedAccountForEdit = (state) =>
+  state.account.selectedAccountForEdit;
 export const selectError = (state) => state.account.error;
 
 export default accountSlice.reducer;

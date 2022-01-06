@@ -71,7 +71,7 @@ const createNewRecord = async (tableName, data) => {
  * Update an existing record on Airtable,
  * @param {String} tableName table name string match with Airtable
  * @param {String} rowId the record id of updating one
- * @param {Object} data data object that is updated from Airtable
+ * @param {Object} data data object that is updated to Airtable
  * * { ...fieldName: value }, the field name that must
  * match the one on Airtable, the data object will merge with the
  * old one - so the data object is only need the updating fields
@@ -90,42 +90,75 @@ const updateRecord = async (tableName, rowId, data) => {
   }
 };
 
-// const updateRecordWhere = async (tableName, whereString, data) => {
-//   const newConfig = tableConfig(tableName);
-//   try {
-//     const res = newConfig.updateWhere(whereString, data);
-//     return res;
-//   } catch (e) {
-//     console.log(e);
-//   }
-// };
+/**
+ *
+ * @param {String} tableName table name string match with Airtable
+ * @param {String} whereString the filter formula for searching record
+ * * ex. `StaffId = "${staffId}"`
+ * @param {Object} data data object that is updated to Airtable
+ * * { ...fieldName: value }, the field name that must
+ * match the one on Airtable, the data object will merge with the
+ * old one - so the data object is only need the updating fields
+ * @returns the new record object from Airtable
+ * * createdTime: string| DateString,
+ * * fields: { ...fieldName: value } object| record data
+ * * id: string| the record id
+ */
+const updateRecordWhere = async (tableName, whereString, data) => {
+  const newConfig = tableConfig(tableName);
+  try {
+    const res = newConfig.updateWhere(whereString, data);
+    return res;
+  } catch (e) {
+    console.log(e);
+  }
+};
 
-// const deleteRecord = async (tableName, rowId) => {
-//   const newConfig = tableConfig(tableName);
-//   try {
-//     const res = newConfig.delete(rowId);
-//     return res;
-//   } catch (e) {
-//     console.log(e);
-//   }
-// };
+/**
+ * Delete a record with RecordId (rowId)
+ * @param {String} tableName table name string match with Airtable
+ * @param {String} rowId the record id of updating one
+ * @returns the record that has been deleted from Airtable
+ * * createdTime: string| DateString,
+ * * fields: { ...fieldName: value } object| record data
+ * * id: string| the record id
+ */
+const deleteRecord = async (tableName, rowId) => {
+  const newConfig = tableConfig(tableName);
+  try {
+    const res = newConfig.delete(rowId);
+    return res;
+  } catch (e) {
+    console.log(e);
+  }
+};
 
-// const deleteRecordWhere = async (tableName, whereString) => {
-//   const newConfig = tableConfig(tableName);
-//   try {
-//     const res = newConfig.deleteWhere(whereString);
-//     return res;
-//   } catch (e) {
-//     console.log(e);
-//   }
-// };
+/**
+ * Delete a record with RecordId (rowId)
+ * @param {String} tableName table name string match with Airtable
+ * @param {String} whereString the filter formula for searching record
+ * * ex. `StaffId = "${staffId}"`
+ * @returns the record that has been deleted from Airtable
+ * * createdTime: string| DateString,
+ * * fields: { ...fieldName: value } object| record data
+ * * id: string| the record id
+ */
+const deleteRecordWhere = async (tableName, whereString) => {
+  const newConfig = tableConfig(tableName);
+  try {
+    const res = newConfig.deleteWhere(whereString);
+    return res;
+  } catch (e) {
+    console.log(e);
+  }
+};
 
 export {
   retrieveData,
   mapResultToTableData,
   createNewRecord,
   updateRecord,
-  // updateRecordWhere,
-  // deleteRecord,
-  // deleteRecordWhere,
+  updateRecordWhere,
+  deleteRecord,
+  deleteRecordWhere,
 };

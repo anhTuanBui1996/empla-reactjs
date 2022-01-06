@@ -103,8 +103,10 @@ export const selectLoading = (state) => state.status.loading;
 export const selectIsSuccess = (state) => state.status.isSuccess;
 export const selectStatusTableData = (state) => state.status.statusTableData;
 export const selectNewStatusData = (state) => state.status.newStatusData;
-export const selectUpdatedStatusData = (state) => state.status.updatedStatusData;
-export const selectSelectedStatusForEdit = (state) => state.status.selectedStatusForEdit;
+export const selectUpdatedStatusData = (state) =>
+  state.status.updatedStatusData;
+export const selectSelectedStatusForEdit = (state) =>
+  state.status.selectedStatusForEdit;
 export const selectError = (state) => state.status.error;
 
 export default statusSlice.reducer;

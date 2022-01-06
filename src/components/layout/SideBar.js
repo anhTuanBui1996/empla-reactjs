@@ -16,11 +16,15 @@ import { setUserCredential } from "../../features/userSlice";
 import Search from "../common/Search";
 import dummyAvatar from "../../assets/images/avatar-dummy.png";
 import { selectInnerWidth } from "../../features/windowSlice";
+import Outclick from "../../hoc/Outclick";
 
 function SideBar() {
   const dispatch = useDispatch();
   const [isCollaped, setCollapse] = useState(true);
   const innerWidth = useSelector(selectInnerWidth);
+  const handleOutClick = () => {
+    setCollapse(true);
+  };
   const handleLogout = () => {
     removeLocalUser();
     dispatch(setUserCredential(null));
@@ -28,6 +32,34 @@ function SideBar() {
   const handleToggleCollapse = () => {
     setCollapse(!isCollaped);
   };
+  return innerWidth <= 767 ? (
+    <Outclick onOutClick={handleOutClick}>
+      <SideBarContent
+        innerWidth={innerWidth}
+        isCollaped={isCollaped}
+        handleLogout={handleLogout}
+        handleToggleCollapse={handleToggleCollapse}
+        forceCollapse={handleOutClick}
+      />
+    </Outclick>
+  ) : (
+    <SideBarContent
+      innerWidth={innerWidth}
+      isCollaped={isCollaped}
+      handleLogout={handleLogout}
+      handleToggleCollapse={handleToggleCollapse}
+      forceCollapse={handleOutClick}
+    />
+  );
+}
+
+function SideBarContent({
+  innerWidth,
+  isCollaped,
+  handleLogout,
+  handleToggleCollapse,
+  forceCollapse,
+}) {
   return (
     <nav
       className="navbar navbar-vertical fixed-left navbar-expand-md navbar-light"
@@ -44,7 +76,7 @@ function SideBar() {
         <Link
           className="navbar-brand text-center"
           to="/"
-          onClick={() => setCollapse(true)}
+          onClick={forceCollapse}
         >
           <img
             src="./favicon.ico"
@@ -55,7 +87,10 @@ function SideBar() {
         </Link>
         <div
           className="navbar-collapse collapsing"
-          style={{ height: isCollaped ? "0" : "287.766px", overflowY: "auto" }}
+          style={{
+            height: isCollaped ? "0" : "287.766px",
+            overflowY: "auto",
+          }}
         >
           <form className="mt-4 mb-3 d-md-flex">
             <Search placeholder="Search..." />
@@ -73,9 +108,7 @@ function SideBar() {
                     }}
                     className="nav-link"
                     to={route.path}
-                    onClick={() => {
-                      setCollapse(true);
-                    }}
+                    onClick={forceCollapse}
                   >
                     <IconWrapper>{route.icon}</IconWrapper>
                     {route.label}
@@ -94,9 +127,7 @@ function SideBar() {
                     }}
                     to="/profile"
                     className="nav-link d-flex"
-                    onClick={() => {
-                      setCollapse(true);
-                    }}
+                    onClick={forceCollapse}
                   >
                     <IconWrapper>
                       <MdSupervisorAccount size="25px" />
@@ -111,9 +142,7 @@ function SideBar() {
                     }}
                     to="/settings"
                     className="nav-link d-flex"
-                    onClick={() => {
-                      setCollapse(true);
-                    }}
+                    onClick={forceCollapse}
                   >
                     <IconWrapper>
                       <MdSettings size="25px" />
@@ -128,9 +157,7 @@ function SideBar() {
                     }}
                     to="/notification"
                     className="nav-link d-flex"
-                    onClick={() => {
-                      setCollapse(true);
-                    }}
+                    onClick={forceCollapse}
                   >
                     <IconWrapper>
                       <MdNotifications size="25px" />

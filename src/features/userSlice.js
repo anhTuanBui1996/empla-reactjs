@@ -22,12 +22,12 @@ export const userSlice = createSlice({
     },
     setError: (state, action) => {
       state.error = action.payload;
-    }
+    },
   },
 });
 
 export const { setUserCredential, setLoading, setError } = userSlice.actions;
-export const selectUserCredential = (state) => state.user.userCredential
+export const selectUserCredential = (state) => state.user.userCredential;
 export const selectLoading = (state) => state.user.loading;
 export const selectError = (state) => state.user.error;
 

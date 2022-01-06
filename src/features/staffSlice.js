@@ -41,6 +41,9 @@ export const staffSlice = createSlice({
     setLoading: (state, action) => {
       state.loading = action.payload;
     },
+    setNewStaffData: (state, action) => {
+      state.newStaffData = action.payload;
+    },
     setSelectedStaffForEdit: (state, action) => {
       state.selectedStaffForEdit = action.payload;
     },
@@ -95,13 +98,15 @@ export const staffSlice = createSlice({
   },
 });
 
-export const { setLoading, setSelectedStaffForEdit } = staffSlice.actions;
+export const { setLoading, setNewStaffData, setSelectedStaffForEdit } =
+  staffSlice.actions;
 export const selectLoading = (state) => state.staff.loading;
 export const selectIsSuccess = (state) => state.staff.isSuccess;
 export const selectStaffTableData = (state) => state.staff.staffTableData;
 export const selectNewStaffData = (state) => state.staff.newStaffData;
 export const selectUpdatedStaffData = (state) => state.staff.updatedStaffData;
-export const selectSelectedStaffForEdit = (state) => state.staff.selectedStaffForEdit;
+export const selectSelectedStaffForEdit = (state) =>
+  state.staff.selectedStaffForEdit;
 export const selectError = (state) => state.staff.error;
 
 export default staffSlice.reducer;

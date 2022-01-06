@@ -6,24 +6,48 @@ import Col from "../layout/Col";
 import Select from "react-select";
 import Button from "../common/Button";
 import ImageUploader from "../common/ImageUploader";
-import { initialStaffForm, VALIDATE_RULE } from "../../constants";
+import {
+  initialErrorFormForStaff,
+  initialStaffFormForCreate,
+  initialStaffFormForEdit,
+  optionList,
+  VALIDATE_RULE,
+} from "../../constants";
 import useAutoGenerate from "../hooks/useAutoGenerate";
 import { MdRefresh, MdRemoveRedEye } from "react-icons/md";
 import DatePicker from "../common/DatePicker";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  createNewStaff,
-  selectSelectedStaffForEdit,
-  updateExistingStaff,
-} from "../../features/staffSlice";
+import { useToasts } from "react-toast-notifications";
 import {
   fetchAllEmptySelectList,
   selectError,
   selectIsSuccess,
   selectOptionList,
 } from "../../features/selectListSlice";
-import { selectSelectedStatusForEdit } from "../../features/statusSlice";
-import { selectSelectedAccountForEdit } from "../../features/accountSlice";
+import {
+  selectSelectedStaffForEdit,
+  setLoading,
+  setNewStaffData,
+  updateExistingStaff,
+  selectError as errorStaff,
+} from "../../features/staffSlice";
+import {
+  selectSelectedStatusForEdit,
+  updateExistingStatus,
+  createNewStatus,
+  selectError as errorStatus,
+} from "../../features/statusSlice";
+import {
+  selectSelectedAccountForEdit,
+  updateExistingAccount,
+  createNewAccount,
+  selectAccountTableData,
+  selectError as errorAccount,
+} from "../../features/accountSlice";
+import { SpinnerCircular } from "spinners-react";
+import convertFullNameToUsername from "../../utils/convertToUsername";
+import { createNewRecord } from "../../services/airtable.service";
+import { compareTwoArrayOfString } from "../../utils/arrayUtils";
 
 // NOTE: The Select component (from react-select) that doesn't
 // support custom inner props when using component event listener
@@ -33,12 +57,16 @@ import { selectSelectedAccountForEdit } from "../../features/accountSlice";
 // the normal input form-control still can use the custom props data-table
 // and name.
 
-function StaffModal({ isModalDisplay, type, setModalHide }) {
+function StaffModal({ isModalDisplay, type, setModalHide, setModalType }) {
   let [componentAvailable, setComponentAvailable] = useState(true);
   const dispatch = useDispatch();
+  const { addToast } = useToasts();
   const retriveSelectStatus = useSelector(selectIsSuccess);
   const retriveSelectResult = useSelector(selectOptionList);
   const retriveSelectError = useSelector(selectError);
+  const staffError = useSelector(errorStaff);
+  const statusError = useSelector(errorStatus);
+  const accountError = useSelector(errorAccount);
 
   const selectedStaffForEdit = useSelector(selectSelectedStaffForEdit);
   const selectedStatusForEdit = useSelector(selectSelectedStatusForEdit);
@@ -47,20 +75,11 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   const autoGenerate = useAutoGenerate();
   const initialPasswordString = autoGenerate(12);
   const [showPassword, setShowPassword] = useState(false);
-  /**
-   * Used to convert a Full Name string into Username
-   * @param {String} fullName Full Name string
-   * @returns a Username that was converted (ex. Nguyen Van Anh => AnhNV)
-   */
-  const convertFullNameToUsername = (fullName) => {
-    const nameArr = fullName.split(" ");
-    const lastName = nameArr[nameArr.length - 1];
-    let abbreviation = "";
-    for (let i = 0; i < nameArr.length - 1; i++) {
-      abbreviation += nameArr[i].charAt(0);
-    }
-    return lastName + abbreviation;
-  };
+  // get the AccountTableList to define Username (not duplicating)
+  const accountDataTableList = useSelector(selectAccountTableData);
+  const [usernameValidation, setUsernameValidation] = useState(false);
+
+  // using string generator hook
   const generateNewPassword = (length) => {
     const newPassword = autoGenerate(length);
     setNewStaffForm((state) => {
@@ -76,336 +95,39 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
 
   // define the select list use for dropdown form control
   // empty select lists have to retrive data from Airtable
-  const [selectList, setSelectList] = useState({
-    Staff: {
-      Gender: {
-        fromTable: "Staff",
-        list: [
-          { "data-table": "Staff", label: "Nam", value: "Nam", name: "Gender" },
-          { "data-table": "Staff", label: "Nữ", value: "Nữ", name: "Gender" },
-        ],
-      },
-      Company: {
-        fromTable: "Collaboratory",
-        list: [] /* { "data-table": "", value: "", label: "", name: "" } */,
-      },
-      CurrentWorkingPlace: {
-        fromTable: "WorkingPlace",
-        list: [] /* { "data-table": "", value: "", label: "", name: "" } */,
-      },
-      RoleType: {
-        fromTable: "Role",
-        list: [] /* { "data-table": "", value: "", label: "", name: "" } */,
-      },
-    },
-    Status: {
-      WorkingType: {
-        fromTable: "Status",
-        list: [
-          {
-            "data-table": "Status",
-            label: "Intern",
-            value: "Intern",
-            name: "WorkingType",
-          },
-          {
-            "data-table": "Status",
-            label: "Probation",
-            value: "Probation",
-            name: "WorkingType",
-          },
-          {
-            "data-table": "Status",
-            label: "Official",
-            value: "Official",
-            name: "WorkingType",
-          },
-        ],
-      },
-      WorkingStatus: {
-        fromTable: "Status",
-        list: [
-          {
-            "data-table": "Status",
-            label: "Working from home",
-            value: "Working from home",
-            name: "WorkingStatus",
-          },
-          {
-            "data-table": "Status",
-            label: "Working in department",
-            value: "Working in department",
-            name: "WorkingStatus",
-          },
-          {
-            "data-table": "Status",
-            label: "On-site with client",
-            value: "On-site with client",
-            name: "WorkingStatus",
-          },
-          {
-            "data-table": "Status",
-            label: "Leaving",
-            value: "Leaving",
-            name: "WorkingStatus",
-          },
-        ],
-      },
-      MarriageStatus: {
-        fromTable: "Status",
-        list: [
-          {
-            "data-table": "Status",
-            label: "Maried",
-            value: "Maried",
-            name: "MarriageStatus",
-          },
-          {
-            "data-table": "Status",
-            label: "Single",
-            value: "Single",
-            name: "MarriageStatus",
-          },
-        ],
-      },
-      HealthStatus: {
-        fromTable: "Status",
-        list: [
-          {
-            "data-table": "Status",
-            label: "Normally",
-            value: "Normally",
-            name: "HealthStatus",
-          },
-          {
-            "data-table": "Status",
-            label: "Having diseases",
-            value: "Having diseases",
-            name: "HealthStatus",
-          },
-          {
-            "data-table": "Status",
-            label: "Pregnants",
-            value: "Pregnants",
-            name: "HealthStatus",
-          },
-          {
-            "data-table": "Status",
-            label: "Taking care babies",
-            value: "Taking care babies",
-            name: "HealthStatus",
-          },
-        ],
-      },
-      Covid19Vaccinated: {
-        fromTable: "Status",
-        list: [
-          {
-            "data-table": "Status",
-            label: "Not vaccinated",
-            value: "Not vaccinated",
-            name: "Covid19Vaccinated",
-          },
-          {
-            "data-table": "Status",
-            label: "1 time vaccinated",
-            value: "1 time vaccinated",
-            name: "Covid19Vaccinated",
-          },
-          {
-            "data-table": "Status",
-            label: "2 time vaccinated",
-            value: "2 time vaccinated",
-            name: "Covid19Vaccinated",
-          },
-        ],
-      },
-      Covid19VaccineType: {
-        fromTable: "Status",
-        list: [
-          {
-            "data-table": "Status",
-            label: "AZD1222 (Astra Zeneca)",
-            value: "AZD1222 (Astra Zeneca)",
-            name: "Covid19VaccineType",
-          },
-          {
-            "data-table": "Status",
-            label: "Sputnik-V (Gamalaya)",
-            value: "Sputnik-V (Gamalaya)",
-            name: "Covid19VaccineType",
-          },
-          {
-            "data-table": "Status",
-            label: "Vero-Cell (Sinopharm)",
-            value: "Vero-Cell (Sinopharm)",
-            name: "Covid19VaccineType",
-          },
-          {
-            "data-table": "Status",
-            label: "Corminaty (Pfizer BioNTect)",
-            value: "Corminaty (Pfizer BioNTect)",
-            name: "Covid19VaccineType",
-          },
-          {
-            "data-table": "Status",
-            label: "Spikevax (Covid-19 vaccine Mordena)",
-            value: "Spikevax (Covid-19 vaccine Mordena)",
-            name: "Covid19VaccineType",
-          },
-          {
-            "data-table": "Status",
-            label: "Covid-19 vaccine Janssen",
-            value: "Covid-19 vaccine Janssen",
-            name: "Covid19VaccineType",
-          },
-          {
-            "data-table": "Status",
-            label: "Vaccine Hayat-Vax",
-            value: "Vaccine Hayat-Vax",
-            name: "Covid19VaccineType",
-          },
-          {
-            "data-table": "Status",
-            label: "Vaccine Abdala (AICA)",
-            value: "Vaccine Abdala (AICA)",
-            name: "Covid19VaccineType",
-          },
-        ],
-      },
-    },
-    Account: {
-      Domain: {
-        fromTable: "Collaboratory",
-        list: [],
-      },
-    },
-  });
+  // optionList is defined in constants.js
+  const [selectList, setSelectList] = useState(optionList);
 
   // define the data object that used for display and upload to
   // airtable the key name is the looked up value (read-only)
   // the 'linkedField' property is the actual field that
   // the new record will be add by this linkedField,
   // the field key and the linkedField is looked up field if
-  // they are the sameÎ
+  // they are the same
+  // initialStaffFormForCreate is defined in constants.js
+  // added Password generation
   const [newStaffForm, setNewStaffForm] = useState({
-    ...initialStaffForm,
+    ...initialStaffFormForCreate,
     Account: {
-      ...initialStaffForm.Account,
+      ...initialStaffFormForCreate.Account,
       Password: {
-        ...initialStaffForm.Account.Password,
+        ...initialStaffFormForCreate.Account.Password,
         value: initialPasswordString,
         label: initialPasswordString,
       },
     },
   });
-  useEffect(() => {
-    if (
-      type === "edit" &&
-      selectedStaffForEdit &&
-      selectedStatusForEdit &&
-      selectedAccountForEdit
-    ) {
-      console.log("update");
-      setNewStaffForm((state) => {
-        let newState = state;
-        // set for Staff
-        Object.entries(newState.Staff).forEach((formField) => {
-          const valueOfFieldsSelected =
-            selectedStaffForEdit.fields[formField[0]];
-          if (formField[0] === formField[1].linkedField) {
-            if (Array.isArray(valueOfFieldsSelected)) {
-              // array of attachment
-              newState.Staff[formField[0]].value = valueOfFieldsSelected;
-              newState.Staff[formField[0]].label = valueOfFieldsSelected[0].url;
-            } else {
-              // string text value or single select
-              newState.Staff[formField[0]].value = valueOfFieldsSelected;
-              newState.Staff[formField[0]].label = valueOfFieldsSelected;
-            }
-          } else {
-            // linked field and looked up field
-            newState.Staff[formField[0]].value =
-              selectedStaffForEdit.fields[formField[1].linkedField];
-            newState.Staff[formField[0]].label = valueOfFieldsSelected;
-          }
-        });
-        Object.entries(newState.Status).forEach((formField) => {
-          const valueOfFieldsSelected =
-            selectedStatusForEdit.fields[formField[0]];
-          if (formField[0] === formField[1].linkedField) {
-            if (Array.isArray(valueOfFieldsSelected)) {
-              if (valueOfFieldsSelected[0].url) {
-                // array of attachment
-                newState.Status[formField[0]].value = valueOfFieldsSelected;
-                newState.Status[formField[0]].label =
-                  valueOfFieldsSelected[0].url;
-              } else {
-                // multi select
-                newState.Status[formField[0]].value = valueOfFieldsSelected;
-                newState.Status[formField[0]].label = valueOfFieldsSelected;
-              }
-            } else {
-              // string text value or single select
-              newState.Status[formField[0]].value = valueOfFieldsSelected;
-              newState.Status[formField[0]].label = valueOfFieldsSelected;
-            }
-          } else {
-            // linked field and looked up field
-            newState.Status[formField[0]].value =
-              selectedStatusForEdit.fields[formField[1].linkedField];
-            newState.Status[formField[0]].label = valueOfFieldsSelected;
-          }
-        });
-        Object.entries(newState.Account).forEach((formField) => {
-          const valueOfFieldsSelected =
-            selectedAccountForEdit.fields[formField[0]];
-          if (formField[0] === formField[1].linkedField) {
-            if (Array.isArray(valueOfFieldsSelected)) {
-              // array of attachment
-              newState.Account[formField[0]].value = valueOfFieldsSelected;
-              newState.Account[formField[0]].label = valueOfFieldsSelected.url;
-            } else {
-              // string text value or single select
-              newState.Account[formField[0]].value = valueOfFieldsSelected;
-              newState.Account[formField[0]].label = valueOfFieldsSelected;
-            }
-          } else {
-            // linked field and looked up field
-            newState.Account[formField[0]].value =
-              selectedAccountForEdit.fields[formField[1].linkedField];
-            newState.Account[formField[0]].label = valueOfFieldsSelected;
-          }
-        });
-        return newState;
-      });
-    }
-  }, [
-    type,
-    selectedStaffForEdit,
-    selectedStatusForEdit,
-    selectedAccountForEdit,
-  ]);
+  // define this for comparing value when editting
+  // if the value has been changed after a handleStaffInput,
+  // enable the Submit Changes button
+  const [newStaffFormForEdit, setNewStaffFormForEdit] = useState(
+    initialStaffFormForEdit
+  );
+  const [isSfaffFormChanged, setSubmitChangeStatus] = useState(false);
 
   // define the error status and message
-  const [errorForm, setErrorForm] = useState({
-    errStatus: false,
-    isShowMsg: false,
-    errMsg: {
-      Staff: {
-        FullName: "",
-        Gender: "",
-        DOB: "",
-        Phone: "",
-        Company: "",
-      },
-      Status: {
-        WorkingType: "",
-        WorkingStatus: "",
-        StartWorkingDay: "",
-      },
-    },
-  });
+  // initialErrorFormForStaff is defined in constants.js
+  const [errorForm, setErrorForm] = useState(initialErrorFormForStaff);
 
   // define the ref list
   const refList = {
@@ -443,10 +165,11 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
     retriveSelectResult,
     retriveSelectError,
   ]);
-
   // Handle the input change (valitdate right after the input change)
   // Normal input/select handle
   const handleStaffInput = (e, action) => {
+    console.log(newStaffFormForEdit.Staff.FullName.value);
+    setSubmitChangeStatus(false);
     if (e === null) {
       // when clearing a single select input
       setNewStaffForm((state) => {
@@ -456,6 +179,8 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         newState[dataTable][name].label = "";
         return newState;
       });
+      // handle compare changes
+      setSubmitChangeStatus(true);
       return;
     } else if (typeof e === "object") {
       if (e.target) {
@@ -480,27 +205,104 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
           const newState = { ...state };
           newState[dataTable][name].value = value;
           newState[dataTable][name].label = label;
+          // handle compare changes
+          if (newStaffFormForEdit[dataTable][name].value !== value) {
+            setSubmitChangeStatus(true);
+          }
+          // handle Username generator
           if (name === "FullName") {
-            const newUsername = convertFullNameToUsername(value);
+            setUsernameValidation(true);
+            let newUsername = convertFullNameToUsername(value);
             const currentDomain = newState.Account.Domain.label;
-            newState.Account.Username.value = newUsername;
-            newState.Account.Username.label = newUsername;
-            newState.Account.UserAccount.value = newUsername + currentDomain;
-            newState.Account.UserAccount.label = newUsername + currentDomain;
+            const filteredRecordSameUsername = accountDataTableList.filter(
+              (record) => record.fields.Username.startsWith(newUsername)
+            );
+            if (filteredRecordSameUsername.length === 0) {
+              newState.Account.Username.value = newUsername;
+              newState.Account.Username.label = newUsername;
+              newState.Account.UserAccount.value = newUsername + currentDomain;
+              newState.Account.UserAccount.label = newUsername + currentDomain;
+            } else if (
+              filteredRecordSameUsername.length === 1 &&
+              filteredRecordSameUsername[0].fields.Username === newUsername
+            ) {
+              newState.Account.Username.value = newUsername + 1;
+              newState.Account.Username.label = newUsername + 1;
+              newState.Account.UserAccount.value =
+                newUsername + 1 + currentDomain;
+              newState.Account.UserAccount.label =
+                newUsername + 1 + currentDomain;
+            } else {
+              for (let i = 1; i <= filteredRecordSameUsername.length; i++) {
+                const findUsername = filteredRecordSameUsername.find(
+                  (record) => record.fields.Username === newUsername + i
+                );
+                if (findUsername !== undefined) {
+                  newState.Account.Username.value = newUsername + i;
+                  newState.Account.Username.label = newUsername + i;
+                  newState.Account.UserAccount.value =
+                    newUsername + i + currentDomain;
+                  newState.Account.UserAccount.label =
+                    newUsername + i + currentDomain;
+                  break;
+                }
+                const findUsernameNext = filteredRecordSameUsername.find(
+                  (record) => record.fields.Username === newUsername + (i + 1)
+                );
+                if (findUsernameNext !== undefined) {
+                  newState.Account.Username.value = newUsername + (i + 1);
+                  newState.Account.Username.label = newUsername + (i + 1);
+                  newState.Account.UserAccount.value =
+                    newUsername + (i + 1) + currentDomain;
+                  newState.Account.UserAccount.label =
+                    newUsername + (i + 1) + currentDomain;
+                  break;
+                }
+              }
+            }
+            setUsernameValidation(false);
           }
           return newState;
         });
       } else if (e.filesFailed && e.filesUploaded) {
         // used for image upload (Filestack handler)
         // filesFailed, filesUploaded are arrays
-        if (e.filesUploaded.length > 0) {
+        if (e.filesUploaded.length) {
           setNewStaffForm((state) => {
             let newState = { ...state };
             const { name, "data-table": dataTable, filesUploaded } = e;
-            newState[dataTable][name].value = [filesUploaded[0]];
+            newState[dataTable][name].value = [
+              {
+                filename: filesUploaded[0].filename,
+                url: filesUploaded[0].url,
+              },
+            ];
             newState[dataTable][name].label = filesUploaded[0].url;
+            // handle compare changes
+            if (
+              newStaffFormForEdit[dataTable][name].label !==
+              filesUploaded[0].url
+            ) {
+              setSubmitChangeStatus(true);
+            }
             return newState;
           });
+        } else {
+          if (e.filesFailed.length) {
+            // image upload failed
+            console.log("image upload failed", e);
+          } else {
+            // clear image from newStaffForm
+            setNewStaffForm((state) => {
+              let newState = { ...state };
+              const { name, "data-table": dataTable } = e;
+              newState[dataTable][name].value = [];
+              newState[dataTable][name].label = "";
+              return newState;
+            });
+            // handle compare changes
+            setSubmitChangeStatus(true);
+          }
         }
       } else {
         setNewStaffForm((state) => {
@@ -530,36 +332,63 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             });
             newState[dataTable][name].value = newSelectedValue;
             newState[dataTable][name].label = newSelectedLabel;
+            // handle compare changes
+            if (
+              compareTwoArrayOfString(
+                newStaffFormForEdit[dataTable][name].value,
+                newSelectedValue
+              )
+            ) {
+              setSubmitChangeStatus(true);
+            }
           } else {
-            // single select
-            const { "data-table": dataTable, name, value, label } = e;
             const newState = { ...state };
+            const { "data-table": dataTable, name, value, label } = e;
+            // when chosing Company it will change the Username and Domain too
             if (name === "Company") {
               const username = newState.Account.Username;
               const domain = newState.Account.Domain;
               const userAccount = newState.Account.UserAccount;
-              domain.value = value;
+              domain.value = [value];
               domain.label = selectList.Account.Domain.list.find(
                 (item) => item.value === value
               ).label;
               userAccount.value = username.value + domain.value;
               userAccount.label = username.label + domain.label;
             }
-            newState[dataTable][name].value = value;
+            if (newStaffForm[dataTable][name].linkedField === name) {
+              // pure single select
+              newState[dataTable][name].value = value;
+              if (newStaffFormForEdit[dataTable][name].value === value) {
+                setSubmitChangeStatus(true);
+              }
+            } else {
+              // looked up/linked field
+              newState[dataTable][name].value = [value];
+              if (newStaffFormForEdit[dataTable][name].value[0] === value[0]) {
+                setSubmitChangeStatus(true);
+              }
+            }
             newState[dataTable][name].label = label;
           }
           return newState;
         });
       }
     }
+    handleValidate();
   };
 
-  // Validate, Clear error message on focus and Submit
+  // Validate and Submit
   const handleValidate = () => {
     // define the validator for the form
     setErrorForm((state) => {
       let newErr = { ...state };
       newErr.errStatus = false;
+      Object.keys(newErr.errMsg).forEach((tableKey) => {
+        Object.keys(newErr.errMsg[tableKey]).forEach((fieldKey) => {
+          newErr.errMsg[tableKey][fieldKey] = "";
+        });
+      });
       const staffForm = newStaffForm.Staff;
       const statusForm = newStaffForm.Status;
       // FullName
@@ -629,35 +458,9 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
       return newErr;
     });
   };
-  // the clear error msg trigger on form-group that
-  // have required tag only used with onFocus
-  const handleClearErrMsgOnFocus = (e) => {
-    let name = "";
-    let dataTable = "";
-    // DatePicker input
-    if (e.inputType && e.inputType === "DatePicker") {
-      name = e.target.name;
-      dataTable = e.target["data-table"];
-    } else if (e.target.className === "") {
-      // select input
-      const inputElement =
-        e.target.parentElement.parentElement.parentElement.parentElement;
-      name = inputElement.classList[1];
-      dataTable = inputElement.classList[0];
-    } else {
-      // normal input
-      name = e.target.attributes.name.nodeValue;
-      dataTable = e.target.attributes["data-table"].nodeValue;
-    }
-    setErrorForm((state) => {
-      let newState = { ...state };
-      newState.errMsg[dataTable][name] = "";
-      return newState;
-    });
-  };
+  // handle submit the new staff or change staff info
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(newStaffForm);
     if (errorForm.errStatus) {
       setErrorForm({ ...errorForm, isShowMsg: true });
       let findFirstErrRef = false;
@@ -675,61 +478,266 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
     }
     // create new record object suitable with fields in airtable
     let newRecord = { Staff: {}, Status: {}, Account: {} };
-    Object.keys(newRecord).forEach((key) => {
-      Object.entries(newStaffForm[key]).forEach((item) => {
-        newRecord[key][newStaffForm[key][item[0]].linkedField] =
-          item[0] === item[1].linkedField ? item[1].value : [item[1].value];
+    Object.keys(newRecord).forEach((tableKey) => {
+      Object.entries(newStaffForm[tableKey]).forEach((field) => {
+        // exclude the field that can't be updated (duplicated/computed/empty)
+        if (
+          field[1].isRemovedWhenSubmit ||
+          !field[1].value ||
+          field[1].value?.length === 0
+        ) {
+          return;
+        }
+        newRecord[tableKey][field[1].linkedField] = field[1].value;
       });
     });
-    let countRecordCreated = 0;
-    // create new record into Staff first to get the recordId then create others
-    // createNewRecord("Staff", newRecord.Staff)
-    //   .then((res) => {
-    //     console.log("Create new record in Staff table successfully!", res);
-    //     countRecordCreated++;
-    //     const recordId = res.id;
-    //     Object.entries(newRecord).forEach((item) => {
-    //       const table = item[0];
-    //       const fields = item[1];
-    //       fields.Staff = [recordId]; // add field Staff to the new record
-    //       table !== "Staff" &&
-    //         createNewRecord(table, fields)
-    //           .then((res) => {
-    //             console.log(
-    //               "Create new record in " + table + " table successfully!",
-    //               res
-    //             );
-    //             countRecordCreated++;
-    //           })
-    //           .catch((e) => console.log(e))
-    //           .finally(() => {
-    //             if (countRecordCreated === 3) dispatch(setLoading(false));
-    //           });
-    //     });
-    //   })
-    //   .catch((e) => console.log(e));
 
-    // create/update for Staff table
-    try {
-      const result = await dispatch(
-        type === "create"
-          ? createNewStaff(newRecord.Staff)
-          : updateExistingStaff(newRecord.Staff)
-      );
-      console.log(result);
-      if (result) {
+    // processing create new staff
+    // we can't use the redux-thunk here because the async thunk
+    // doesn't have access to the result of the async (we can only get it
+    // from slice, then we can't catch the result when it's done in a same
+    // function)
+    if (type === "create") {
+      dispatch(setLoading(true));
+      createNewRecord("Staff", newRecord.Staff)
+        .then((staffRes) => {
+          try {
+            dispatch(setNewStaffData(staffRes));
+            dispatch(setLoading(false));
+            addToast("Create a new staff record successfully!", {
+              appearance: "success",
+            });
+            const newStaffRecordId = [staffRes.id];
+            newRecord.Status.Staff = newStaffRecordId;
+            newRecord.Account.Staff = newStaffRecordId;
+            dispatch(createNewStatus(newRecord.Status));
+            if (statusError) {
+              console.log(statusError);
+              addToast("Fail to create a new status record!", {
+                appearance: "error",
+              });
+            } else {
+              addToast("Create a new status record successfully!", {
+                appearance: "success",
+              });
+            }
+            dispatch(createNewAccount(newRecord.Account));
+            if (accountError) {
+              console.log(accountError);
+              addToast("Fail to create a new account record!", {
+                appearance: "error",
+              });
+            } else {
+              addToast("Create a new staff record successfully!", {
+                appearance: "success",
+              });
+            }
+          } catch (e) {
+            console.log("Async thunk error", e);
+          }
+        })
+        .catch((e) => {
+          console.log("Error while creating new staff", e);
+          addToast("Fail to create a new staff record!", {
+            appearance: "error",
+          });
+        })
+        .finally(() => {
+          setModalHide();
+        });
+    } else {
+      try {
+        dispatch(
+          updateExistingStaff({
+            recordId: selectedStaffForEdit.id,
+            updateData: newRecord.Staff,
+          })
+        );
+        if (staffError) {
+          console.log(staffError);
+          addToast("Fail to update a staff record!", { appearance: "error" });
+        } else {
+          addToast("Update a staff record successfully!", {
+            appearance: "success",
+          });
+        }
+        dispatch(
+          updateExistingStatus({
+            recordId: selectedStatusForEdit.id,
+            updateData: newRecord.Status,
+          })
+        );
+        if (statusError) {
+          console.log(statusError);
+          addToast("Fail to update a status record!", { appearance: "error" });
+        } else {
+          addToast("Update a status record successfully!", {
+            appearance: "success",
+          });
+        }
+        dispatch(
+          updateExistingAccount({
+            recordId: selectedAccountForEdit.id,
+            updateData: newRecord.Account,
+          })
+        );
+        if (accountError) {
+          console.log(accountError);
+          addToast("Fail to update an account record!", {
+            appearance: "error",
+          });
+        } else {
+          addToast("Update an account record successfully!", {
+            appearance: "success",
+          });
+        }
+      } catch (e) {
+        console.log("Async thunk error", e);
+      } finally {
         setModalHide();
+        setModalType("create");
       }
-    } catch (e) {
-      console.log(e);
     }
   };
+
+  // update the modal initial state (newStaffForm)
+  // when select a staff to edit or clear staff when click Add new staff
+  useEffect(() => {
+    const setNewStaff = (state) => {
+      let newState = { ...state };
+      // set for Staff
+      Object.entries(newState.Staff).forEach((formField) => {
+        const valueOfFieldsSelected = selectedStaffForEdit.fields[formField[0]];
+        if (formField[0] === formField[1].linkedField) {
+          if (Array.isArray(valueOfFieldsSelected)) {
+            // array of attachment
+            newState.Staff[formField[0]].value = valueOfFieldsSelected;
+            newState.Staff[formField[0]].label = valueOfFieldsSelected[0].url;
+          } else {
+            // string text value or single select
+            newState.Staff[formField[0]].value = valueOfFieldsSelected;
+            newState.Staff[formField[0]].label = valueOfFieldsSelected;
+          }
+        } else {
+          // linked field and looked up field
+          newState.Staff[formField[0]].value =
+            selectedStaffForEdit.fields[formField[1].linkedField];
+          newState.Staff[formField[0]].label = valueOfFieldsSelected;
+        }
+      });
+      Object.entries(newState.Status).forEach((formField) => {
+        const valueOfFieldsSelected =
+          selectedStatusForEdit.fields[formField[0]];
+        if (formField[0] === formField[1].linkedField) {
+          if (Array.isArray(valueOfFieldsSelected)) {
+            if (valueOfFieldsSelected[0].url) {
+              // array of attachment
+              newState.Status[formField[0]].value = valueOfFieldsSelected;
+              newState.Status[formField[0]].label =
+                valueOfFieldsSelected[0].url;
+            } else {
+              // multi select
+              newState.Status[formField[0]].value = valueOfFieldsSelected;
+              newState.Status[formField[0]].label = valueOfFieldsSelected;
+            }
+          } else {
+            // string text value or single select
+            newState.Status[formField[0]].value = valueOfFieldsSelected;
+            newState.Status[formField[0]].label = valueOfFieldsSelected;
+          }
+        } else {
+          // linked field and looked up field
+          newState.Status[formField[0]].value =
+            selectedStatusForEdit.fields[formField[1].linkedField];
+          newState.Status[formField[0]].label = valueOfFieldsSelected;
+        }
+      });
+      Object.entries(newState.Account).forEach((formField) => {
+        const valueOfFieldsSelected =
+          selectedAccountForEdit.fields[formField[0]];
+        if (formField[0] === formField[1].linkedField) {
+          if (Array.isArray(valueOfFieldsSelected)) {
+            // array of attachment
+            newState.Account[formField[0]].value = valueOfFieldsSelected;
+            newState.Account[formField[0]].label = valueOfFieldsSelected[0].url;
+          } else {
+            // string text value or single select
+            newState.Account[formField[0]].value = valueOfFieldsSelected;
+            newState.Account[formField[0]].label = valueOfFieldsSelected;
+          }
+        } else {
+          // linked field and looked up field
+          newState.Account[formField[0]].value =
+            selectedAccountForEdit.fields[formField[1].linkedField];
+          newState.Account[formField[0]].label = valueOfFieldsSelected;
+        }
+      });
+      return newState;
+    };
+    const resetNewStaff = (state) => {
+      let newState = { ...state };
+      Object.keys(newState).forEach((tableKey) => {
+        Object.keys(newState[tableKey]).forEach((fieldKey) => {
+          if (fieldKey === "Password") {
+            const newPasswordGenerated = autoGenerate(12);
+            newState[tableKey][fieldKey].value = newPasswordGenerated;
+            newState[tableKey][fieldKey].label = newPasswordGenerated;
+          } else {
+            if (
+              fieldKey === "Portrait" ||
+              fieldKey === "Avatar" ||
+              fieldKey === "Covid19VaccineType"
+            ) {
+              newState[tableKey][fieldKey].value = [];
+            } else {
+              newState[tableKey][fieldKey].value = "";
+            }
+            if (fieldKey === "Covid19VaccineType") {
+              newState[tableKey][fieldKey].label = [];
+            } else {
+              newState[tableKey][fieldKey].label = "";
+            }
+          }
+        });
+      });
+      return newState;
+    };
+    const resetError = (state) => {
+      let newState = { ...state };
+      newState.errStatus = false;
+      newState.isShowMsg = false;
+      Object.keys(newState.errMsg).forEach((tableKey) => {
+        Object.keys(newState.errMsg[tableKey]).forEach((fieldKey) => {
+          newState.errMsg[tableKey][fieldKey] = "";
+        });
+      });
+      return newState;
+    };
+    if (
+      selectedStaffForEdit &&
+      selectedStatusForEdit &&
+      selectedAccountForEdit
+    ) {
+      setNewStaffForm(setNewStaff);
+      setNewStaffFormForEdit(setNewStaff);
+      // reset errorForm state, see the initialErrorFormForStaff
+      setErrorForm(resetError);
+    } else {
+      // reset newStaffForm state, see the initialStaffFormForCreate in constant.js
+      setNewStaffForm(resetNewStaff);
+      setNewStaffFormForEdit(resetNewStaff);
+      // reset errorForm state, see the initialErrorFormForStaff
+      setErrorForm(resetError);
+    }
+  }, [selectedStaffForEdit, selectedStatusForEdit, selectedAccountForEdit]);
 
   return (
     <Modal setModalHide={setModalHide} isModalDisplay={isModalDisplay}>
       <Row className="py-4 justify-content-center">
         <Col columnSize={["auto"]}>
-          <h1 className="font-weight-bold">Add new staff</h1>
+          <h1 className="font-weight-bold">
+            {type === "create" ? "Add new staff" : "Edit the staff"}
+          </h1>
         </Col>
       </Row>
       <hr className="navbar-divider"></hr>
@@ -746,7 +754,6 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             type="text"
             value={newStaffForm.Staff.FullName.label}
             onChange={handleStaffInput}
-            onFocus={handleClearErrMsgOnFocus}
             onBlur={handleValidate}
             placeholder="Enter full name..."
           />
@@ -763,7 +770,6 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
           <Select
             className="Staff Gender"
             onChange={handleStaffInput}
-            onFocus={handleClearErrMsgOnFocus}
             onBlur={handleValidate}
             value={
               newStaffForm.Staff.Gender.value && {
@@ -812,7 +818,6 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             name="DOB"
             data-table="Staff"
             value={newStaffForm.Staff.DOB.value && newStaffForm.Staff.DOB.label}
-            onFocus={handleClearErrMsgOnFocus}
             onChange={handleStaffInput}
             onBlur={handleValidate}
           />
@@ -835,7 +840,6 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
               newStaffForm.Staff.Phone.value && newStaffForm.Staff.Phone.label
             }
             onChange={handleStaffInput}
-            onFocus={handleClearErrMsgOnFocus}
             onBlur={handleValidate}
             placeholder="0123 456 789"
           />
@@ -868,7 +872,6 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
           <Select
             className="Staff Company"
             onChange={handleStaffInput}
-            onFocus={handleClearErrMsgOnFocus}
             onBlur={handleValidate}
             value={
               newStaffForm.Staff.Company.value && {
@@ -950,7 +953,6 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
           <Select
             className="Status WorkingType"
             onChange={handleStaffInput}
-            onFocus={handleClearErrMsgOnFocus}
             onBlur={handleValidate}
             value={
               newStaffForm.Status.WorkingType.value && {
@@ -983,13 +985,12 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
           <Select
             className="Status WorkingStatus"
             onChange={handleStaffInput}
-            onFocus={handleClearErrMsgOnFocus}
             onBlur={handleValidate}
             value={
-              newStaffForm.Status.WorkingType.value && {
+              newStaffForm.Status.WorkingStatus.value && {
                 "data-table": "Status",
-                label: newStaffForm.Status.WorkingType.label,
-                value: newStaffForm.Status.WorkingType.value,
+                label: newStaffForm.Status.WorkingStatus.label,
+                value: newStaffForm.Status.WorkingStatus.value,
                 name: "WorkingType",
               }
             }
@@ -1021,7 +1022,6 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
               newStaffForm.Status.StartWorkingDay.value &&
               newStaffForm.Status.StartWorkingDay.label
             }
-            onFocus={handleClearErrMsgOnFocus}
             onChange={handleStaffInput}
             onBlur={handleValidate}
           />
@@ -1202,15 +1202,55 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             </div>
           </div>
         </div>
+        <div className="form-group">
+          <label htmlFor="AccountStatus">Account Status</label>
+          <Select
+            className="Account AccountStatus"
+            onChange={handleStaffInput}
+            onBlur={handleValidate}
+            value={
+              newStaffForm.Account.AccountStatus.value && {
+                "data-table": "Account",
+                label: newStaffForm.Account.AccountStatus.label,
+                value: newStaffForm.Account.AccountStatus.value,
+                name: "AccountStatus",
+              }
+            }
+            options={selectList.Account.AccountStatus.list}
+            placeholder="Account status..."
+            styles={{
+              menu: (provided) => ({
+                ...provided,
+                zIndex: "1000",
+              }),
+            }}
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="Avatar">Avatar</label>
+          <ImageUploader
+            name="Avatar"
+            data-table="Account"
+            imgData={newStaffForm.Account.Avatar.value}
+            imgThumbnail={
+              newStaffForm.Account.Avatar.value &&
+              newStaffForm.Account.Avatar.label
+            }
+            handleUploadSuccessfully={handleStaffInput}
+            handleClearImg={handleStaffInput}
+          />
+        </div>
         <hr className="navbar-divider"></hr>
         <Row className="justify-content-center mt-5">
           <Col columnSize={["12"]}>
             <Button
               className="px-4 py-3 w-100"
               type="submit"
-              onClick={handleSubmit}
+              onClick={isSfaffFormChanged ? handleSubmit : undefined}
+              disabled={usernameValidation || !isSfaffFormChanged}
             >
-              Add new staff
+              {usernameValidation && <SpinnerCircular />}
+              {type === "create" ? "Add new staff" : "Submit changes"}
             </Button>
           </Col>
         </Row>
@@ -1223,6 +1263,7 @@ StaffModal.propTypes = {
   isModalDisplay: PropTypes.bool,
   type: PropTypes.oneOf(["create", "edit"]).isRequired,
   setModalHide: PropTypes.func,
+  setModalType: PropTypes.func,
 };
 
 export default StaffModal;

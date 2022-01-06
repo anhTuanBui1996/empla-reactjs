@@ -1,7 +1,8 @@
 import React, { useRef, useEffect } from "react";
+import styled from "styled-components";
 
 function Outclick({ children, onOutClick }) {
-  const outClickRef = useRef();
+  const outClickRef = useRef(null);
   useEffect(() => {
     const handleOutClick = (e) => {
       const { target } = e;
@@ -18,10 +19,12 @@ function Outclick({ children, onOutClick }) {
     };
   }, [onOutClick]);
   return (
-    <div className="out-clicker" ref={outClickRef}>
+    <OutclickWrapper className="out-clicker" ref={outClickRef}>
       {children}
-    </div>
+    </OutclickWrapper>
   );
 }
+
+const OutclickWrapper = styled.div``;
 
 export default Outclick;

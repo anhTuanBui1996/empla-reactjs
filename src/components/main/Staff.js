@@ -17,6 +17,7 @@ import {
   selectIsSuccess as staffIsSuccess,
   selectError as staffError,
   selectStaffTableData,
+  setSelectedStaffForEdit,
 } from "../../features/staffSlice";
 import {
   retriveStatusList,
@@ -24,6 +25,7 @@ import {
   selectIsSuccess as statusIsSuccess,
   selectError as statusError,
   selectStatusTableData,
+  setSelectedStatusForEdit,
 } from "../../features/statusSlice";
 import {
   retriveAccountList,
@@ -31,6 +33,7 @@ import {
   selectIsSuccess as accountIsSuccess,
   selectError as accountError,
   selectAccountTableData,
+  setSelectedAccountForEdit,
 } from "../../features/accountSlice";
 
 function Staff() {
@@ -170,6 +173,14 @@ function Staff() {
     dispatch,
   ]);
 
+  const handleOpenModalForCreate = () => {
+    setModalType("create");
+    setModalDisplay(true);
+    dispatch(setSelectedStaffForEdit(null));
+    dispatch(setSelectedStatusForEdit(null));
+    dispatch(setSelectedAccountForEdit(null));
+  };
+
   return (
     <>
       <MainContent isPopupOpened={isModalDisplay}>
@@ -189,10 +200,7 @@ function Staff() {
                     <Row className="justify-content-end">
                       <Button
                         className="py-2 px-4"
-                        onClick={() => {
-                          setModalType("create");
-                          setModalDisplay(true);
-                        }}
+                        onClick={handleOpenModalForCreate}
                       >
                         Add staff
                       </Button>
@@ -246,7 +254,13 @@ function Staff() {
                     }}
                   />,
                 ]}
-                isLoading={_staff_recordList.length === 0 ? true : false}
+                isLoading={
+                  _staff_recordList.length ||
+                  _status_recordList.length ||
+                  _account_recordList.length
+                    ? false
+                    : true
+                }
                 noBodyPadding
               />
             </Col>
@@ -256,7 +270,13 @@ function Staff() {
       <StaffModal
         isModalDisplay={isModalDisplay}
         type={modalType}
-        setModalHide={() => setModalDisplay(false)}
+        setModalHide={() => {
+          setModalDisplay(false);
+          dispatch(setSelectedStaffForEdit(null));
+          dispatch(setSelectedStatusForEdit(null));
+          dispatch(setSelectedAccountForEdit(null));
+        }}
+        setModalType={(v) => setModalType(v)}
       />
       {(_staff_loading || _status_loading || _account_loading) && <Loader />}
     </>

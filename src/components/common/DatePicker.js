@@ -35,20 +35,11 @@ function DatePicker(props) {
         }`}
         type="text"
         value={dateValue}
-        onChange={() => {}}
         placeholder="Click to pick a day..."
-        onFocus={() => {
-          props.onFocus({
-            target: {
-              "data-table": props["data-table"],
-              name: props.name,
-              value: dateValue,
-              label: dateValue,
-            },
-            inputType: "DatePicker",
-          });
+        onClick={() => {
           setShowPickerBox(true);
         }}
+        readOnly
       />
       {showPickerBox && (
         <DatePickerPopper

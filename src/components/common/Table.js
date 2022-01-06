@@ -70,15 +70,26 @@ function Table({
   const handleEditStaff = (recordSelected) => {
     if (isEditable && handleOpenEditModal) {
       const staffId = recordSelected.data[0];
+
       const staffSelected = staffDataTable.find((record) => {
-        return record.fields["StaffId"] === staffId;
+        return (
+          record.fields["StaffId"] ===
+          (Array.isArray(staffId) ? staffId[0] : staffId)
+        );
       });
       const statusSelected = statusDataTable.find((record) => {
-        return record.fields["StaffId"][0] === staffId;
+        return (
+          record.fields["StaffId"][0] ===
+          (Array.isArray(staffId) ? staffId[0] : staffId)
+        );
       });
       const accountSelected = accountDataTable.find((record) => {
-        return record.fields["StaffId"][0] === staffId;
+        return (
+          record.fields["StaffId"][0] ===
+          (Array.isArray(staffId) ? staffId[0] : staffId)
+        );
       });
+
       dispatch(setSelectedStaffForEdit(staffSelected));
       dispatch(setSelectedStatusForEdit(statusSelected));
       dispatch(setSelectedAccountForEdit(accountSelected));

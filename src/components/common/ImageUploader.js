@@ -1,11 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import loadable from "@loadable/component";
 import { FILESTACK } from "../../constants";
 import Row from "../layout/Row";
 import styled from "styled-components";
 import Col from "../layout/Col";
 import PropTypes from "prop-types";
-import { MdClear, MdRedo } from "react-icons/md";
 const ReactFilestack = loadable(() => import("filestack-react"));
 
 function ImageUploader({
@@ -16,22 +15,36 @@ function ImageUploader({
   handleUploadSuccessfully,
   handleClearImg,
 }) {
-  const handleRetriveImg = () => {};
+  const [imgStored, setImgStored] = useState(null);
+  const handleRetriveImg = () => {
+    handleUploadSuccessfully({
+      filesUploaded: [imgStored],
+      filesFailed: [],
+      name,
+      "data-table": dataTable,
+    });
+  };
+  useEffect(() => {
+    imgData?.length && setImgStored(imgData[0]);
+  }, [imgData]);
   return (
     <ReactFilestack
       apikey={FILESTACK.API_KEY}
       customRender={({ onPick }) =>
-        imgData ? (
+        imgData.length ? (
           <div className="dz-processing dz-image-preview position-relative">
             <Row className="row align-items-center thumbnail-preview-dropzone position-relative">
               <Col columnSize={["12"]}>
                 <ImageBg className="image-bg">
                   <ImageViewer
                     className="image-previewer avatar-img rounded w-100"
-                    src={imgData && imgThumbnail}
+                    src={imgThumbnail}
                     alt=""
                   />
-                  <ImageHover className="hover-blur" onClick={onPick}>
+                  <ImageHover
+                    className="hover-blur"
+                    onMouseDownCapture={onPick}
+                  >
                     Change image
                   </ImageHover>
                 </ImageBg>
@@ -39,24 +52,41 @@ function ImageUploader({
             </Row>
             <ImageClearButton
               className="btn btn-link image-clear-btn rounded"
-              onClick={() => handleClearImg()}
+              onMouseDownCapture={(e) => {
+                e.stopPropagation();
+                handleClearImg({
+                  filesFailed: [],
+                  filesUploaded: [],
+                  name,
+                  "data-table": dataTable,
+                });
+              }}
             >
-              <MdClear color="grey" />
+              &times;
             </ImageClearButton>
           </div>
         ) : (
-          <div className="dropzone dropzone-multiple dz-clickable">
+          <div className="dropzone dropzone-multiple dz-clickable position-relative">
             <div className="dz-default dz-message">
-              <button className="dz-button" type="button" onClick={onPick}>
+              <button
+                className="dz-button"
+                type="button"
+                onMouseDownCapture={onPick}
+              >
                 Add an image
               </button>
             </div>
-            <ImageRetriveButton
-              className="btn btn-link image-retrive-btn rounded"
-              onClick={handleRetriveImg}
-            >
-              <MdRedo color="grey" />
-            </ImageRetriveButton>
+            {imgStored && (
+              <ImageRetiveButton
+                className="btn btn-link image-clear-btn rounded"
+                onMouseDownCapture={(e) => {
+                  e.stopPropagation();
+                  handleRetriveImg();
+                }}
+              >
+                &#8635;
+              </ImageRetiveButton>
+            )}
           </div>
         )
       }
@@ -100,25 +130,33 @@ const ImageHover = styled.div`
 `;
 const ImageClearButton = styled.button`
   position: absolute;
-  top: -25px;
+  top: 0;
   right: 0;
+  font-size: 20px;
   width: 25px;
   height: 25px;
+  line-height: 1;
   padding: 0 !important;
+  color: #ff1919e7 !important;
   :hover {
-    background-color: #bbbbbb !important;
+    background-color: #ff1919e7 !important;
+    color: #fff !important;
   }
 `;
-const ImageRetriveButton = styled.button`
+const ImageRetiveButton = styled.button`
   position: absolute;
-  top: -25px;
+  top: 0;
   right: 0;
+  font-size: 18px;
   width: 25px;
   height: 25px;
+  line-height: 1;
   padding: 0 !important;
+  color: #0051ff !important;
   z-index: 1000;
   :hover {
-    background-color: #bbbbbb !important;
+    background-color: #0051ff !important;
+    color: #fff !important;
   }
 `;
 
