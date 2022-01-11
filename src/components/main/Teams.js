@@ -1,7 +1,7 @@
 import React from "react";
 
-function Settings() {
+function Teams() {
   return <div></div>;
 }
 
-export default Settings;
+export default Teams;

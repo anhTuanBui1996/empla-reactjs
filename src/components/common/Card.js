@@ -21,7 +21,7 @@ function Card({
     <div className={"card" + (inactive ? " card-inactive" : "")}>
       {cardHeader && (
         <div
-          className="card-header justify-content-between flex-wrap"
+          className="card-header justify-content-between align-items-center flex-wrap"
           style={{ gap: "5px", paddingRight: "5px", height: "auto" }}
         >
           <h4 className="card-header-title font-weight-bold mr-auto py-2">
@@ -36,6 +36,7 @@ function Card({
               </span>
             )}
           </h4>
+          {cardHeader.rightTitle && cardHeader.rightTitle}
           {cardHeader.navList && (
             <ul className="nav nav-tabs nav-tabs-sm card-header-tabs">
               {cardHeader.navList.map((navLinkTitle, navIndex) => (
@@ -86,6 +87,7 @@ Card.propTypes = {
       ]),
       label: PropTypes.string,
     }),
+    rightTitle: PropTypes.any,
     extension: PropTypes.any,
     navList: PropTypes.arrayOf(PropTypes.string),
   }),

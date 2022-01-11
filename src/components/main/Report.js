@@ -1,10 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import CustomSwitch from "../common/CustomSwitch";
+import MainContent from "../layout/MainContent";
 
 function Report() {
   return (
-    <div className="main-content">
+    <MainContent>
       <div className="container-fluid">
         <div className="row">
           <div className="col-12 col-lg-6 col-xl">
@@ -109,7 +110,7 @@ function Report() {
           </div>
         </div>
       </div>
-    </div>
+    </MainContent>
   );
 }
 

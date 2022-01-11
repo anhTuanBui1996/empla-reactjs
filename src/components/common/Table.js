@@ -25,7 +25,6 @@ import CustomSwitch from "./CustomSwitch";
 import Search from "./Search";
 
 function Table({
-  tableName,
   fieldList,
   recordList,
   isHasSettings,
@@ -112,21 +111,13 @@ function Table({
         if (typeof cellDataForSearch === "string") {
           if (cellDataForSearch.includes(searchValue)) {
             newRecordList.push(recordData);
-          } else {
-            return;
           }
         } else if (Array.isArray(cellDataForSearch)) {
           if (typeof cellDataForSearch[0] === "string") {
             if (cellDataForSearch[0].includes(searchValue)) {
               newRecordList.push(recordData);
-            } else {
-              return;
             }
-          } else {
-            return;
           }
-        } else {
-          return;
         }
       } else {
         newRecordList.push(recordData);
@@ -363,11 +354,12 @@ function Table({
                         className="form-control ml-4"
                         type="number"
                         value={recordsPerPage}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          setActiveIndex(1);
                           e.target.value > 0 && e.target.value !== ""
                             ? setRecordPerPage(e.target.value)
-                            : setRecordPerPage(1)
-                        }
+                            : setRecordPerPage(1);
+                        }}
                       />
                     </Col>
                   </Row>
@@ -412,8 +404,8 @@ function Table({
         <span
           className={`badge badge-success${innerWidth < 330 ? " my-3" : ""}`}
         >
-          {recordTableList.length}{" "}
-          {recordTableList.length > 1 ? "records" : "record"} in total
+          {recordList.length} {recordList.length > 1 ? "records" : "record"} in
+          total
         </span>
         <ul className="pagination mb-0">
           <li
@@ -513,7 +505,7 @@ const RowHover = styled.tr`
 `;
 
 Table.propTypes = {
-  tableName: PropTypes.string.isRequired,
+  tableName: PropTypes.string,
   fieldList: PropTypes.arrayOf(PropTypes.string).isRequired,
   recordList: PropTypes.arrayOf(PropTypes.any),
   isHasSettings: PropTypes.bool,

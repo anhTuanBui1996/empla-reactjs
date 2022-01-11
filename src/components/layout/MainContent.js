@@ -11,6 +11,8 @@ function MainContent({ children, isPopupOpened }) {
 
 export const MainContentWrapper = styled.div`
   ${(props) => props.isPopupOpened && `overflow: hidden`}
+  height: 100vh;
+  overflow: auto;
 `;
 
 export default MainContent;

@@ -38,6 +38,8 @@ import {
   setSelectedAccountForEdit,
   setProgressing as accountProgressSet,
 } from "../../features/accountSlice";
+import Scheduler from "../common/Scheduler";
+import { MdCelebration } from "react-icons/md";
 
 function Staff() {
   const _staff_loading = useSelector(staffLoading);
@@ -193,7 +195,7 @@ function Staff() {
         <MainHeader title="Staff" subTitle="All of your employee is here" />
         <Container fluid>
           <Row>
-            <Col columnSize={["12", "lg-auto"]}>
+            <Col columnSize={["12", "lg-6"]}>
               <Card
                 cardHeader={{
                   title: "Quick New Staff",
@@ -215,7 +217,19 @@ function Staff() {
                 ]}
               />
             </Col>
-            <Col columnSize={["12", "lg-auto"]}></Col>
+            <Col columnSize={["12", "lg-6"]}>
+              <Card
+                cardHeader={{
+                  title: (
+                    <span>
+                      Birthday of staffs <MdCelebration size={20} />
+                    </span>
+                  ),
+                  extension: true,
+                }}
+                elementList={[<Scheduler events={_status_retriveResult} />]}
+              />
+            </Col>
           </Row>
           <Row>
             <Col columnSize={["12"]}>

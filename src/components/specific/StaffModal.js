@@ -32,6 +32,7 @@ import {
   selectError as errorStaff,
   deleteExistingStaff,
   selectProgressing as progressingStaff,
+  retriveStaffList,
 } from "../../features/staffSlice";
 import {
   selectSelectedStatusForEdit,
@@ -40,6 +41,7 @@ import {
   selectError as errorStatus,
   deleteExistingStatus,
   selectProgressing as progressingStatus,
+  retriveStatusList,
 } from "../../features/statusSlice";
 import {
   selectSelectedAccountForEdit,
@@ -49,6 +51,7 @@ import {
   selectError as errorAccount,
   deleteExistingAccount,
   selectProgressing as progressingAccount,
+  retriveAccountList,
 } from "../../features/accountSlice";
 import { SpinnerCircular } from "spinners-react";
 import convertFullNameToUsername from "../../utils/convertToUsername";
@@ -386,7 +389,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
     handleValidate();
   };
 
-  // Validate and Submit
+  // validate the newStaffForm
   const handleValidate = () => {
     // define the validator for the form
     setErrorForm((state) => {
@@ -466,7 +469,15 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
       return newErr;
     });
   };
-  // handle submit the new staff or change staff info
+
+  // handle retrive 3 tables after a create/update/delete
+  const handleRetriveAllTable = () => {
+    dispatch(retriveStaffList());
+    dispatch(retriveStatusList());
+    dispatch(retriveAccountList());
+  };
+
+  // handle submit the new staff creation or update staff info
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (errorForm.errStatus) {
@@ -492,7 +503,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         if (
           field[1].isRemovedWhenSubmit ||
           field[1].value === "" ||
-          field[1].value?.length === 0
+          field[1].value.length === 0
         ) {
           return;
         }
@@ -559,6 +570,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         setModalHide();
       }
     }
+    handleRetriveAllTable();
   };
 
   // handle delete a staff
@@ -567,9 +579,11 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
     const staffRecordId = selectedStaffForEdit.id;
     const statusRecordId = selectedStatusForEdit.id;
     const accountRecordId = selectedAccountForEdit.id;
+    console.log(selectedAccountForEdit);
     dispatch(deleteExistingStaff(staffRecordId));
     dispatch(deleteExistingStatus(statusRecordId));
     dispatch(deleteExistingAccount(accountRecordId));
+    handleRetriveAllTable();
   };
 
   /* eslint-disable */
@@ -1272,6 +1286,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
               type={showPassword ? "text" : "password"}
               value={newStaffForm.Account.Password.label}
               disabled
+              readOnly
             />
             <div className="input-group-append">
               <div className="input-group-text">

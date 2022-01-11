@@ -2,7 +2,6 @@ import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { setUserCredential } from "../features/userSlice";
 import { getLocalUser } from "../services/localStorage.service";
-import SideBar from "../components/layout/SideBar";
 import { useNavigate } from "react-router";
 
 function Auth({ children }) {
@@ -17,12 +16,7 @@ function Auth({ children }) {
     }
   }, [localUser, navigate, dispatch]);
 
-  return (
-    <>
-      {localUser && <SideBar />}
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }
 
 export default Auth;

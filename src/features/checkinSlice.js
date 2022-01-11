@@ -34,6 +34,12 @@ export const checkinSlice = createSlice({
     setLoading: (state, action) => {
       state.loading = action.payload;
     },
+    setCheckinTableData: (state, action) => {
+      state.checkinTableData = action.payload;
+    },
+    setNewCheckinData: (state, action) => {
+      state.newCheckinData = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -70,7 +76,8 @@ export const checkinSlice = createSlice({
   },
 });
 
-export const { setLoading } = checkinSlice.actions;
+export const { setLoading, setCheckinTableData, setNewCheckinData } =
+  checkinSlice.actions;
 export const selectLoading = (state) => state.checkin.loading;
 export const selectIsSuccess = (state) => state.checkin.isSuccess;
 export const selectCheckinTableData = (state) => state.checkin.checkinTableData;

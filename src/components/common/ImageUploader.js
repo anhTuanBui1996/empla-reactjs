@@ -31,7 +31,7 @@ function ImageUploader({
     <ReactFilestack
       apikey={FILESTACK.API_KEY}
       customRender={({ onPick }) =>
-        imgData.length ? (
+        imgData?.length ? (
           <div className="dz-processing dz-image-preview position-relative">
             <Row className="row align-items-center thumbnail-preview-dropzone position-relative">
               <Col columnSize={["12"]}>

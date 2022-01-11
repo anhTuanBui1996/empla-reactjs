@@ -9,7 +9,7 @@ import {
 } from "react-icons/md";
 import { IconContext } from "react-icons";
 import { Link, NavLink } from "react-router-dom";
-import { SIDENAV } from "../../constants";
+import { adminAccessOnly, SIDENAV } from "../../constants";
 import { removeLocalUser } from "../../services/localStorage.service";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -19,9 +19,11 @@ import {
 import Search from "../common/Search";
 import { selectInnerWidth } from "../../features/windowSlice";
 import Outclick from "../../hoc/Outclick";
+import avatarDummy from "../../assets/images/avatar-dummy.png";
 
-function SideBar() {
+function SideBar({ localUser }) {
   const dispatch = useDispatch();
+  const userAccessibility = localUser.DatabaseAccessibility[0];
   const [isCollaped, setCollapse] = useState(true);
   const innerWidth = useSelector(selectInnerWidth);
   const handleOutClick = () => {
@@ -46,6 +48,7 @@ function SideBar() {
     </Outclick>
   ) : (
     <SideBarContent
+      isAdminAccess={userAccessibility}
       innerWidth={innerWidth}
       isCollaped={isCollaped}
       handleLogout={handleLogout}
@@ -56,6 +59,7 @@ function SideBar() {
 }
 
 function SideBarContent({
+  isAdminAccess,
   innerWidth,
   isCollaped,
   handleLogout,
@@ -63,7 +67,9 @@ function SideBarContent({
   forceCollapse,
 }) {
   const userCredential = useSelector(selectUserCredential);
-  const avatarUrl = userCredential?.Avatar[0].url;
+  const avatarUrl = userCredential?.Avatar
+    ? userCredential.Avatar[0].url
+    : avatarDummy;
   return (
     <nav
       className="navbar navbar-vertical fixed-left navbar-expand-md navbar-light"
@@ -103,23 +109,31 @@ function SideBarContent({
           <ul className="navbar-nav">
             {innerWidth <= 767 && <h6 className="navbar-heading px-3">Menu</h6>}
             <IconContext.Provider value={{ size: "1.5em" }}>
-              {SIDENAV.map((route) => (
-                <li className="nav-item" key={route.path}>
-                  <NavLink
-                    style={({ isActive }) => {
-                      return {
-                        backgroundColor: isActive ? "#e7e7e7" : "",
-                      };
-                    }}
-                    className="nav-link"
-                    to={route.path}
-                    onClick={forceCollapse}
-                  >
-                    <IconWrapper>{route.icon}</IconWrapper>
-                    {route.label}
-                  </NavLink>
-                </li>
-              ))}
+              {SIDENAV.map((route) => {
+                if (
+                  isAdminAccess === null &&
+                  adminAccessOnly.includes(route.path)
+                ) {
+                  return <li key={route.path}></li>;
+                } else
+                  return (
+                    <li className="nav-item" key={route.path}>
+                      <NavLink
+                        style={({ isActive }) => {
+                          return {
+                            backgroundColor: isActive ? "#e7e7e7" : "",
+                          };
+                        }}
+                        className="nav-link"
+                        to={route.path}
+                        onClick={forceCollapse}
+                      >
+                        <IconWrapper>{route.icon}</IconWrapper>
+                        {route.label}
+                      </NavLink>
+                    </li>
+                  );
+              })}
               {innerWidth <= 767 && (
                 <>
                   <hr className="dropdown-divider my-3" />

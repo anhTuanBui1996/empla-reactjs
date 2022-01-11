@@ -1,9 +1,13 @@
 import {
   MdAdminPanelSettings,
-  MdDataSaverOff,
+  MdInsertInvitation,
   MdStickyNote2,
   MdSupervisorAccount,
   MdHouse,
+  MdOutlineDeveloperBoard,
+  MdSettingsApplications,
+  MdConnectWithoutContact,
+  MdOutlineDynamicFeed,
 } from "react-icons/md";
 
 export const AIRTABLE = {
@@ -19,9 +23,19 @@ export const SIDENAV = [
   { label: "Homepage", path: "/", icon: <MdHouse /> },
   { label: "Admin", path: "/admin", icon: <MdAdminPanelSettings /> },
   { label: "Staff", path: "/staff", icon: <MdSupervisorAccount /> },
+  { label: "Database", path: "/database", icon: <MdOutlineDeveloperBoard /> },
+  { label: "Projects", path: "/projects", icon: <MdOutlineDynamicFeed /> },
+  { label: "Teams", path: "/teams", icon: <MdConnectWithoutContact /> },
+  {
+    label: "App Settings",
+    path: "/appconfig",
+    icon: <MdSettingsApplications />,
+  },
   { label: "Check-in", path: "/checkin", icon: <MdStickyNote2 /> },
-  { label: "Report", path: "/report", icon: <MdDataSaverOff /> },
+  { label: "Report", path: "/report", icon: <MdInsertInvitation /> },
 ];
+
+export const adminAccessOnly = ["/admin", "/staff", "/database"];
 
 export const USER_CREDENTIAL = "userCredential";
 
@@ -147,6 +161,12 @@ export const optionList = {
           "data-table": "Status",
           label: "Taking care babies",
           value: "Taking care babies",
+          name: "HealthStatus",
+        },
+        {
+          "data-table": "Status",
+          label: "Taking care victims",
+          value: "Taking care victims",
           name: "HealthStatus",
         },
       ],

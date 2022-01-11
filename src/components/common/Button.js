@@ -1,7 +1,11 @@
 import PropTypes from "prop-types";
 import styled from "styled-components";
 
-const Button = styled.button`
+const Button = styled.button.attrs((props) => ({
+  bgColor: props.bgColor ? props.bgColor : "",
+  bgHoverColor: props.bgHoverColor ? props.bgHoverColor : "",
+  borderRadius: props.borderRadius ? props.borderRadius : "",
+}))`
   color: ${(props) => (props.color ? props.color : " #fff")};
   border-radius: ${(props) =>
     props.borderRadius ? props.borderRadius : " 5px"};
