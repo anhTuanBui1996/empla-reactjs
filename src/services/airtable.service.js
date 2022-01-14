@@ -1,3 +1,4 @@
+import { FIELD_DATE_TYPE } from "../constants";
 import tableConfig from "./../utils/airtable";
 
 /**
@@ -39,6 +40,8 @@ const mapResultToTableData = (res, fieldList) => {
       fieldList,
       data: fieldList.map((field) => {
         let cellData = recordData.fields[field];
+        if (FIELD_DATE_TYPE.includes(field))
+          return new Date(Date.parse(cellData)).toLocaleString();
         return cellData;
       }),
     });

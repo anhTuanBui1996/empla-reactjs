@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import styled from "styled-components";
 
 const Button = styled.button.attrs((props) => ({
@@ -51,13 +50,5 @@ const Button = styled.button.attrs((props) => ({
     top: 2px;
   }
 `;
-
-Button.propTypes = {
-  color: PropTypes.string,
-  hoverColor: PropTypes.string,
-  bgColor: PropTypes.string,
-  bgHoverColor: PropTypes.string,
-  borderRadius: PropTypes.string,
-};
 
 export default Button;

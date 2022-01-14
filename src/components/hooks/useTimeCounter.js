@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { selectTimeNow, setTimeNow } from "../../features/timeSlice";
+import { useDispatch } from "react-redux";
+import { setTimeNow } from "../../features/timeSlice";
 
 const useTimeCounter = () => {
   const dispatch = useDispatch();
-  const timeNow = useSelector(selectTimeNow);
+  /* eslint-disable */
   useEffect(() => {
     const timeInterval = setInterval(() => {
       dispatch(setTimeNow(Date.now()));
@@ -12,8 +12,7 @@ const useTimeCounter = () => {
     return () => {
       clearInterval(timeInterval);
     };
-  }, [dispatch]);
-  return () => timeNow;
+  }, []);
 };
 
 export default useTimeCounter;

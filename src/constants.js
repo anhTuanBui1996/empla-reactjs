@@ -439,3 +439,10 @@ export const NOT_SUPPORT_FIELD_FEATURE = [
   "CreatedDate",
   "LastModifiedTime",
 ];
+
+// used for render Date, this is field name that have Date data type
+export const FIELD_DATE_TYPE = [
+  "CreatedTime",
+  "CreatedDate",
+  "LastModifiedTime",
+];

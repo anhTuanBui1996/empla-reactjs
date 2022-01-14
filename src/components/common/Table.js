@@ -66,7 +66,8 @@ function Table({
   const statusDataTable = useSelector(selectStatusTableData);
   const accountDataTable = useSelector(selectAccountTableData);
 
-  const handleEditStaff = (recordSelected) => {
+  const handleEditRecord = (e, recordSelected) => {
+    e.preventDefault();
     if (isEditable && handleOpenEditModal) {
       const staffId = recordSelected.data[0];
 
@@ -384,7 +385,7 @@ function Table({
             {recordTableList.map((recordData) => (
               <RowHover
                 key={recordData.rowId}
-                onClick={() => handleEditStaff(recordData)}
+                onClick={(e) => handleEditRecord(e, recordData)}
               >
                 {recordData.data.map((value, cellRowIndex) => (
                   <td key={cellRowIndex}>{injectDataToJSX(value)}</td>

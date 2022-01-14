@@ -1,18 +1,17 @@
 import React from "react";
-import styled from "styled-components";
 
-function MainContent({ children, isPopupOpened }) {
+function MainContent({ children }) {
   return (
-    <MainContentWrapper className="main-content" isPopupOpened={isPopupOpened}>
+    <div
+      className="main-content"
+      style={{
+        height: "100vh;",
+        overflow: "auto;",
+      }}
+    >
       {children}
-    </MainContentWrapper>
+    </div>
   );
 }
-
-export const MainContentWrapper = styled.div`
-  ${(props) => props.isPopupOpened && `overflow: hidden`}
-  height: 100vh;
-  overflow: auto;
-`;
 
 export default MainContent;

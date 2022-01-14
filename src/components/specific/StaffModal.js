@@ -5,7 +5,8 @@ import Row from "../layout/Row";
 import Col from "../layout/Col";
 import Select from "react-select";
 import Button from "../common/Button";
-import ImageUploader from "../common/ImageUploader";
+import ImageUploader from "./ImageUploader";
+import DatePicker from "./DatePicker";
 import {
   initialErrorFormForStaff,
   initialStaffFormForCreate,
@@ -15,7 +16,6 @@ import {
 } from "../../constants";
 import useAutoGenerate from "../hooks/useAutoGenerate";
 import { MdRefresh, MdRemoveRedEye } from "react-icons/md";
-import DatePicker from "../common/DatePicker";
 import { useDispatch, useSelector } from "react-redux";
 import { useToasts } from "react-toast-notifications";
 import {

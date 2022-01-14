@@ -191,7 +191,7 @@ function Staff() {
 
   return (
     <>
-      <MainContent isPopupOpened={isModalDisplay}>
+      <MainContent>
         <MainHeader title="Staff" subTitle="All of your employee is here" />
         <Container fluid>
           <Row>

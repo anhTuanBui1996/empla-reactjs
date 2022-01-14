@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useToasts } from "react-toast-notifications";
-import useTimeCounter from "../hooks/useTimeCounter";
 import { MdNoteAdd } from "react-icons/md";
 import styled from "styled-components";
 import { selectUserCredential } from "../../features/userSlice";
@@ -13,13 +12,13 @@ import {
   createNewCheckin,
   retriveCheckinList,
   setNewCheckinData,
-  setCheckinTableData,
 } from "../../features/checkinSlice";
 import Outclick from "../../hoc/Outclick";
 import Card from "../common/Card";
 import Col from "../layout/Col";
 import Row from "../layout/Row";
 import Button from "../common/Button";
+import { selectTimeNow } from "../../features/timeSlice";
 
 function QuickCheckinCard() {
   const [isCheckAvailable, setCheckStatus] = useState(false);
@@ -29,14 +28,13 @@ function QuickCheckinCard() {
   const [isNotesOpened, setOpenNotes] = useState(false);
   const userCredential = useSelector(selectUserCredential);
 
-  const timer = useTimeCounter();
   const dispatch = useDispatch();
   const { addToast } = useToasts();
   const loading = useSelector(selectLoading);
   const checkinList = useSelector(selectCheckinTableData);
   const error = useSelector(selectError);
   const newCheckin = useSelector(selectNewCheckinData);
-  const now = timer();
+  const now = useSelector(selectTimeNow);
 
   /* eslint-disable */
   useEffect(() => {
@@ -63,8 +61,10 @@ function QuickCheckinCard() {
 
         // we check at least 4 hours for creating a new check-in/out
         const lastCheckTime = Date.parse(lastCheck.fields.CreatedDate);
-        if (now - lastCheckTime >= 4 * 60 * 60 * 1000) {
+        if (now - lastCheckTime >= 1 * 60 * 60 * 1000) {
           setCheckStatus(true);
+        } else {
+          setCheckStatus(false);
         }
       } else {
         setCheckStatus(true);
@@ -74,8 +74,9 @@ function QuickCheckinCard() {
         addToast(`Create a new ${newCheckin.fields.Type} successfully!`, {
           appearance: "info",
         });
+        setCheckStatus(false);
         dispatch(setNewCheckinData(null));
-        dispatch(setCheckinTableData(null));
+        dispatch(retriveCheckinList(userCredential.StaffId[0]));
       }
     } else {
       if (error) {
@@ -113,10 +114,10 @@ function QuickCheckinCard() {
 
   return (
     <Card
-      inactive={isCheckAvailable}
+      inactive={!isCheckAvailable}
       isLoading={loading}
       cardHeader={{
-        title: isCheckIn ? "Check-in" : "Check-out",
+        title: loading ? "" : isCheckIn ? "Check-in" : "Check-out",
         rightTitle: isCheckAvailable && (
           <div className="dropdown">
             <button
