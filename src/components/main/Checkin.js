@@ -98,7 +98,7 @@ function Checkin() {
 
 const mapCheckinListToEvents = (recordList) => {
   let newRecordList = [];
-  for (let i = 0; i < recordList.length / 2; i = i + 2) {
+  for (let i = 0; i < recordList.length; i = i + 2) {
     const record = recordList[i];
     const nextRecord = recordList[i + 1];
     if (!nextRecord) break;
