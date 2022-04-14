@@ -15,6 +15,10 @@ export const AIRTABLE = {
   API_KEY: process.env.REACT_APP_AIRTABLE_API_KEY,
 };
 
+export const GOOGLE = {
+  MAP_JAVASCRIPT_KEY: process.env.REACT_APP_GOOGLE_MAP_API_KEY,
+};
+
 export const FILESTACK = {
   API_KEY: process.env.REACT_APP_FILESTACK_API_KEY,
 };

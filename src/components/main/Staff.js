@@ -38,7 +38,7 @@ import {
   setSelectedAccountForEdit,
   setProgressing as accountProgressSet,
 } from "../../features/accountSlice";
-import Scheduler from "../common/Scheduler";
+import Scheduler from "../specific/Scheduler";
 import { MdCelebration } from "react-icons/md";
 
 function Staff() {

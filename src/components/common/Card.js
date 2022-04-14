@@ -71,6 +71,10 @@ function Card({
 }
 
 Card.propTypes = {
+  /**
+   * The element list, if the card has only 1 element, then no need
+   * the navList and elementList is array that has 1 element (length=1)
+   */
   elementList: PropTypes.array.isRequired,
   cardHeader: PropTypes.shape({
     title: PropTypes.any.isRequired,

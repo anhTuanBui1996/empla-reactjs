@@ -1,19 +1,27 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Outclick from "../../hoc/Outclick";
 import Button from "./Button";
 import { MdArrowRight } from "react-icons/md";
 
-function Modal({ children, setModalHide, isModalDisplay }) {
+function Modal({ children, onModalHide, isModalDisplay }) {
+  const [isDisplay, setDisplay] = useState(false);
+  const handleHideModal = () => {
+    setDisplay(false);
+    onModalHide && onModalHide();
+  };
+  useEffect(() => {
+    setDisplay(isModalDisplay);
+  }, [isModalDisplay]);
   return (
-    <ModalWrapper isDisplay={isModalDisplay}>
-      <Outclick onOutClick={setModalHide}>
-        <ModalContent isDisplay={isModalDisplay}>
+    <ModalWrapper isDisplay={isDisplay}>
+      <Outclick onOutClick={handleHideModal}>
+        <ModalContent isDisplay={isDisplay}>
           <ModalBody>
             <Button
               style={{ position: "absolute", left: "-5px", top: "0" }}
               className="py-1"
-              onClick={() => setModalHide()}
+              onClick={handleHideModal}
             >
               <MdArrowRight size="20px" />
             </Button>

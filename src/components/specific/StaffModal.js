@@ -832,7 +832,10 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   }, [selectedStaffForEdit, selectedStatusForEdit, selectedAccountForEdit]);
 
   return (
-    <Modal setModalHide={setModalHide} isModalDisplay={isModalDisplay}>
+    <Modal
+      onModalHide={setModalHide}
+      isModalDisplay={isModalDisplay}
+    >
       <Row className="py-4 justify-content-center">
         <Col columnSize={["auto"]}>
           <h1 className="font-weight-bold">

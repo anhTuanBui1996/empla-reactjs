@@ -19,6 +19,8 @@ import Col from "../layout/Col";
 import Row from "../layout/Row";
 import Button from "../common/Button";
 import { selectTimeNow } from "../../features/timeSlice";
+import useGeolocation from "../hooks/useGeolocation";
+import { selectPos } from "../../features/geolocationSlice";
 
 function QuickCheckinCard() {
   const [isCheckAvailable, setCheckStatus] = useState(false);
@@ -28,6 +30,7 @@ function QuickCheckinCard() {
   const [isNotesOpened, setOpenNotes] = useState(false);
   const userCredential = useSelector(selectUserCredential);
 
+  useGeolocation();
   const dispatch = useDispatch();
   const { addToast } = useToasts();
   const loading = useSelector(selectLoading);
@@ -35,6 +38,7 @@ function QuickCheckinCard() {
   const error = useSelector(selectError);
   const newCheckin = useSelector(selectNewCheckinData);
   const now = useSelector(selectTimeNow);
+  const currentPosition = useSelector(selectPos);
 
   /* eslint-disable */
   useEffect(() => {
@@ -92,22 +96,26 @@ function QuickCheckinCard() {
 
   const handleCheckIn = (e) => {
     e.preventDefault();
+    const { lat, lng } = currentPosition;
     dispatch(
       createNewCheckin({
         Type: "Check-in",
         Notes: notes,
         Staff: userCredential.Staff,
+        CoordinatePosition: `${lat} ${lng}`,
       })
     );
   };
 
   const handleCheckOut = (e) => {
     e.preventDefault();
+    const { lat, lng } = currentPosition;
     dispatch(
       createNewCheckin({
         Type: "Check-out",
         Notes: notes,
         Staff: userCredential.Staff,
+        CoordinatePosition: `${lat} ${lng}`,
       })
     );
   };
@@ -146,7 +154,7 @@ function QuickCheckinCard() {
       elementList={[
         <Col columnSize={["auto"]}>
           <Row>
-            <p style={{ maxWidth: "300px" }}>
+            <p>
               {isCheckAvailable
                 ? `Create a new check-${
                     isCheckIn ? "in" : "out"

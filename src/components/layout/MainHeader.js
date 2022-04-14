@@ -9,7 +9,7 @@ function MainHeader({ title, subTitle, children }) {
         <div className="header-body">
           <div className="row">
             <Col columnSize={["auto"]}>
-              <h1 className="header-title font-weight-bold">{title}</h1>
+              <h1 className="header-title font-weight-bold pb-3">{title}</h1>
               <span className="header-subtitle">{subTitle}</span>
             </Col>
             {children}

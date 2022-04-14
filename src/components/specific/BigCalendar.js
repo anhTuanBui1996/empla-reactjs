@@ -19,6 +19,7 @@ function BigCalendar({ title, events }) {
       elementList={[
         <Calendar
           defaultView={"week"}
+          views={["month", "week"]}
           getNow={() => new Date(now)}
           localizer={localizer}
           events={events}
@@ -29,7 +30,7 @@ function BigCalendar({ title, events }) {
           }
           startAccessor="start"
           endAccessor="end"
-          style={{ height: 500 }}
+          style={{ height: "687.5px", width: "100%" }}
         />,
       ]}
     />

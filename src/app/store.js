@@ -7,6 +7,7 @@ import staffReducer from "../features/staffSlice";
 import accountReducer from "../features/accountSlice";
 import statusReducer from "../features/statusSlice";
 import checkinReducer from "../features/checkinSlice";
+import geolocationSlice from "../features/geolocationSlice";
 
 export const store = configureStore({
   reducer: {
@@ -18,5 +19,6 @@ export const store = configureStore({
     account: accountReducer,
     status: statusReducer,
     checkin: checkinReducer,
+    geolocation: geolocationSlice,
   },
 });

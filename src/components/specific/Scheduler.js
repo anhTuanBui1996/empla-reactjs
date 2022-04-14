@@ -2,10 +2,10 @@ import React, { useState, useMemo, useEffect } from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
 
-function Scheduler(props) {
+function Scheduler({ events }) {
   // we import all data from Status table then mapping
   const birthdayList = useMemo(() => {
-    return props.events?.map((record) => {
+    return events?.map((record) => {
       return {
         birthday: record.fields.BirthdayCelebration,
         fullName: record.fields.FullName[0],
@@ -13,7 +13,7 @@ function Scheduler(props) {
         staffId: record.fields.StaffId[0],
       };
     });
-  }, [props.events]);
+  }, [events]);
   const now = new Date();
   const currentWeekday = now.getDay();
   const currentDay = now.getDate();
