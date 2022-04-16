@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import MainContent from "../layout/MainContent";
 import MainHeader from "../layout/MainHeader";
-import Card from "../common/Card";
+import Card, { ExtensionItemBtn } from "../common/Card";
 import Col from "../layout/Col";
 import Row from "../layout/Row";
 import Container from "../layout/Container";
@@ -16,8 +16,9 @@ import {
 } from "../../features/checkinSlice";
 import QuickCheckinCard from "../specific/QuickCheckinCard";
 import BigCalendar from "../specific/BigCalendar";
-import { MdSummarize } from "react-icons/md";
+import { MdArticle, MdSummarize, MdTableView } from "react-icons/md";
 import CheckInMap from "../specific/CheckInMap";
+import { companySpecific } from "../../constants";
 
 function Checkin() {
   const fieldList = useMemo(() => {
@@ -43,21 +44,32 @@ function Checkin() {
     }
   }, [userCredential, checkinList]);
 
+  // sort the recordList by createdDate
+  const sortedRecordList = useMemo(
+    () =>
+      recordList.sort((a, b) => {
+        let aTime = new Date(a.data[1]).getTime();
+        let bTime = new Date(b.data[1]).getTime();
+        return aTime - bTime;
+      }),
+    [recordList]
+  );
   // for now, we only support consecutive day check-in in the same month, year
   // the technical for fill time consecutive day check-in will need develope more
   // in the useMemo hook of eventList below
   const eventList = useMemo(() => {
     let newRecordList = [];
-    for (let i = 0; i < recordList.length; i = i + 2) {
+    for (let i = 0; i < sortedRecordList.length; i = i + 2) {
       const record = recordList[i];
       const nextRecord = recordList[i + 1];
       if (!nextRecord) break;
-      const createdTimeStart = new Date(nextRecord.data[1]);
-      const createdTimeEnd = new Date(record.data[1]);
+      const createdTimeStart = new Date(record.data[1]);
+      const createdTimeEnd = new Date(nextRecord.data[1]);
       const checkTypeStart = nextRecord.data[2];
       const checkTypeEnd = record.data[2];
       const isWeekendWorking =
-        createdTimeStart.getDay() < 1 || createdTimeStart.getDay() > 5
+        createdTimeStart.getDay() < companySpecific.workingWeekDay.WEEKSTART ||
+        createdTimeStart.getDay() > companySpecific.workingWeekDay.WEEKEND
           ? true
           : false;
 
@@ -187,7 +199,7 @@ function Checkin() {
       }
     }
     return newRecordList;
-  }, [recordList]);
+  }, [sortedRecordList]);
   return (
     <>
       {loading && <Loader />}
@@ -227,8 +239,20 @@ function Checkin() {
                 isLoading={loading}
                 cardHeader={{
                   title: "Check-in/out history",
-                  extension: true,
+                  extension: (
+                    <>
+                      <ExtensionItemBtn>
+                        <MdArticle />
+                        {` Download as .csv`}
+                      </ExtensionItemBtn>
+                      <ExtensionItemBtn>
+                        <MdTableView />
+                        {` Download as .xls`}
+                      </ExtensionItemBtn>
+                    </>
+                  ),
                 }}
+                isHasHideCard
                 elementList={[
                   <Table
                     tableName="Check-in"

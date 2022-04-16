@@ -19,8 +19,8 @@ function AdminCheck({ children }) {
         if (
           adminAccessOnly.find((route) => location.pathname.startsWith(route))
         ) {
-          navigate("/");
           alert("You are illegal to access this page!");
+          navigate("/");
         }
       }
     }

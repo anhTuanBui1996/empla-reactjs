@@ -11,7 +11,7 @@ function CheckInMap() {
       title="Check-in locations"
       styleContainer={{
         width: "100%",
-        height: "471.5px",
+        height: "487px",
       }}
       zoom={20}
       dataList={checkinList}

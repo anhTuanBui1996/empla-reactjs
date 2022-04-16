@@ -11,13 +11,12 @@ import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
 import { selectPos } from "../../features/geolocationSlice";
 import styledComponents from "styled-components";
-import { MdGpsFixed } from "react-icons/md";
-import useGeolocation from "../hooks/useGeolocation";
+import { MdGpsFixed, MdReorder } from "react-icons/md";
 import { GOOGLE } from "../../constants";
+import Dropdown from "../common/Dropdown";
 
 function GoogleMapCard({ title, styleContainer, zoom, dataList }) {
   // hooks
-  useGeolocation();
   const { isLoaded, loadError } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: GOOGLE.MAP_JAVASCRIPT_KEY,
@@ -33,39 +32,52 @@ function GoogleMapCard({ title, styleContainer, zoom, dataList }) {
     };
   }, [styleContainer]);
   const mappedDataList = useMemo(() => {
-    return dataList?.map((item) => ({
-      ...item,
-      isFocused: false,
-      isInfoWindowShown: false,
-    }));
+    if (!dataList) return null;
+    const newDataList = [...dataList];
+    const sortedDataList = newDataList.sort((a, b) => {
+      let createdDateA = new Date(a.fields.CreatedDate).getTime();
+      let createdDateB = new Date(b.fields.CreatedDate).getTime();
+      return createdDateB - createdDateA;
+    });
+    return sortedDataList.map((item) => {
+      let lat = parseFloat(item.fields.CoordinatePosition.split(" ")[0]);
+      let lng = parseFloat(item.fields.CoordinatePosition.split(" ")[1]);
+      let header = item.fields.Type;
+      let notes = item.fields.Notes;
+      let createdDate = new Date(item.fields.CreatedDate);
+      return {
+        location: { lat, lng },
+        header,
+        title: createdDate.toUTCString(),
+        notes,
+        isFocused: false,
+        isInfoWindowShown: false,
+      };
+    });
   }, [dataList]);
 
   // state list
-  const [center, setCenter] = useState(currentPosition);
+  const [mapInstance, setMapInstance] = useState(null);
   const [isCurrentSelected, selectCurrent] = useState(true);
   const [markerAnim, setMarkerAnim] = useState(
     window.google?.maps.Animation.BOUNCE
   );
   const [locationList, setLocationList] = useState(null);
+  const [isCloseLocationList, setCloseLocationList] = useState(false);
 
   // handler list
   const onLoaded = (map) => {
-    map.addListener("dragend", () => {
-      setCenter({
-        lat: map.getCenter().lat(),
-        lng: map.getCenter().lng(),
-      });
-    });
-    map.addListener("zoom_changed", () => {
-      setCenter({
-        lat: map.getCenter().lat(),
-        lng: map.getCenter().lng(),
-      });
-    });
+    setMapInstance(map);
+    map.setCenter(currentPosition);
+  };
+  const onUnmounted = () => {
+    setMapInstance(null);
+    window?.google.maps.event.clearInstanceListeners(mapInstance);
   };
   const handleSelectCurrentPosition = (e) => {
+    e.stopPropagation();
     selectCurrent(true);
-    setCenter(currentPosition);
+    mapInstance.panTo(currentPosition);
     handleControlAnimation();
     handleCloseAllInfoWindow();
   };
@@ -73,12 +85,7 @@ function GoogleMapCard({ title, styleContainer, zoom, dataList }) {
     setLocationList(mappedDataList);
   };
   const handleSelectCheckInItemOnMap = (index) => {
-    let rec = locationList[index];
-    let geo = rec.fields.CoordinatePosition;
-    let selectedCenter = {
-      lat: parseFloat(geo.split(" ")[0]),
-      lng: parseFloat(geo.split(" ")[1]),
-    };
+    let { lat, lng } = locationList[index].location;
     handleCloseAllInfoWindow();
     setLocationList((state) => [
       ...state.slice(0, index),
@@ -89,17 +96,22 @@ function GoogleMapCard({ title, styleContainer, zoom, dataList }) {
       },
       ...state.slice(index + 1),
     ]);
-    setCenter(selectedCenter);
+    mapInstance.panTo(new window.google.maps.LatLng({ lat, lng }));
     selectCurrent(false);
   };
   const handleControlAnimation = () => {
     setMarkerAnim(window.google?.maps.Animation.BOUNCE);
     setTimeout(() => setMarkerAnim(null), 1000);
   };
+  const handleSelectCheckInItemOnList = (e, index) => {
+    e.stopPropagation();
+    setCloseLocationList(true);
+    handleSelectCheckInItemOnMap(index);
+    setTimeout(() => setCloseLocationList(false), 100);
+  };
 
   useEffect(() => handleControlAnimation(), []);
   useEffect(() => {
-    currentPosition && setCenter(currentPosition);
     loadError && console.log("Loadding Map Javascript API failed!", loadError);
     mappedDataList && setLocationList(mappedDataList);
   }, [currentPosition, loadError, mappedDataList]);
@@ -108,14 +120,16 @@ function GoogleMapCard({ title, styleContainer, zoom, dataList }) {
     <Card
       cardHeader={{
         title: title,
+        extension: true,
       }}
-      isLoading={!isLoaded && !center}
+      isLoading={!isLoaded || !currentPosition}
+      isHasHideCard
       noBodyPadding
       elementList={[
-        isLoaded && center && (
+        isLoaded && currentPosition && (
           <GoogleMap
             mapContainerStyle={styledContainer}
-            center={center}
+            center={currentPosition}
             id="google-map"
             zoom={zoom}
             options={{
@@ -124,33 +138,67 @@ function GoogleMapCard({ title, styleContainer, zoom, dataList }) {
               mapTypeControl: false,
             }}
             onLoad={onLoaded}
+            onUnmount={onUnmounted}
           >
-            <CurrentPositionToggle onClick={handleSelectCurrentPosition}>
+            <CurrentPositionToggle
+              className="btn btn-light"
+              onClick={handleSelectCurrentPosition}
+            >
               <MdGpsFixed />
             </CurrentPositionToggle>
+            <Dropdown
+              variant="light"
+              style={{
+                position: "absolute",
+                top: "10px",
+                left: "10px",
+              }}
+              toggleStyle={{
+                width: "40px",
+                height: "40px",
+                boxShadow: "rgb(0 0 0 / 30%) 0px 1px 4px -1px",
+              }}
+              boxStyle={{
+                width: "250px",
+                maxHeight: "300px",
+                overflow: "auto",
+                padding: "10px 8px",
+                flexDirection: "column",
+                gap: "5px",
+              }}
+              position="left"
+              title={<MdReorder />}
+              isForceClose={isCloseLocationList}
+            >
+              {locationList?.map((item, index) => (
+                <button
+                  key={index}
+                  className="loc-list-item btn btn-light text-left"
+                  onClick={(e) => handleSelectCheckInItemOnList(e, index)}
+                >
+                  <strong>{`${item.header}: `}</strong>
+                  <span>{item.title}</span>
+                </button>
+              ))}
+            </Dropdown>
             {isCurrentSelected && (
               <Marker
                 animation={markerAnim}
                 position={currentPosition}
                 onClick={handleSelectCurrentPosition}
+                onUnmount={(marker) =>
+                  window?.google.maps.event.clearInstanceListeners(marker)
+                }
               />
             )}
             {locationList?.map((item, index) => {
-              let lat = parseFloat(
-                item.fields.CoordinatePosition.split(" ")[0]
-              );
-              let lng = parseFloat(
-                item.fields.CoordinatePosition.split(" ")[1]
-              );
-              let createdDate = new Date(item.fields.CreatedDate);
-              let notes = item.fields.Notes;
               return (
-                <div className="checkin-pos-item" key={item.id}>
+                <div className="checkin-pos-item" key={index}>
                   <Circle
                     radius={1}
                     center={{
-                      lat,
-                      lng,
+                      lat: item.location.lat,
+                      lng: item.location.lng,
                     }}
                     options={{
                       fillColor: "#2883DA",
@@ -165,11 +213,22 @@ function GoogleMapCard({ title, styleContainer, zoom, dataList }) {
                       e.stop();
                       handleSelectCheckInItemOnMap(index);
                     }}
+                    onUnmount={(circle) =>
+                      window?.google.maps.event.clearInstanceListeners(circle)
+                    }
                   />
                   {item.isInfoWindowShown && (
                     <InfoWindow
-                      position={{ lat, lng }}
+                      position={{
+                        lat: item.location.lat,
+                        lng: item.location.lng,
+                      }}
                       onCloseClick={handleCloseAllInfoWindow}
+                      onUnmount={(infoWindow) =>
+                        window?.google.maps.event.clearInstanceListeners(
+                          infoWindow
+                        )
+                      }
                     >
                       <>
                         <div
@@ -177,13 +236,13 @@ function GoogleMapCard({ title, styleContainer, zoom, dataList }) {
                             py-2 mb-2 border border-1 border-primary rounded
                           `}
                         >
-                          {item.fields.Type}
+                          {item.header}
                         </div>
                         <div className="map-checkin-info">
                           <strong className="map-checkin-time">
-                            {createdDate.toUTCString()}
+                            {item.title}
                           </strong>
-                          {`${notes ? `: ${notes}` : ""}`}
+                          {`${item.notes ? `: ${item.notes}` : ""}`}
                         </div>
                       </>
                     </InfoWindow>
@@ -208,13 +267,13 @@ const CurrentPositionToggle = styledComponents.button`
   align-items: center;
   top: 10px;
   right: 10px;
-  background-color: #FFF;
   border-radius: 5px;
   border: none;
   box-shadow: rgb(0 0 0 / 30%) 0px 1px 4px -1px;
   cursor: alias;
-  :hover {
-    background-color: aliceblue;
+  :hover, :active, :focus {
+    box-shadow: rgb(0 0 0 / 30%) 0px 1px 4px -1px;
+    outline: none;
   }
 `;
 

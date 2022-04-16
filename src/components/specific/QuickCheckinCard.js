@@ -13,24 +13,21 @@ import {
   retriveCheckinList,
   setNewCheckinData,
 } from "../../features/checkinSlice";
-import Outclick from "../../hoc/Outclick";
 import Card from "../common/Card";
 import Col from "../layout/Col";
 import Row from "../layout/Row";
 import Button from "../common/Button";
 import { selectTimeNow } from "../../features/timeSlice";
-import useGeolocation from "../hooks/useGeolocation";
 import { selectPos } from "../../features/geolocationSlice";
+import Dropdown from "../common/Dropdown";
 
 function QuickCheckinCard() {
   const [isCheckAvailable, setCheckStatus] = useState(false);
   const [isCheckIn, setCheckIn] = useState(true);
   const [lastCheckTime, setLastCheckTime] = useState("");
   const [notes, setNotes] = useState("");
-  const [isNotesOpened, setOpenNotes] = useState(false);
   const userCredential = useSelector(selectUserCredential);
 
-  useGeolocation();
   const dispatch = useDispatch();
   const { addToast } = useToasts();
   const loading = useSelector(selectLoading);
@@ -127,28 +124,27 @@ function QuickCheckinCard() {
       cardHeader={{
         title: loading ? "" : isCheckIn ? "Check-in" : "Check-out",
         rightTitle: isCheckAvailable && (
-          <div className="dropdown">
-            <button
-              className="btn btn-info h5 mb-0 px-2 py-2"
-              onClick={() => setOpenNotes(!isNotesOpened)}
-            >
-              <MdNoteAdd size="20px" />
-            </button>
-            <Outclick onOutClick={() => setOpenNotes(false)}>
-              <div
-                className={`dropdown-menu dropdown-menu-right bg-info px-4 py-4${
-                  isNotesOpened ? " d-block" : ""
-                }`}
-              >
-                <TextAreaForNotes
-                  className="form-coltrol border border-0"
-                  placeholder="Addition notes"
-                  onChange={(e) => setNotes(e.target.value)}
-                  value={notes}
-                />
-              </div>
-            </Outclick>
-          </div>
+          <Dropdown
+            title={<MdNoteAdd size="20px" />}
+            variant="link"
+            position="right"
+            style={{
+              marginRight: "3px",
+            }}
+            boxStyle={{
+              backgroundColor: "#D0FAF9",
+              boxShadow: "0 1px 8px 0 #6E84A3",
+              padding: "5px 8px"
+            }}
+          >
+            <TextAreaForNotes
+              style={{ backgroundColor: "#D0FAF9" }}
+              className="form-coltrol border border-0"
+              placeholder="Addition notes"
+              onChange={(e) => setNotes(e.target.value)}
+              value={notes}
+            />
+          </Dropdown>
         ),
       }}
       elementList={[

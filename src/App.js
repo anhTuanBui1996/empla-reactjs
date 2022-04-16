@@ -13,9 +13,12 @@ import Settings from "./components/main/Settings";
 import Notifications from "./components/main/Notifications";
 import Admin from "./components/main/Admin";
 import AdminCheck from "./hoc/AdminCheck";
+import useGeolocation from "./components/hooks/useGeolocation";
+import Database from "./components/main/Database";
 require("dotenv").config();
 
 function App() {
+  useGeolocation();
   return (
     <WindowResizeHandler>
       <Auth>
@@ -23,11 +26,15 @@ function App() {
           <ToastProvider autoDismiss placement="bottom-left">
             <Routes>
               <Route path="/login" element={<Login />} />
+
               <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/notifications" element={<Notifications />} />
+
               <Route path="/admin" element={<Admin />} />
               <Route path="/staff" element={<Staff />} />
+              <Route path="/database" element={<Database />} />
+
               <Route path="/report" element={<Report />} />
               <Route path="/checkin" element={<Checkin />} />
               <Route path="/" element={<Home />} />

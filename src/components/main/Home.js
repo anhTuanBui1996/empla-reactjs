@@ -26,7 +26,7 @@ function Home() {
             Hello, {userCredential?.FullName} ({userCredential?.Username})
           </h1>
           <Row>
-            <Col columnSize={["auto"]}>
+            <Col columnSize={["lg-6", "12"]}>
               <QuickCheckinCard />
             </Col>
           </Row>

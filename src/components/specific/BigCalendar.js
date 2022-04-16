@@ -16,6 +16,7 @@ function BigCalendar({ title, events }) {
         title: title,
         extension: true,
       }}
+      isHasHideCard
       elementList={[
         <Calendar
           defaultView={"week"}
@@ -30,7 +31,16 @@ function BigCalendar({ title, events }) {
           }
           startAccessor="start"
           endAccessor="end"
-          style={{ height: "687.5px", width: "100%" }}
+          style={{
+            height: "687.5px",
+            width: "100%",
+            borderBottom: "1px solid #ddd",
+            borderLeft: "1px solid #ddd",
+            borderRight: "1px solid #ddd",
+            borderBottomLeftRadius: "0.5rem",
+            borderBottomRightRadius: "0.5rem",
+            overflow: "hidden",
+          }}
         />,
       ]}
     />
@@ -38,7 +48,11 @@ function BigCalendar({ title, events }) {
 }
 
 BigCalendar.propTypes = {
-  title: PropTypes.any.isRequired,
+  title: PropTypes.oneOfType([
+    PropTypes.node,
+    PropTypes.element,
+    PropTypes.string,
+  ]).isRequired,
   events: PropTypes.arrayOf(
     PropTypes.shape({
       title: PropTypes.string.isRequired,

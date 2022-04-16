@@ -39,9 +39,29 @@ export const SIDENAV = [
   { label: "Report", path: "/report", icon: <MdInsertInvitation /> },
 ];
 
+/**
+ * List of private path (visible only for admin DatabaseAccessbility=[true])
+ */
 export const adminAccessOnly = ["/admin", "/staff", "/database"];
 
-export const USER_CREDENTIAL = "userCredential";
+// defined company specific requires and configuration
+export const companySpecific = {
+  dailyWorkingTime: {
+    start: 8,
+    end: 17,
+    unit: "hour",
+  },
+  workingWeekDay: {
+    /**
+     * Monday
+     */
+    WEEKSTART: 1,
+    /**
+     * Friday
+     */
+    WEEKEND: 5,
+  },
+};
 
 // all the input form below must have this 2 properties
 // (name, data-table)
@@ -435,8 +455,10 @@ export const VALIDATE_RULE = {
 
 // used for search, sort in Table component
 export const NOT_SUPPORT_FIELD_FEATURE = [
+  // attachment type
   "Portrait",
   "Avatar",
+  // date type
   "DOB",
   "StartWorkingDay",
   "CreatedTime",

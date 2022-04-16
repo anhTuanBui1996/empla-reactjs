@@ -1,11 +1,9 @@
-import { USER_CREDENTIAL } from "../constants";
-
 export const setLocalUser = (data) => {
-  localStorage.setItem(USER_CREDENTIAL, JSON.stringify(data));
+  localStorage.setItem("userCredential", JSON.stringify(data));
 };
 
 export const getLocalUser = () => {
-  const userInfo = localStorage.getItem(USER_CREDENTIAL);
+  const userInfo = localStorage.getItem("userCredential");
   if (userInfo) {
     return JSON.parse(userInfo);
   } else {
@@ -14,5 +12,5 @@ export const getLocalUser = () => {
 };
 
 export const removeLocalUser = () => {
-  localStorage.removeItem(USER_CREDENTIAL);
+  localStorage.removeItem("userCredential");
 };

@@ -5,6 +5,7 @@ function Outclick({ children, onOutClick }) {
   const outClickRef = useRef(null);
   useEffect(() => {
     const handleOutClick = (e) => {
+      e.stopPropagation();
       const { target } = e;
       if (
         !outClickRef.current.contains(target) &&

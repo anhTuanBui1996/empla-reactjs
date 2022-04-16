@@ -40,6 +40,7 @@ import {
 } from "../../features/accountSlice";
 import Scheduler from "../specific/Scheduler";
 import { MdCelebration } from "react-icons/md";
+import newStaffImg from "./../../assets/images/welcome-new-staff.jpeg";
 
 function Staff() {
   const _staff_loading = useSelector(staffLoading);
@@ -202,10 +203,11 @@ function Staff() {
                 }}
                 elementList={[
                   <Col columnSize={["auto"]}>
-                    <Row>
+                    <Row style={{ marginBottom: "7.69px" }}>
                       <p>Create a new staff to the database</p>
                     </Row>
-                    <Row className="justify-content-end">
+                    <Row className="justify-content-between align-items-baseline">
+                      <img alt="" src={newStaffImg} width={200} height={110} />
                       <Button
                         className="py-2 px-4"
                         onClick={handleOpenModalForCreate}
