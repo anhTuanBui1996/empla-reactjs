@@ -14,9 +14,9 @@ This store all private key and some sensity data for the app.<br />
 See [dotenv](https://www.npmjs.com/package/dotenv) for more information.<br />
 The infomation must provide in .env file:
 
-> REACT_APP_AIRTABLE_BASE_ID (your `Airtable` base ID)
-> REACT_APP_AIRTABLE_API_KEY (your `Airtable` api key)
-> REACT_APP_FILESTACK_API_KEY (your `Filestack` api key)
+> REACT_APP_AIRTABLE_BASE_ID (your `Airtable` base ID)<br />
+> REACT_APP_AIRTABLE_API_KEY (your `Airtable` api key)<br />
+> REACT_APP_FILESTACK_API_KEY (your `Filestack` api key)<br />
 > REACT_APP_GOOGLE_MAP_API_KEY (your `Google Map Javascript API` api key)
 
 Read more: [Airtable](https://www.airtable.com/), [Filestack](https://www.filestack.com/), [Google Map Javascript](https://developers.google.com/maps/documentation/javascript/overview)
@@ -72,9 +72,9 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 
 Initialization for Firebase Hosting, some inportant step during processing:
 
-> Set this app as Single-Page Application (SPA)
-> Only using Firebase Hosting
-> Do not re-write the index.html
+> Set this app as Single-Page Application (SPA)<br />
+> Only using Firebase Hosting<br />
+> Do not re-write the index.html<br />
 > Use the `build` directory for deployment
 
 ### `firebase deploy`
