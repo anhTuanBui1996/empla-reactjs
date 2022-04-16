@@ -72,9 +72,9 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 
 Initialization for Firebase Hosting, some inportant step during processing:
 
-> Set this app as Single-Page Application (SPA)
-> Only using Firebase Hosting
-> Do not re-write the index.html
+> Set this app as Single-Page Application (SPA)<br />
+> Only using Firebase Hosting<br />
+> Do not re-write the index.html<br />
 > Use the `build` directory for deployment
 
 ### `firebase deploy`
