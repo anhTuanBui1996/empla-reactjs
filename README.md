@@ -14,9 +14,9 @@ This store all private key and some sensity data for the app.<br />
 See [dotenv](https://www.npmjs.com/package/dotenv) for more information.<br />
 The infomation must provide in .env file:
 
-> REACT_APP_AIRTABLE_BASE_ID (your `Airtable` base ID)
-> REACT_APP_AIRTABLE_API_KEY (your `Airtable` api key)
-> REACT_APP_FILESTACK_API_KEY (your `Filestack` api key)
+> REACT_APP_AIRTABLE_BASE_ID (your `Airtable` base ID)<br />
+> REACT_APP_AIRTABLE_API_KEY (your `Airtable` api key)<br />
+> REACT_APP_FILESTACK_API_KEY (your `Filestack` api key)<br />
 > REACT_APP_GOOGLE_MAP_API_KEY (your `Google Map Javascript API` api key)
 
 Read more: [Airtable](https://www.airtable.com/), [Filestack](https://www.filestack.com/), [Google Map Javascript](https://developers.google.com/maps/documentation/javascript/overview)
