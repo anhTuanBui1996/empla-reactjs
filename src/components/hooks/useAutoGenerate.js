@@ -6,7 +6,7 @@ const useAutoGenerate = () => {
     for (let i = 0; i < length / baseLength; i++) {
       exampleString += baseString();
     }
-    return exampleString.substring(0, length - 1);
+    return exampleString.substring(0, length);
   };
 };
 

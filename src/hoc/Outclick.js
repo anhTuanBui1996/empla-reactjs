@@ -18,7 +18,8 @@ function Outclick({ children, onOutClick }) {
     return () => {
       document.removeEventListener("mousedown", handleOutClick);
     };
-  }, [onOutClick]);
+    // eslint-disable-next-line
+  }, []);
   return (
     <OutclickWrapper className="out-clicker" ref={outClickRef}>
       {children}

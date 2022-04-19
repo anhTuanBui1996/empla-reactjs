@@ -16,6 +16,7 @@ import {
   selectUserCredential,
   setUserCredential,
 } from "../../features/userSlice";
+import PropTypes from "prop-types";
 import Search from "../common/Search";
 import { selectInnerWidth } from "../../features/windowSlice";
 import Outclick from "../../hoc/Outclick";
@@ -258,5 +259,9 @@ const IconWrapper = styled.div`
   margin-right: 10px;
   margin-left: 5px;
 `;
+
+SideBar.propTypes = {
+  localUser: PropTypes.object,
+};
 
 export default SideBar;

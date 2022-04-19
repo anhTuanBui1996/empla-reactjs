@@ -14,19 +14,25 @@ function Card({
   isHasHideCard,
   noBodyPadding,
   onChangeTab,
+  onHideCard,
+  forceStopTranslate,
 }) {
   const [navActivated, setActiveNav] = useState(0);
   const [cardOpacity, setCardOpacity] = useState(1);
   const [isHidden, setHidden] = useState(false);
   const handleChangeTab = (e, tabIndex) => {
-    e.preventDefault();
+    e.stopPropagation();
     setActiveNav(tabIndex);
     onChangeTab && onChangeTab();
   };
   const handleHideCard = (e) => {
     e.stopPropagation();
     setCardOpacity(0);
-    setTimeout(() => setHidden(true), 1000);
+    onHideCard && onHideCard();
+    setTimeout(() => {
+      forceStopTranslate && forceStopTranslate();
+      setHidden(true);
+    }, 1000);
   };
   return (
     !isHidden && (
@@ -39,20 +45,26 @@ function Card({
             className="card-header justify-content-between align-items-center flex-wrap"
             style={{ gap: "5px", paddingRight: "5px", height: "auto" }}
           >
-            <h4 className="card-header-title d-flex flex-nowrap font-weight-bold mr-auto py-2">
-              <span style={{ whiteSpace: "nowrap" }}>{cardHeader.title}</span>
-              {cardHeader.badge && (
-                <span
-                  className={
-                    "badge font-weight-bold ml-2 badge-" +
-                    cardHeader.badge.theme
-                  }
-                >
-                  {cardHeader.badge.label}
-                </span>
+            <div className="card-header-title d-flex justify-content-between align-items-center">
+              <div className="card-header-left-title d-flex flex-nowrap font-weight-bold mr-auto py-2">
+                <span style={{ whiteSpace: "nowrap" }}>{cardHeader.title}</span>
+                {cardHeader.badge && (
+                  <span
+                    className={
+                      "badge font-weight-bold ml-2 badge-" +
+                      cardHeader.badge.theme
+                    }
+                  >
+                    {cardHeader.badge.label}
+                  </span>
+                )}
+              </div>
+              {cardHeader.rightTitle && (
+                <div className="card-header-right-title d-flex flex-nowrap font-weight-bold ml-auto py-2">
+                  {cardHeader.rightTitle}
+                </div>
               )}
-            </h4>
-            {cardHeader.rightTitle && cardHeader.rightTitle}
+            </div>
             {cardHeader.navList && (
               <ul className="nav nav-tabs nav-tabs-sm card-header-tabs">
                 {cardHeader.navList.map((navLinkTitle, navIndex) => (
@@ -128,7 +140,11 @@ Card.propTypes = {
       ]),
       label: PropTypes.string,
     }),
-    rightTitle: PropTypes.any,
+    rightTitle: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.element,
+      PropTypes.node,
+    ]),
     /**
      * Node of extension buttons, the list is flex-column
      */
@@ -147,6 +163,7 @@ Card.propTypes = {
   isHasHideCard: PropTypes.bool,
   noBodyPadding: PropTypes.bool,
   onChangeTab: PropTypes.func,
+  onHideCard: PropTypes.func,
 };
 
 const CardWrapper = styled.div`

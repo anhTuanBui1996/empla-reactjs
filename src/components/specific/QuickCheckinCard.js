@@ -134,7 +134,7 @@ function QuickCheckinCard() {
             boxStyle={{
               backgroundColor: "#D0FAF9",
               boxShadow: "0 1px 8px 0 #6E84A3",
-              padding: "5px 8px"
+              padding: "5px 8px",
             }}
           >
             <TextAreaForNotes
@@ -146,7 +146,9 @@ function QuickCheckinCard() {
             />
           </Dropdown>
         ),
+        extension: true,
       }}
+      isHasHideCard
       elementList={[
         <Col columnSize={["auto"]}>
           <Row>

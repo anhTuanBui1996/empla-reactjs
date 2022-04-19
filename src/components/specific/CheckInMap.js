@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React from "react";
 import { useSelector } from "react-redux";
 import { selectCheckinTableData } from "../../features/checkinSlice";
 import GoogleMapCard from "./GoogleMapCard";

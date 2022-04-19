@@ -233,12 +233,12 @@ function GoogleMapCard({ title, styleContainer, zoom, dataList }) {
                       <>
                         <div
                           className={`map-checkin-type font-weight-bold text-center 
-                            py-2 mb-2 border border-1 border-primary rounded
+                            py-2 mb-2 mr-1 border border-1 border-primary rounded
                           `}
                         >
                           {item.header}
                         </div>
-                        <div className="map-checkin-info">
+                        <div className="map-checkin-info mr-1">
                           <strong className="map-checkin-time">
                             {item.title}
                           </strong>

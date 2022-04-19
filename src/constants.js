@@ -464,6 +464,8 @@ export const NOT_SUPPORT_FIELD_FEATURE = [
   "CreatedTime",
   "CreatedDate",
   "LastModifiedTime",
+  // boolean type,
+  "DatabaseAccessibility",
 ];
 
 // used for render Date, this is field name that have Date data type

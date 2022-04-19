@@ -30,6 +30,7 @@ function Table({
   isHasSettings,
   isEditable,
   handleOpenEditModal,
+  recordPerPage,
 }) {
   const dispatch = useDispatch();
   const innerWidth = useSelector(selectInnerWidth);
@@ -44,7 +45,9 @@ function Table({
   }, [fieldList]);
 
   const [activeIndex, setActiveIndex] = useState(1);
-  const [recordsPerPage, setRecordPerPage] = useState(5);
+  const [recordsPerPage, setRecordPerPage] = useState(
+    recordPerPage ? recordPerPage : 5
+  );
   const [pageList, setPageList] = useState([]);
   const [recordTableList, setRecordTableList] = useState(recordList);
 
@@ -494,6 +497,21 @@ function injectDataToJSX(cellData) {
         </div>
       );
     }
+  } else if (cellData === true) {
+    // Checkbox type (true or undefined)
+    cellJSX = (
+      <div
+        className="cellData d-flex justify-content-center align-items-center"
+        style={{ height: "40px", overflowY: "hidden" }}
+      >
+        <input
+          className="custom-control-input cell-bool"
+          type="checkbox"
+          checked
+          readOnly
+        />
+      </div>
+    );
   }
   return cellJSX;
 }
@@ -512,6 +530,7 @@ Table.propTypes = {
   isHasSettings: PropTypes.bool,
   isEditable: PropTypes.bool,
   handleOpenEditModal: PropTypes.func,
+  recordPerPage: PropTypes.number,
 };
 
 export default Table;

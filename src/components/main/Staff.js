@@ -41,6 +41,7 @@ import {
 import Scheduler from "../specific/Scheduler";
 import { MdCelebration } from "react-icons/md";
 import newStaffImg from "./../../assets/images/welcome-new-staff.jpeg";
+import { useToasts } from "react-toast-notifications";
 
 function Staff() {
   const _staff_loading = useSelector(staffLoading);
@@ -57,6 +58,7 @@ function Staff() {
   const _account_retriveError = useSelector(accountError);
 
   const dispatch = useDispatch();
+  const { addToast } = useToasts();
   const [_staff_recordList, _staff_setRecordList] = useState([]);
   const [_status_recordList, _status_setRecordList] = useState([]);
   const [_account_recordList, _account_setRecordList] = useState([]);
@@ -117,6 +119,10 @@ function Staff() {
       if (_staff_retriveStatus) {
         if (_staff_retriveError) {
           console.log(_staff_retriveError);
+          addToast(
+            "Retrive Staff Data failed! Please check your connection...",
+            { appearance: "error" }
+          );
         }
       } else {
         dispatch(retriveStaffList());
@@ -128,6 +134,7 @@ function Staff() {
     _staff_retriveResult,
     _staff_retriveError,
     dispatch,
+    addToast,
   ]);
 
   // Status table retrive progression
@@ -143,6 +150,10 @@ function Staff() {
       if (_status_retriveStatus) {
         if (_status_retriveError) {
           console.log(_status_retriveError);
+          addToast(
+            "Retrive Status Data failed! Please check your connection...",
+            { appearance: "error" }
+          );
         }
       } else {
         dispatch(retriveStatusList());
@@ -154,6 +165,7 @@ function Staff() {
     _status_retriveResult,
     _status_retriveError,
     dispatch,
+    addToast,
   ]);
 
   // Account table retrive progression
@@ -169,6 +181,10 @@ function Staff() {
       if (_account_retriveStatus) {
         if (_account_retriveError) {
           console.log(_account_retriveError);
+          addToast(
+            "Retrive Account Data failed! Please check your connection...",
+            { appearance: "error" }
+          );
         }
       } else {
         dispatch(retriveAccountList());
@@ -180,6 +196,7 @@ function Staff() {
     _account_retriveResult,
     _account_retriveError,
     dispatch,
+    addToast,
   ]);
 
   const handleOpenModalForCreate = () => {
@@ -200,7 +217,9 @@ function Staff() {
               <Card
                 cardHeader={{
                   title: "Quick New Staff",
+                  extension: true,
                 }}
+                isHasHideCard
                 elementList={[
                   <Col columnSize={["auto"]}>
                     <Row style={{ marginBottom: "7.69px" }}>
@@ -229,6 +248,7 @@ function Staff() {
                   ),
                   extension: true,
                 }}
+                isHasHideCard
                 elementList={[<Scheduler events={_status_retriveResult} />]}
               />
             </Col>
@@ -241,6 +261,7 @@ function Staff() {
                   extension: true,
                   navList: ["Staff", "Status", "Account"],
                 }}
+                isHasHideCard
                 elementList={[
                   <Table
                     tableName="Staff"

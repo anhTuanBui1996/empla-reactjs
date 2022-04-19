@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useToasts } from "react-toast-notifications";
 import MainContent from "../layout/MainContent";
 import MainHeader from "../layout/MainHeader";
 import Card, { ExtensionItemBtn } from "../common/Card";
@@ -12,6 +13,8 @@ import { useSelector } from "react-redux";
 import Loader from "../common/Loader";
 import {
   selectCheckinTableData,
+  selectError,
+  selectIsSuccess,
   selectLoading,
 } from "../../features/checkinSlice";
 import QuickCheckinCard from "../specific/QuickCheckinCard";
@@ -21,6 +24,7 @@ import CheckInMap from "../specific/CheckInMap";
 import { companySpecific } from "../../constants";
 
 function Checkin() {
+  const { addToast } = useToasts();
   const fieldList = useMemo(() => {
     return ["RecordId", "CreatedDate", "Type", "Notes"];
   }, []);
@@ -28,6 +32,8 @@ function Checkin() {
   const userCredential = useSelector(selectUserCredential);
 
   const loading = useSelector(selectLoading);
+  const isSuccess = useSelector(selectIsSuccess);
+  const error = useSelector(selectError);
   const checkinList = useSelector(selectCheckinTableData);
 
   /* eslint-disable */
@@ -41,6 +47,16 @@ function Checkin() {
           return secondCreatedTime - firstCreatedTime;
         })
       );
+    } else {
+      if (isSuccess) {
+        if (error) {
+          console.log(error);
+          addToast(
+            "Retrive Check-in Data failed! Please check your connection...",
+            { appearance: "error" }
+          );
+        }
+      }
     }
   }, [userCredential, checkinList]);
 
