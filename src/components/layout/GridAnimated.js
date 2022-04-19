@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import styledComponents from "styled-components";
 import PropTypes from "prop-types";
 
@@ -9,14 +9,24 @@ import PropTypes from "prop-types";
  * a children node, and doesn't have any other component, otherwise the
  * animation can not be applied.
  */
-function GridAnimated({ flexProps, children }) {
+function GridAnimated({ flexProps, isSameAsRow, children }) {
   const { direction, wrap, justifyContent, alignItems } = flexProps;
 
-  const [gridCardList, setGridCardList] = useState([]);
-  const cardPositionSet = new Set();
+  const cardPositionSet = useMemo(() => {
+    return new Array(React.Children.count(children));
+    // eslint-disable-next-line
+  }, []);
+  const gridStateArr = useMemo(() => {
+    let arrLength = React.Children.count(children);
+    let res = new Array(arrLength);
+    res.fill({ isTranslate: false, isHide: false });
+    return res;
+    // eslint-disable-next-line
+  }, []);
+  const [gridState, setGridState] = useState(gridStateArr);
 
   const hideCard = (index) => {
-    setGridCardList((state) => [
+    setGridState((state) => [
       ...state.slice(0, index),
       {
         ...state[index],
@@ -29,7 +39,7 @@ function GridAnimated({ flexProps, children }) {
     ]);
   };
   const stopTranslate = () => {
-    setGridCardList((state) =>
+    setGridState((state) =>
       state.map((card) => ({
         ...card,
         isTranslate: false,
@@ -39,18 +49,17 @@ function GridAnimated({ flexProps, children }) {
 
   const childrenWithProps = React.Children.map(children, (card, index) => (
     <GridCard
-      ref={(cardRef) =>
-        cardRef &&
-        cardPositionSet.add({
-          x: cardRef.offsetLeft,
-          y: cardRef.offsetTop,
-        })
-      }
+      ref={(cardRef) => {
+        if (cardRef) {
+          let { x, y } = cardRef.getClientRects().item(0);
+          cardPositionSet[index] = { x, y };
+        }
+      }}
       key={index}
-      gridCards={gridCardList}
+      gridCards={cardPositionSet}
       className="grid-anim-card"
       cardIndex={index}
-      isTranslate={gridCardList[index]?.isTranslate}
+      isTranslate={gridState[index]?.isTranslate}
     >
       {React.cloneElement(card, {
         onHideCard: () => hideCard(index),
@@ -59,20 +68,6 @@ function GridAnimated({ flexProps, children }) {
     </GridCard>
   ));
 
-  useEffect(() => {
-    cardPositionSet.forEach((val) => {
-      setGridCardList((state) => [
-        ...state,
-        {
-          isHide: false,
-          isTranslate: false,
-          position: val,
-        },
-      ]);
-    });
-    // eslint-disable-next-line
-  }, []);
-
   return (
     <GridContainer
       className="grid-anim-container"
@@ -80,6 +75,7 @@ function GridAnimated({ flexProps, children }) {
       wrap={wrap}
       justifyContent={justifyContent}
       alignItems={alignItems}
+      sameAsRow={isSameAsRow}
     >
       {childrenWithProps}
     </GridContainer>
@@ -89,6 +85,7 @@ function GridAnimated({ flexProps, children }) {
 const GridContainer = styledComponents.div`
   position: relative;
   display: flex;
+  ${(props) => (props.sameAsRow ? `margin: 0 -12px;` : "")}
   flex-wrap: ${(props) => props.wrap};
   flex-direction: ${(props) => props.direction};
   justify-content: ${(props) => props.justifyContent};
@@ -100,17 +97,19 @@ export const GridCard = styledComponents.div`
     if (!isTranslate || cardIndex === 0) return "";
     let currentCard = gridCards[cardIndex];
     let previousCard = gridCards[cardIndex - 1];
+    let transX = previousCard.x - currentCard.x;
+    let transY = previousCard.y - currentCard.y;
     return `
       transition: transform ease-out 0.5s;
-      transform: translate(${
-        previousCard.position.x - currentCard.position.x
-      }px, ${previousCard.position.y - currentCard.position.y - 26}px);`;
-    // 26px is 24px (margin-bottom of Card) + 2px (border-top and border-bottom width)
-    // this is maybe a bug, because the cardRef offset doesn't have high accuracy
+      transform: translate(${transX}px, ${transY}px);
+    `;
   }}
 `;
 
 GridAnimated.propTypes = {
+  /**
+   * Object include flex-box related properties
+   */
   flexProps: PropTypes.shape({
     wrap: PropTypes.oneOf([
       "nowrap",
@@ -131,6 +130,7 @@ GridAnimated.propTypes = {
       "inherit",
     ]),
   }).isRequired,
+  isSameAsRow: PropTypes.bool,
 };
 
 export default GridAnimated;

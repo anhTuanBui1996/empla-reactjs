@@ -67,7 +67,7 @@ function Admin() {
       {isLoading && <Loader />}
       <MainContent>
         <MainHeader
-          title="Administrator List"
+          title="Database Access Roles"
           subTitle="Your company administrators"
         />
         <Container fluid>
