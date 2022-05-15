@@ -15,7 +15,7 @@ import tableConfig from "./../utils/airtable";
 const retrieveData = async (tableName, formula, config) => {
   const newConfig = tableConfig(tableName);
   try {
-    const res = newConfig.read(formula, config);
+    const res = await newConfig.read(formula, config);
     return res;
   } catch (e) {
     console.log(e);
@@ -63,7 +63,7 @@ const mapResultToTableData = (res, fieldList) => {
 const createNewRecord = async (tableName, data) => {
   const newConfig = tableConfig(tableName);
   try {
-    const res = newConfig.create(data);
+    const res = await newConfig.create(data);
     return res;
   } catch (e) {
     console.log(e);
@@ -86,7 +86,7 @@ const createNewRecord = async (tableName, data) => {
 const updateRecord = async (tableName, rowId, data) => {
   const newConfig = tableConfig(tableName);
   try {
-    const res = newConfig.update(rowId, data);
+    const res = await newConfig.update(rowId, data);
     return res;
   } catch (e) {
     console.log(e);
@@ -110,7 +110,7 @@ const updateRecord = async (tableName, rowId, data) => {
 const updateRecordWhere = async (tableName, whereString, data) => {
   const newConfig = tableConfig(tableName);
   try {
-    const res = newConfig.updateWhere(whereString, data);
+    const res = await newConfig.updateWhere(whereString, data);
     return res;
   } catch (e) {
     console.log(e);
@@ -129,7 +129,7 @@ const updateRecordWhere = async (tableName, whereString, data) => {
 const deleteRecord = async (tableName, rowId) => {
   const newConfig = tableConfig(tableName);
   try {
-    const res = newConfig.delete(rowId);
+    const res = await newConfig.delete(rowId);
     return res;
   } catch (e) {
     console.log(e);
@@ -149,7 +149,7 @@ const deleteRecord = async (tableName, rowId) => {
 const deleteRecordWhere = async (tableName, whereString) => {
   const newConfig = tableConfig(tableName);
   try {
-    const res = newConfig.deleteWhere(whereString);
+    const res = await newConfig.deleteWhere(whereString);
     return res;
   } catch (e) {
     console.log(e);

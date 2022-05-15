@@ -25,6 +25,7 @@ import {
   selectOptionList,
 } from "../../features/selectListSlice";
 import {
+  setSelectedStaffForEdit,
   selectSelectedStaffForEdit,
   setLoading,
   setNewStaffData,
@@ -33,8 +34,14 @@ import {
   deleteExistingStaff,
   selectProgressing as progressingStaff,
   retriveStaffList,
+  selectDeletedStaffData,
+  selectWillUpdatingStaffData,
+  setWillBeUpdatedStaffData,
+  selectWillBeUpdatedStaffData,
+  setWillUpdatingStaffData,
 } from "../../features/staffSlice";
 import {
+  setSelectedStatusForEdit,
   selectSelectedStatusForEdit,
   updateExistingStatus,
   createNewStatus,
@@ -42,8 +49,15 @@ import {
   deleteExistingStatus,
   selectProgressing as progressingStatus,
   retriveStatusList,
+  selectDeletedStatusData,
+  selectNewStatusData,
+  selectWillUpdatingStatusData,
+  setWillBeUpdatedStatusData,
+  selectWillBeUpdatedStatusData,
+  setWillUpdatingStatusData,
 } from "../../features/statusSlice";
 import {
+  setSelectedAccountForEdit,
   selectSelectedAccountForEdit,
   updateExistingAccount,
   createNewAccount,
@@ -52,11 +66,24 @@ import {
   deleteExistingAccount,
   selectProgressing as progressingAccount,
   retriveAccountList,
+  selectDeletedAccountData,
+  selectNewAccountData,
+  selectWillUpdatingAccountData,
+  setWillBeUpdatedAccountData,
+  setWillUpdatingAccountData,
+  selectWillBeUpdatedAccountData,
 } from "../../features/accountSlice";
 import { SpinnerCircular } from "spinners-react";
 import convertFullNameToUsername from "../../utils/convertToUsername";
 import { createNewRecord } from "../../services/airtable.service";
 import { compareTwoArrayOfString } from "../../utils/arrayUtils";
+import {
+  createNewLog,
+  selectLogsData,
+  setLogsData,
+} from "../../features/logsSlice";
+import { getLocalUser } from "../../services/localStorage.service";
+import { compareTwoObject } from "../../utils/objectUtils";
 
 // NOTE: The Select component (from react-select) that doesn't
 // support custom inner props when using component event listener
@@ -80,9 +107,26 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   const statusProgression = useSelector(progressingStatus);
   const accountProgression = useSelector(progressingAccount);
 
+  const logData = useSelector(selectLogsData);
+
+  const createdStatus = useSelector(selectNewStatusData);
+  const createdAccount = useSelector(selectNewAccountData);
+
   const selectedStaffForEdit = useSelector(selectSelectedStaffForEdit);
   const selectedStatusForEdit = useSelector(selectSelectedStatusForEdit);
   const selectedAccountForEdit = useSelector(selectSelectedAccountForEdit);
+
+  const willBeUpdatedStaff = useSelector(selectWillBeUpdatedStaffData);
+  const willBeUpdatedStatus = useSelector(selectWillBeUpdatedStatusData);
+  const willBeUpdatedAccount = useSelector(selectWillBeUpdatedAccountData);
+  const willUpdatingStaff = useSelector(selectWillUpdatingStaffData);
+  const willUpdatingStatus = useSelector(selectWillUpdatingStatusData);
+  const willUpdatingAccount = useSelector(selectWillUpdatingAccountData);
+
+  const deletedStaff = useSelector(selectDeletedStaffData);
+  const deletedStatus = useSelector(selectDeletedStatusData);
+  const deletedAccount = useSelector(selectDeletedAccountData);
+  // console.log(updatedStaff, updatedStatus, updatedAccount);
 
   const autoGenerate = useAutoGenerate();
   const initialPasswordString = autoGenerate(12);
@@ -131,7 +175,8 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   });
   // define this for comparing value when editting
   // if the value has been changed after a handleStaffInput,
-  // enable the Submit Changes button
+  // enable the Submit Changes button, this is the initial form
+  // every changing/modifying is happened in newStaffForm
   const [newStaffFormForEdit, setNewStaffFormForEdit] = useState(
     initialStaffFormForEdit
   );
@@ -153,7 +198,6 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
     StartWorkingDay: useRef(null),
   };
 
-  /* eslint-disable */
   // retrive data from airtable into empty select list
   useEffect(() => {
     if (retriveSelectResult) {
@@ -170,6 +214,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
     return () => {
       setComponentAvailable(false);
     };
+    // eslint-disable-next-line
   }, [
     componentAvailable,
     dispatch,
@@ -471,9 +516,13 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   };
 
   // handle retrive 3 tables after a create/update/delete
-  const handleRetriveAllTable = () => {
+  const handleRetriveStaffTable = () => {
     dispatch(retriveStaffList());
+  };
+  const handleRetriveStatusTable = () => {
     dispatch(retriveStatusList());
+  };
+  const handleRetriveAccountTable = () => {
     dispatch(retriveAccountList());
   };
 
@@ -496,20 +545,64 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
       return;
     }
     // create new record object suitable with fields in airtable
+    // this is the data to upload to airtable
     let newRecord = { Staff: {}, Status: {}, Account: {} };
+    // this is the old data that has been overwrited
+    let oldRecord = { Staff: {}, Status: {}, Account: {} };
     Object.keys(newRecord).forEach((tableKey) => {
-      Object.entries(newStaffForm[tableKey]).forEach((field) => {
-        // exclude the field that can't be updated (duplicated/computed/empty)
-        if (
-          field[1].isRemovedWhenSubmit ||
-          field[1].value === "" ||
-          field[1].value.length === 0
-        ) {
-          return;
+      Object.entries(
+        type === "create"
+          ? newStaffFormForEdit[tableKey] // type === "create"
+          : newStaffForm[tableKey] // type === "edit"
+      ).forEach((field) => {
+        if (type === "edit") {
+          // exclude the field that can't be updated (duplicated/computed/empty)
+          if (field[1].value === undefined) {
+            return;
+          } else if (Array.isArray(field[1].value)) {
+            if (field[1].value.length === 0) {
+              return;
+            } else if (typeof field[1].value[0] === "object") {
+              // comparing 2 Attachment type object (airtable)
+              for (let j = 0; j < field[1].value.length; j++) {
+                if (
+                  compareTwoObject(
+                    field[1].value[j],
+                    newStaffFormForEdit[tableKey][field[0]].value[j]
+                  )
+                ) {
+                  return;
+                }
+              }
+            } else if (typeof field[1].value[0] === "string") {
+              if (
+                compareTwoArrayOfString(
+                  field[1].value,
+                  newStaffFormForEdit[tableKey][field[0]].value
+                )
+              ) {
+                return;
+              }
+            }
+          } else if (typeof field[1].value === "string") {
+            if (
+              field[1].value.length === 0 ||
+              field[1].value === newStaffFormForEdit[tableKey][field[0]].value
+            ) {
+              return;
+            }
+          }
+          oldRecord[tableKey][field[1].linkedField] =
+            newStaffFormForEdit[tableKey][field[1].linkedField].value;
         }
         newRecord[tableKey][field[1].linkedField] = field[1].value;
       });
     });
+
+    // save the old data to redux (available with Update action)
+    dispatch(setWillBeUpdatedStaffData(oldRecord.Staff));
+    dispatch(setWillBeUpdatedStatusData(oldRecord.Status));
+    dispatch(setWillBeUpdatedAccountData(oldRecord.Account));
 
     // processing create new staff
     // we can't use the redux-thunk here because the async thunk
@@ -522,9 +615,21 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         .then((staffRes) => {
           try {
             dispatch(setNewStaffData(staffRes));
+            dispatch(
+              createNewLog({
+                Actions: "Create",
+                Account: getLocalUser().UserAccount,
+                RecordAffected: staffRes.id,
+                TableAffected: "Staff",
+                Status: "Done",
+                NewValue: JSON.stringify(staffRes.fields),
+                Notes: "Create a new Staff",
+              })
+            );
             addToast("Create a new staff record successfully!", {
               appearance: "success",
             });
+            handleRetriveStaffTable();
             dispatch(setLoading(false));
             const newStaffRecordId = [staffRes.id];
             newRecord.Status.Staff = newStaffRecordId;
@@ -537,40 +642,46 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         })
         .catch((e) => {
           console.log("Error while creating new staff", e);
+          dispatch(
+            createNewLog({
+              Actions: "Create",
+              Account: getLocalUser().UserAccount,
+              TableAffected: "Staff",
+              Status: "Failed",
+              Notes: `Create a new Staff errored,\n${JSON.stringify(e)}`,
+            })
+          );
           addToast("Fail to create a new staff record!", {
             appearance: "error",
           });
-        })
-        .finally(() => {
-          setModalHide();
         });
     } else {
       try {
-        dispatch(
-          updateExistingStaff({
-            recordId: selectedStaffForEdit.id,
-            updateData: newRecord.Staff,
-          })
-        );
-        dispatch(
-          updateExistingStatus({
-            recordId: selectedStatusForEdit.id,
-            updateData: newRecord.Status,
-          })
-        );
-        dispatch(
-          updateExistingAccount({
-            recordId: selectedAccountForEdit.id,
-            updateData: newRecord.Account,
-          })
-        );
+        Object.keys(newRecord.Staff).length > 0 &&
+          dispatch(
+            updateExistingStaff({
+              recordId: selectedStaffForEdit.id,
+              updateData: newRecord.Staff,
+            })
+          );
+        Object.keys(newRecord.Status).length > 0 &&
+          dispatch(
+            updateExistingStatus({
+              recordId: selectedStatusForEdit.id,
+              updateData: newRecord.Status,
+            })
+          );
+        Object.keys(newRecord.Account).length > 0 &&
+          dispatch(
+            updateExistingAccount({
+              recordId: selectedAccountForEdit.id,
+              updateData: newRecord.Account,
+            })
+          );
       } catch (e) {
         console.log("Source code error", e);
-      } finally {
-        setModalHide();
       }
     }
-    handleRetriveAllTable();
   };
 
   // handle delete a staff
@@ -579,14 +690,20 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
     const staffRecordId = selectedStaffForEdit.id;
     const statusRecordId = selectedStatusForEdit.id;
     const accountRecordId = selectedAccountForEdit.id;
-    console.log(selectedAccountForEdit);
     dispatch(deleteExistingStaff(staffRecordId));
     dispatch(deleteExistingStatus(statusRecordId));
     dispatch(deleteExistingAccount(accountRecordId));
-    handleRetriveAllTable();
   };
 
-  /* eslint-disable */
+  // handle finish task (create/update/delete)
+  const handleFinishTask = () => {
+    setModalHide();
+    dispatch(setSelectedStaffForEdit(null));
+    dispatch(setSelectedStatusForEdit(null));
+    dispatch(setSelectedAccountForEdit(null));
+    dispatch(setLogsData(null));
+  };
+
   // effect catch the create/update/delete api
   // there are 3 prefix progression of 3 table
   // (<staff|status|account>/<fetch|create|update|delete>)
@@ -597,26 +714,77 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
     // staff progression
     switch (staffProgression) {
       case "staff/update/rejected":
-        console.log(staffError);
+        console.error(staffError);
+        dispatch(
+          createNewLog({
+            Actions: "Update",
+            Account: getLocalUser().UserAccount,
+            RecordAffected: willUpdatingStaff.recordId,
+            TableAffected: "Staff",
+            Status: "Failed",
+            OldValue: JSON.stringify(willBeUpdatedStaff),
+            NewValue: JSON.stringify(willUpdatingStaff.updateData),
+            Notes: `Update an existing Staff errored,\n${JSON.stringify(
+              staffError
+            )}`,
+          })
+        );
         addToast("Fail to update the staff record!", {
           appearance: "error",
         });
         break;
       case "staff/update/fulfilled":
+        dispatch(
+          createNewLog({
+            Actions: "Update",
+            Account: getLocalUser().UserAccount,
+            RecordAffected: willUpdatingStaff.recordId,
+            TableAffected: "Staff",
+            Status: "Done",
+            OldValue: JSON.stringify(willBeUpdatedStaff),
+            NewValue: JSON.stringify(willUpdatingStaff.updateData),
+            Notes: `Update an existing Staff`,
+          })
+        );
         addToast("Update the staff record successfully!", {
           appearance: "success",
         });
+        handleRetriveStaffTable();
         break;
       case "staff/delete/rejected":
         console.log(staffError);
+        dispatch(
+          createNewLog({
+            Actions: "Delete",
+            Account: getLocalUser().UserAccount,
+            RecordAffected: selectedStaffForEdit.id,
+            TableAffected: "Staff",
+            Status: "Failed",
+            Notes: `Delete an existing Staff errored,\n${JSON.stringify(
+              staffError
+            )}`,
+          })
+        );
         addToast("Fail to delete the staff record!", {
           appearance: "error",
         });
         break;
       case "staff/delete/fulfilled":
+        dispatch(
+          createNewLog({
+            Actions: "Delete",
+            Account: getLocalUser().UserAccount,
+            RecordAffected: deletedStaff.id,
+            TableAffected: "Staff",
+            Status: "Done",
+            OldValue: JSON.stringify(deletedStaff.fields),
+            Notes: `Delete an existing Staff `,
+          })
+        );
         addToast("Delete the staff record successfully!", {
           appearance: "success",
         });
+        handleRetriveStaffTable();
         break;
       default:
         break;
@@ -625,36 +793,108 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
     switch (statusProgression) {
       case "status/create/rejected":
         console.log(statusError);
+        dispatch(
+          createNewLog({
+            Actions: "Create",
+            Account: getLocalUser().UserAccount,
+            TableAffected: "Status",
+            Status: "Failed",
+            Notes: `Create a Status errored,\n${JSON.stringify(statusError)}`,
+          })
+        );
         addToast("Fail to create a new status record!", {
           appearance: "error",
         });
         break;
       case "status/create/fulfilled":
+        dispatch(
+          createNewLog({
+            Actions: "Create",
+            Account: getLocalUser().UserAccount,
+            RecordAffected: createdStatus.id,
+            TableAffected: "Status",
+            Status: "Done",
+            NewValue: JSON.stringify(createdStatus.fields),
+            Notes: `Create a new Status`,
+          })
+        );
         addToast("Create a new status record successfully!", {
           appearance: "success",
         });
+        handleRetriveStatusTable();
         break;
       case "status/update/rejected":
         console.log(statusError);
+        dispatch(
+          createNewLog({
+            Actions: "Update",
+            Account: getLocalUser().UserAccount,
+            RecordAffected: willUpdatingStatus.recordId,
+            TableAffected: "Status",
+            Status: "Failed",
+            OldValue: JSON.stringify(willBeUpdatedStatus),
+            NewValue: JSON.stringify(willUpdatingStatus.updateData),
+            Notes: `Update an existing Status errored,\n${JSON.stringify(
+              statusError
+            )}`,
+          })
+        );
         addToast("Fail to update the status record!", {
           appearance: "error",
         });
         break;
       case "status/update/fulfilled":
+        dispatch(
+          createNewLog({
+            Actions: "Update",
+            Account: getLocalUser().UserAccount,
+            RecordAffected: willUpdatingStatus.recordId,
+            TableAffected: "Status",
+            Status: "Done",
+            OldValue: JSON.stringify(willBeUpdatedStatus),
+            NewValue: JSON.stringify(willUpdatingStatus.updateData),
+            Notes: `Update an existing Status errored,\n${JSON.stringify(
+              statusError
+            )}`,
+          })
+        );
         addToast("Update the status record successfully!", {
           appearance: "success",
         });
+        handleRetriveStatusTable();
         break;
       case "status/delete/rejected":
         console.log(statusError);
+        dispatch(
+          createNewLog({
+            Actions: "Delete",
+            Account: getLocalUser().UserAccount,
+            TableAffected: "Status",
+            Status: "Failed",
+            Notes: `Delete an existing Status errored,\n${JSON.stringify(
+              statusError
+            )}`,
+          })
+        );
         addToast("Fail to delete the status record!", {
           appearance: "error",
         });
         break;
       case "status/delete/fulfilled":
+        dispatch(
+          createNewLog({
+            Actions: "Delete",
+            Account: getLocalUser().UserAccount,
+            TableAffected: "Status",
+            Status: "Done",
+            OldValue: JSON.stringify(deletedStatus.fields),
+            Notes: `Delete an existing Status`,
+          })
+        );
         addToast("Delete the status record successfully!", {
           appearance: "success",
         });
+        handleRetriveStatusTable();
         break;
       default:
         break;
@@ -663,41 +903,128 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
     switch (accountProgression) {
       case "account/create/rejected":
         console.log(accountError);
+        dispatch(
+          createNewLog({
+            Actions: "Create",
+            Account: getLocalUser().UserAccount,
+            TableAffected: "Account",
+            Status: "Failed",
+            Notes: `Create an Account errored,\n${JSON.stringify(
+              accountError
+            )}`,
+          })
+        );
         addToast("Fail to create a new account record!", {
           appearance: "error",
         });
         break;
       case "account/create/fulfilled":
-        addToast("Fail to create a new account record!", {
+        dispatch(
+          createNewLog({
+            Actions: "Create",
+            Account: getLocalUser().UserAccount,
+            RecordAffected: createdAccount.id,
+            TableAffected: "Account",
+            Status: "Done",
+            NewValue: JSON.stringify(createdAccount.fields),
+            Notes: `Create a new Account`,
+          })
+        );
+        addToast("Create a new account record successfully!", {
           appearance: "success",
         });
+        handleRetriveAccountTable();
         break;
       case "account/update/rejected":
         console.log(accountError);
+        dispatch(
+          createNewLog({
+            Actions: "Update",
+            Account: getLocalUser().UserAccount,
+            RecordAffected: willUpdatingAccount.recordId,
+            TableAffected: "Account",
+            Status: "Failed",
+            OldValue: JSON.stringify(willBeUpdatedAccount),
+            NewValue: JSON.stringify(willUpdatingAccount.updateData),
+            Notes: `Update an existing Account errored,\n${JSON.stringify(
+              accountError
+            )}`,
+          })
+        );
         addToast("Fail to update the account record!", {
           appearance: "error",
         });
         break;
       case "account/update/fulfilled":
+        dispatch(
+          createNewLog({
+            Actions: "Update",
+            Account: getLocalUser().UserAccount,
+            RecordAffected: willUpdatingAccount.recordId,
+            TableAffected: "Account",
+            Status: "Done",
+            OldValue: JSON.stringify(willBeUpdatedAccount),
+            NewValue: JSON.stringify(willUpdatingAccount.updateData),
+            Notes: `Update an existing Account`,
+          })
+        );
         addToast("Update the account record successfully!", {
           appearance: "success",
         });
+        handleRetriveAccountTable();
         break;
       case "account/delete/rejected":
         console.log(accountError);
+        dispatch(
+          createNewLog({
+            Actions: "Delete",
+            Account: getLocalUser().UserAccount,
+            TableAffected: "Account",
+            Status: "Failed",
+            Notes: `Delete an existing Account errored,\n${JSON.stringify(
+              accountError
+            )}`,
+          })
+        );
         addToast("Fail to delete the account record!", {
           appearance: "error",
         });
         break;
       case "account/delete/fulfilled":
+        dispatch(
+          createNewLog({
+            Actions: "Delete",
+            Account: getLocalUser().UserAccount,
+            TableAffected: "Account",
+            Status: "Done",
+            OldValue: JSON.stringify(deletedAccount.fields),
+            Notes: `Delete an existing Account`,
+          })
+        );
         addToast("Delete the staff record successfully!", {
           appearance: "success",
         });
+        handleRetriveAccountTable();
         break;
       default:
         break;
     }
+    // eslint-disable-next-line
   }, [staffProgression, statusProgression, accountProgression]);
+
+  // logs listener, finish task when the log has been created
+  useEffect(() => {
+    if (logData) {
+      handleFinishTask();
+      dispatch(setWillBeUpdatedStaffData(null));
+      dispatch(setWillBeUpdatedStatusData(null));
+      dispatch(setWillBeUpdatedAccountData(null));
+      dispatch(setWillUpdatingStaffData(null));
+      dispatch(setWillUpdatingStatusData(null));
+      dispatch(setWillUpdatingAccountData(null));
+    }
+    // eslint-disable-next-line
+  }, [logData]);
 
   // update the modal initial state (newStaffForm)
   // when select a staff to edit or clear staff when click Add new staff
@@ -829,13 +1156,11 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
       setErrorForm(resetError);
     }
     setSubmitChangeStatus(false);
+    // eslint-disable-next-line
   }, [selectedStaffForEdit, selectedStatusForEdit, selectedAccountForEdit]);
 
   return (
-    <Modal
-      onModalHide={setModalHide}
-      isModalDisplay={isModalDisplay}
-    >
+    <Modal onModalHide={setModalHide} isModalDisplay={isModalDisplay}>
       <Row className="py-4 justify-content-center">
         <Col columnSize={["auto"]}>
           <h1 className="font-weight-bold">

@@ -26,7 +26,6 @@ function AirtableView({ shareId, isForceLoading, stopLoadingHandler }) {
           border: "1px solid #ccc",
         }}
         frameBorder={0}
-        loading="lazy"
       />
       {(isLoading || isForceLoading) && (
         <ChangFrameLoader>

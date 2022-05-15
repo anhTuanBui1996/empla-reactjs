@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import Outclick from "../../hoc/Outclick";
 import Button from "./Button";
 import { MdArrowRight } from "react-icons/md";
 
 function Modal({ children, onModalHide, isModalDisplay }) {
+  const modalRef = useRef();
   const [isDisplay, setDisplay] = useState(false);
   const handleHideModal = () => {
     setDisplay(false);
@@ -12,11 +13,12 @@ function Modal({ children, onModalHide, isModalDisplay }) {
   };
   useEffect(() => {
     setDisplay(isModalDisplay);
+    isModalDisplay && modalRef.current && (modalRef.current.scrollTop = 0);
   }, [isModalDisplay]);
   return (
     <ModalWrapper isDisplay={isDisplay}>
       <Outclick onOutClick={handleHideModal}>
-        <ModalContent isDisplay={isDisplay}>
+        <ModalContent isDisplay={isDisplay} ref={modalRef}>
           <ModalBody>
             <Button
               style={{ position: "absolute", left: "-5px", top: "0" }}

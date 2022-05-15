@@ -68,7 +68,7 @@ function Login() {
       } else {
         const actualPassword = res[0].fields.Password;
         if (loginForm.password === actualPassword) {
-          setLocalUser(res[0].fields);
+          setLocalUser({ ...res[0].fields, logInByPage: true });
           dispatch(setUserCredential(res[0].fields));
           dispatch(
             setError({
@@ -91,6 +91,7 @@ function Login() {
     }
     dispatch(setLoading(false));
   };
+
   return getLocalUser() ? (
     <Navigate to="/" />
   ) : (
@@ -106,6 +107,7 @@ function Login() {
               <label>Username or Email Address</label>
               <input
                 type="email"
+                autoComplete="username"
                 className="form-control"
                 placeholder="name@address.com"
                 name="username"

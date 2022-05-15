@@ -41,8 +41,9 @@ export const SIDENAV = [
 
 /**
  * List of private path (visible only for admin DatabaseAccessbility=[true])
+ * and condition path (base on DatabaseEditable and TableEditable)
  */
-export const adminAccessOnly = ["/admin", "/staff", "/database"];
+export const privateRoutes = ["/admin", "/staff", "/database", "/clients"];
 
 // defined company specific requires and configuration
 export const companySpecific = {
@@ -470,6 +471,7 @@ export const NOT_SUPPORT_FIELD_FEATURE = [
 
 // used for render Date, this is field name that have Date data type
 export const FIELD_DATE_TYPE = [
+  "Created",
   "CreatedTime",
   "CreatedDate",
   "LastModifiedTime",

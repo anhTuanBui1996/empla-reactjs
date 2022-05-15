@@ -6,6 +6,7 @@ import styled from "styled-components";
 import Dropdown from "./Dropdown";
 
 function Card({
+  className,
   elementList,
   cardHeader,
   cardFooter,
@@ -15,7 +16,6 @@ function Card({
   noBodyPadding,
   onChangeTab,
   onHideCard,
-  forceStopTranslate,
 }) {
   const [navActivated, setActiveNav] = useState(0);
   const [cardOpacity, setCardOpacity] = useState(1);
@@ -28,16 +28,18 @@ function Card({
   const handleHideCard = (e) => {
     e.stopPropagation();
     setCardOpacity(0);
-    onHideCard && onHideCard();
-    setTimeout(() => {
-      forceStopTranslate && forceStopTranslate();
-      setHidden(true);
-    }, 1000);
+    onHideCard
+      ? setTimeout(onHideCard, 500)
+      : setTimeout(() => {
+          setHidden(true);
+        }, 500);
   };
   return (
     !isHidden && (
       <CardWrapper
-        className={"card" + (inactive ? " card-inactive" : "")}
+        className={`d-flex card${inactive ? " card-inactive" : ""}${
+          className ? ` ${className}` : ""
+        }`}
         cardOpacity={cardOpacity}
       >
         {cardHeader && (
@@ -47,13 +49,16 @@ function Card({
           >
             <div className="card-header-title d-flex justify-content-between align-items-center">
               <div className="card-header-left-title d-flex flex-nowrap font-weight-bold mr-auto py-2">
-                <span style={{ whiteSpace: "nowrap" }}>{cardHeader.title}</span>
+                <span style={{ whiteSpace: "nowrap", lineHeight: 1.6 }}>
+                  {cardHeader.title}
+                </span>
                 {cardHeader.badge && (
                   <span
                     className={
                       "badge font-weight-bold ml-2 badge-" +
                       cardHeader.badge.theme
                     }
+                    style={{ lineHeight: 1.5 }}
                   >
                     {cardHeader.badge.label}
                   </span>
@@ -116,6 +121,7 @@ function Card({
 }
 
 Card.propTypes = {
+  className: PropTypes.string,
   /**
    * The element list, if the card has only 1 element, then no need
    * the navList and elementList is array that has 1 element (length=1)
@@ -168,7 +174,8 @@ Card.propTypes = {
 
 const CardWrapper = styled.div`
   opacity: ${(props) => props.cardOpacity};
-  transition: opacity ease-in-out 1s;
+  transition: opacity ease-in-out 0.5s;
+  margin-bottom: 0;
 `;
 const NavLinkHover = styled.div`
   cursor: pointer;

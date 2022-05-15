@@ -10,6 +10,10 @@ code {
     monospace;
 }
 
+ul {
+  padding-inline-start: 20px;
+}
+
 /* =============== Side bar ================== */
 #sidebar .navbar-toggler {
   order: 1;

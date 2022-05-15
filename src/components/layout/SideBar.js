@@ -9,7 +9,7 @@ import {
 } from "react-icons/md";
 import { IconContext } from "react-icons";
 import { Link, NavLink } from "react-router-dom";
-import { adminAccessOnly, SIDENAV } from "../../constants";
+import { privateRoutes, SIDENAV } from "../../constants";
 import { removeLocalUser } from "../../services/localStorage.service";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -21,10 +21,15 @@ import Search from "../common/Search";
 import { selectInnerWidth } from "../../features/windowSlice";
 import Outclick from "../../hoc/Outclick";
 import avatarDummy from "../../assets/images/avatar-dummy.png";
+import { createNewLog } from "../../features/logsSlice";
+import { useToasts } from "react-toast-notifications";
+import { browserDetect } from "../../utils/userAgentUtils";
 
 function SideBar({ localUser }) {
   const dispatch = useDispatch();
+  const { addToast } = useToasts();
   const userAccessibility = localUser.DatabaseAccessibility[0];
+  const userAccount = localUser.UserAccount;
   const [isCollaped, setCollapse] = useState(true);
   const innerWidth = useSelector(selectInnerWidth);
   const handleOutClick = () => {
@@ -32,6 +37,15 @@ function SideBar({ localUser }) {
   };
   const handleLogout = () => {
     removeLocalUser();
+    dispatch(
+      createNewLog({
+        Actions: "Logout",
+        Account: userAccount,
+        Status: "Done",
+        Notes: `Browser: ${browserDetect()}`,
+      })
+    );
+    addToast("Logout Successfully!", { appearance: "success" });
     dispatch(setUserCredential(null));
   };
   const handleToggleCollapse = () => {
@@ -40,6 +54,7 @@ function SideBar({ localUser }) {
   return innerWidth <= 767 ? (
     <Outclick onOutClick={handleOutClick}>
       <SideBarContent
+        isAdminAccess={userAccessibility}
         innerWidth={innerWidth}
         isCollaped={isCollaped}
         handleLogout={handleLogout}
@@ -113,7 +128,7 @@ function SideBarContent({
               {SIDENAV.map((route) => {
                 if (
                   isAdminAccess === null &&
-                  adminAccessOnly.includes(route.path)
+                  privateRoutes.includes(route.path)
                 ) {
                   return <li key={route.path}></li>;
                 } else

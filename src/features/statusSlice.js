@@ -12,8 +12,11 @@ const initialState = {
   progressing: null,
   statusTableData: null,
   newStatusData: null,
+  willBeUpdatedStatusData: null,
+  willUpdatingStatusData: null,
   updatedStatusData: null,
   selectedStatusForEdit: null,
+  deletedStatusData: null,
   error: null,
 };
 
@@ -60,6 +63,15 @@ export const statusSlice = createSlice({
     setSelectedStatusForEdit: (state, action) => {
       state.selectedStatusForEdit = action.payload;
     },
+    setWillBeUpdatedStatusData: (state, action) => {
+      state.willBeUpdatedStatusData = action.payload;
+    },
+    setWillUpdatingStatusData: (state, action) => {
+      state.willUpdatingStatusData = action.payload;
+    },
+    setUpdatedStatusData: (state, action) => {
+      state.updatedStatusData = action.payload;
+    },
     setProgressing: (state, action) => {
       state.progressing = action.payload;
     },
@@ -73,12 +85,14 @@ export const statusSlice = createSlice({
         state.loading = true;
         state.isSuccess = false;
         state.error = null;
+        state.statusTableData = null;
         state.progressing = action.type;
       })
       .addCase(retriveStatusList.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = action.error;
+        state.statusTableData = null;
         state.progressing = action.type;
       })
       .addCase(retriveStatusList.fulfilled, (state, action) => {
@@ -92,12 +106,14 @@ export const statusSlice = createSlice({
         state.loading = true;
         state.isSuccess = false;
         state.error = null;
+        state.newStatusData = null;
         state.progressing = action.type;
       })
       .addCase(createNewStatus.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = action.error;
+        state.newStatusData = null;
         state.progressing = action.type;
       })
       .addCase(createNewStatus.fulfilled, (state, action) => {
@@ -111,18 +127,23 @@ export const statusSlice = createSlice({
         state.loading = true;
         state.isSuccess = false;
         state.error = null;
+        state.willUpdatingStatusData = null;
+        state.updatedStatusData = null;
         state.progressing = action.type;
       })
       .addCase(updateExistingStatus.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = action.error;
+        state.willUpdatingStatusData = action.meta.arg;
+        state.updatedStatusData = null;
         state.progressing = action.type;
       })
       .addCase(updateExistingStatus.fulfilled, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = null;
+        state.willUpdatingStatusData = action.meta.arg;
         state.updatedStatusData = action.payload;
         state.progressing = action.type;
       })
@@ -130,19 +151,21 @@ export const statusSlice = createSlice({
         state.loading = true;
         state.isSuccess = false;
         state.error = null;
+        state.deletedStatusData = null;
         state.progressing = action.type;
       })
       .addCase(deleteExistingStatus.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = action.error;
+        state.deletedStatusData = null;
         state.progressing = action.type;
       })
       .addCase(deleteExistingStatus.fulfilled, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = null;
-        state.updatedStatusData = null;
+        state.deletedStatusData = action.payload;
         state.selectedStatusForEdit = null;
         state.progressing = action.type;
       });
@@ -153,6 +176,9 @@ export const {
   setLoading,
   setNewStatusData,
   setSelectedStatusForEdit,
+  setWillBeUpdatedStatusData,
+  setWillUpdatingStatusData,
+  setUpdatedStatusData,
   setProgressing,
   setError,
 } = statusSlice.actions;
@@ -161,10 +187,16 @@ export const selectIsSuccess = (state) => state.status.isSuccess;
 export const selectProgressing = (state) => state.status.progressing;
 export const selectStatusTableData = (state) => state.status.statusTableData;
 export const selectNewStatusData = (state) => state.status.newStatusData;
+export const selectWillBeUpdatedStatusData = (state) =>
+  state.status.willBeUpdatedStatusData;
+export const selectWillUpdatingStatusData = (state) =>
+  state.status.willUpdatingStatusData;
 export const selectUpdatedStatusData = (state) =>
   state.status.updatedStatusData;
 export const selectSelectedStatusForEdit = (state) =>
   state.status.selectedStatusForEdit;
+export const selectDeletedStatusData = (state) =>
+  state.status.deletedStatusData;
 export const selectError = (state) => state.status.error;
 
 export default statusSlice.reducer;

@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 
 function Container({ children, fluid }) {
   return (
-    <div className={"container" + (fluid ? "-fluid" : "")}>
+    <div className={"pb-4 container" + (fluid ? "-fluid" : "")}>
       {children}
     </div>
   );

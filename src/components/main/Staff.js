@@ -42,8 +42,12 @@ import Scheduler from "../specific/Scheduler";
 import { MdCelebration } from "react-icons/md";
 import newStaffImg from "./../../assets/images/welcome-new-staff.jpeg";
 import { useToasts } from "react-toast-notifications";
+import { selectInnerWidth } from "../../features/windowSlice";
+import { selectLoading } from "../../features/logsSlice";
 
 function Staff() {
+  const windowWidth = useSelector(selectInnerWidth);
+
   const _staff_loading = useSelector(staffLoading);
   const _staff_retriveStatus = useSelector(staffIsSuccess);
   const _staff_retriveResult = useSelector(selectStaffTableData);
@@ -56,6 +60,8 @@ function Staff() {
   const _account_retriveStatus = useSelector(accountIsSuccess);
   const _account_retriveResult = useSelector(selectAccountTableData);
   const _account_retriveError = useSelector(accountError);
+
+  const _logLoading = useSelector(selectLoading);
 
   const dispatch = useDispatch();
   const { addToast } = useToasts();
@@ -225,7 +231,11 @@ function Staff() {
                     <Row style={{ marginBottom: "7.69px" }}>
                       <p>Create a new staff to the database</p>
                     </Row>
-                    <Row className="justify-content-between align-items-baseline">
+                    <Row
+                      className={`justify-content-${
+                        windowWidth < 389 ? "center" : "between"
+                      } align-items-baseline`}
+                    >
                       <img alt="" src={newStaffImg} width={200} height={110} />
                       <Button
                         className="py-2 px-4"
@@ -268,8 +278,20 @@ function Staff() {
                     fieldList={staffFieldList}
                     recordList={_staff_recordList}
                     isHasSettings
-                    isEditable
-                    handleOpenEditModal={() => {
+                    forEditing={{
+                      syncTables: [
+                        _staff_retriveResult,
+                        _status_retriveResult,
+                        _account_retriveResult,
+                      ],
+                      syncField: "StaffId",
+                      syncReducers: [
+                        setSelectedStaffForEdit,
+                        setSelectedStatusForEdit,
+                        setSelectedAccountForEdit,
+                      ],
+                    }}
+                    onRecordClick={() => {
                       setModalType("edit");
                       setModalDisplay(true);
                     }}
@@ -279,7 +301,19 @@ function Staff() {
                     fieldList={statusFieldList}
                     recordList={_status_recordList}
                     isHasSettings
-                    isEditable
+                    forEditing={{
+                      syncTables: [
+                        _staff_retriveResult,
+                        _status_retriveResult,
+                        _account_retriveResult,
+                      ],
+                      syncField: "StaffId",
+                      syncReducers: [
+                        setSelectedStaffForEdit,
+                        setSelectedStatusForEdit,
+                        setSelectedAccountForEdit,
+                      ],
+                    }}
                     handleOpenEditModal={() => {
                       setModalType("edit");
                       setModalDisplay(true);
@@ -290,7 +324,19 @@ function Staff() {
                     fieldList={accountFieldList}
                     recordList={_account_recordList}
                     isHasSettings
-                    isEditable
+                    forEditing={{
+                      syncTables: [
+                        _staff_retriveResult,
+                        _status_retriveResult,
+                        _account_retriveResult,
+                      ],
+                      syncField: "StaffId",
+                      syncReducers: [
+                        setSelectedStaffForEdit,
+                        setSelectedStatusForEdit,
+                        setSelectedAccountForEdit,
+                      ],
+                    }}
                     handleOpenEditModal={() => {
                       setModalType("edit");
                       setModalDisplay(true);
@@ -313,14 +359,12 @@ function Staff() {
       <StaffModal
         isModalDisplay={isModalDisplay}
         type={modalType}
-        setModalHide={() => {
-          setModalDisplay(false);
-          dispatch(setSelectedStaffForEdit(null));
-          dispatch(setSelectedStatusForEdit(null));
-          dispatch(setSelectedAccountForEdit(null));
-        }}
+        setModalHide={() => setModalDisplay(false)}
       />
-      {(_staff_loading || _status_loading || _account_loading) && <Loader />}
+      {(_staff_loading ||
+        _status_loading ||
+        _account_loading ||
+        _logLoading) && <Loader />}
     </>
   );
 }

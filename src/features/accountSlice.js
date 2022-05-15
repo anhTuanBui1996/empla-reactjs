@@ -11,8 +11,11 @@ const initialState = {
   progressing: null,
   accountTableData: null,
   newAccountData: null,
+  willBeUpdatedAccountData: null,
+  willUpdatingAccountData: null,
   updatedAccountData: null,
   selectedAccountForEdit: null,
+  deletedAccountData: null,
   error: null,
 };
 
@@ -62,6 +65,15 @@ export const accountSlice = createSlice({
     setSelectedAccountForEdit: (state, action) => {
       state.selectedAccountForEdit = action.payload;
     },
+    setWillBeUpdatedAccountData: (state, action) => {
+      state.willBeUpdatedAccountData = action.payload;
+    },
+    setWillUpdatingAccountData: (state, action) => {
+      state.willUpdatingAccountData = action.payload;
+    },
+    setUpdatedAccountData: (state, action) => {
+      state.updatedAccountData = action.payload;
+    },
     setProgressing: (state, action) => {
       state.progressing = action.payload;
     },
@@ -75,12 +87,14 @@ export const accountSlice = createSlice({
         state.loading = true;
         state.isSuccess = false;
         state.error = null;
+        state.accountTableData = null;
         state.progressing = action.type;
       })
       .addCase(retriveAccountList.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = action.error;
+        state.accountTableData = null;
         state.progressing = action.type;
       })
       .addCase(retriveAccountList.fulfilled, (state, action) => {
@@ -94,12 +108,14 @@ export const accountSlice = createSlice({
         state.loading = true;
         state.isSuccess = false;
         state.error = null;
+        state.newAccountData = null;
         state.progressing = action.type;
       })
       .addCase(createNewAccount.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = action.error;
+        state.newAccountData = null;
         state.progressing = action.type;
       })
       .addCase(createNewAccount.fulfilled, (state, action) => {
@@ -113,18 +129,23 @@ export const accountSlice = createSlice({
         state.loading = true;
         state.isSuccess = false;
         state.error = null;
+        state.willUpdatingAccountData = null;
+        state.updatedAccountData = null;
         state.progressing = action.type;
       })
       .addCase(updateExistingAccount.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = action.error;
+        state.willUpdatingAccountData = action.meta.arg;
+        state.updatedAccountData = null;
         state.progressing = action.type;
       })
       .addCase(updateExistingAccount.fulfilled, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = null;
+        state.willUpdatingAccountData = action.meta.arg;
         state.updatedAccountData = action.payload;
         state.progressing = action.type;
       })
@@ -132,19 +153,21 @@ export const accountSlice = createSlice({
         state.loading = true;
         state.isSuccess = false;
         state.error = null;
+        state.deletedAccountData = null;
         state.progressing = action.type;
       })
       .addCase(deleteExistingAccount.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = action.error;
+        state.deletedAccountData = null;
         state.progressing = action.type;
       })
       .addCase(deleteExistingAccount.fulfilled, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = null;
-        state.updatedAccountData = null;
+        state.deletedAccountData = action.payload;
         state.selectedAccountForEdit = null;
         state.progressing = action.type;
       });
@@ -155,6 +178,9 @@ export const {
   setLoading,
   setNewAccountData,
   setSelectedAccountForEdit,
+  setWillBeUpdatedAccountData,
+  setWillUpdatingAccountData,
+  setUpdatedAccountData,
   setProgressing,
   setError,
 } = accountSlice.actions;
@@ -163,10 +189,16 @@ export const selectIsSuccess = (state) => state.account.isSuccess;
 export const selectProgressing = (state) => state.account.progressing;
 export const selectAccountTableData = (state) => state.account.accountTableData;
 export const selectNewAccountData = (state) => state.account.newAccountData;
+export const selectWillBeUpdatedAccountData = (state) =>
+  state.account.willBeUpdatedAccountData;
+export const selectWillUpdatingAccountData = (state) =>
+  state.account.willUpdatingAccountData;
 export const selectUpdatedAccountData = (state) =>
   state.account.updatedAccountData;
 export const selectSelectedAccountForEdit = (state) =>
   state.account.selectedAccountForEdit;
+export const selectDeletedAccountData = (state) =>
+  state.account.deletedAccountData;
 export const selectError = (state) => state.account.error;
 
 export default accountSlice.reducer;

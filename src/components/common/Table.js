@@ -1,22 +1,10 @@
 import PropTypes from "prop-types";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { MdSettings } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import Select from "react-select";
 import styled from "styled-components";
 import { NOT_SUPPORT_FIELD_FEATURE } from "../../constants";
-import {
-  selectAccountTableData,
-  setSelectedAccountForEdit,
-} from "../../features/accountSlice";
-import {
-  selectStaffTableData,
-  setSelectedStaffForEdit,
-} from "../../features/staffSlice";
-import {
-  selectStatusTableData,
-  setSelectedStatusForEdit,
-} from "../../features/statusSlice";
 import { selectInnerWidth } from "../../features/windowSlice";
 import Outclick from "../../hoc/Outclick";
 import Col from "../layout/Col";
@@ -27,12 +15,15 @@ import Search from "./Search";
 function Table({
   fieldList,
   recordList,
+  forEditing,
   isHasSettings,
-  isEditable,
-  handleOpenEditModal,
+  onRecordClick,
   recordPerPage,
+  maxPageDisplay,
+  tableStyle,
 }) {
   const dispatch = useDispatch();
+  const tableRef = useRef(null);
   const innerWidth = useSelector(selectInnerWidth);
   const fieldsForSortAndSearch = useMemo(() => {
     const newList = [];
@@ -45,13 +36,21 @@ function Table({
   }, [fieldList]);
 
   const [activeIndex, setActiveIndex] = useState(1);
-  const [recordsPerPage, setRecordPerPage] = useState(
-    recordPerPage ? recordPerPage : 5
-  );
+  const [recordsPerPage, setRecordPerPage] = useState(recordPerPage);
+  const pageAmount = useMemo(() => {
+    return recordList.length % recordsPerPage > 0
+      ? parseInt(recordList.length / recordsPerPage) + 1
+      : recordList.length / recordsPerPage;
+  }, [recordList, recordsPerPage]);
   const [pageList, setPageList] = useState([]);
+  const [isPageListExceed, setIsPageListExceed] = useState({
+    pageStart: false,
+    pageEnd: false,
+  });
   const [recordTableList, setRecordTableList] = useState(recordList);
 
   const [showSettings, setShowSettings] = useState(false);
+  const [isPaginationCenter, setIsPaginationCenter] = useState(false);
 
   const [searchStatus, setSearchStatus] = useState(false);
   const [searchValue, setSearchValue] = useState("");
@@ -61,42 +60,30 @@ function Table({
   const [sortCritea, setSortCritea] = useState(fieldsForSortAndSearch[0]);
   const [sortDirection, setSortDirection] = useState("ascending");
   const sortOptionList = [
-    { label: "ascending", value: "ascending" },
-    { label: "descending", value: "descending" },
+    { label: "asc", value: "ascending" },
+    { label: "desc", value: "descending" },
   ];
-
-  const staffDataTable = useSelector(selectStaffTableData);
-  const statusDataTable = useSelector(selectStatusTableData);
-  const accountDataTable = useSelector(selectAccountTableData);
 
   const handleEditRecord = (e, recordSelected) => {
     e.preventDefault();
-    if (isEditable && handleOpenEditModal) {
-      const staffId = recordSelected.data[0];
+    if (forEditing && onRecordClick) {
+      // The first value in record is the syncValue
+      const syncValue = recordSelected.data[0];
 
-      const staffSelected = staffDataTable.find((record) => {
-        return (
-          record.fields["StaffId"] ===
-          (Array.isArray(staffId) ? staffId[0] : staffId)
-        );
-      });
-      const statusSelected = statusDataTable.find((record) => {
-        return (
-          record.fields["StaffId"][0] ===
-          (Array.isArray(staffId) ? staffId[0] : staffId)
-        );
-      });
-      const accountSelected = accountDataTable.find((record) => {
-        return (
-          record.fields["StaffId"][0] ===
-          (Array.isArray(staffId) ? staffId[0] : staffId)
-        );
+      const { syncTables, syncField, syncReducers } = forEditing;
+      syncTables.forEach((table, index) => {
+        const recordSelected = table.find((record) => {
+          return (
+            (Array.isArray(record.fields[syncField])
+              ? record.fields[syncField][0]
+              : record.fields[syncField]) ===
+            (Array.isArray(syncValue) ? syncValue[0] : syncValue)
+          );
+        });
+        dispatch(syncReducers[index](recordSelected));
       });
 
-      dispatch(setSelectedStaffForEdit(staffSelected));
-      dispatch(setSelectedStatusForEdit(statusSelected));
-      dispatch(setSelectedAccountForEdit(accountSelected));
-      handleOpenEditModal();
+      setTimeout(onRecordClick, 50);
     }
   };
 
@@ -167,17 +154,43 @@ function Table({
       }
     });
     setRecordTableList(newRecordListToDisplay);
-    const pageAmount =
-      newRecordList % recordsPerPage > 0
-        ? parseInt(newRecordList.length / recordsPerPage) + 1
-        : newRecordList.length / recordsPerPage;
     setPageList(() => {
       const newState = [];
-      for (let i = 0; i < pageAmount; i++) {
-        newState.push(i + 1);
+      let pageStart = 1;
+      let pageEnd = pageAmount;
+      if (maxPageDisplay < pageAmount) {
+        if (activeIndex - maxPageDisplay + 1 < 1) {
+          pageEnd = pageStart + maxPageDisplay - 1;
+          setIsPageListExceed({
+            pageStart: false,
+            pageEnd: true,
+          });
+        } else if (activeIndex + maxPageDisplay - 1 > pageAmount) {
+          pageStart = pageAmount - maxPageDisplay + 1;
+          setIsPageListExceed({
+            pageStart: true,
+            pageEnd: false,
+          });
+        } else {
+          pageStart = activeIndex - maxPageDisplay + 2;
+          pageEnd = pageStart + maxPageDisplay - 1;
+          setIsPageListExceed({
+            pageStart: true,
+            pageEnd: true,
+          });
+        }
+      } else {
+        setIsPageListExceed({
+          pageStart: false,
+          pageEnd: false,
+        });
+      }
+      for (let i = pageStart; i <= pageEnd; i++) {
+        newState.push(i);
       }
       return newState;
     });
+    // eslint-disable-next-line
   }, [
     recordList,
     recordsPerPage,
@@ -189,6 +202,15 @@ function Table({
     sortCritea.index,
     sortDirection,
   ]);
+  // Get cardWidth when windowWidth change
+  useEffect(() => {
+    if (tableRef?.current?.clientWidth) {
+      let tableViewWidth = tableRef.current.clientWidth;
+      tableViewWidth < 435
+        ? setIsPaginationCenter(true)
+        : setIsPaginationCenter(false);
+    }
+  }, [tableRef?.current?.clientWidth]);
 
   return (
     <>
@@ -346,25 +368,57 @@ function Table({
                     </Col>
                   </Row>
                   <Row>
-                    <Col
-                      columnSize={["12"]}
-                      className="d-flex justify-content-between align-items-center"
-                    >
-                      <label className="mb-0" htmlFor="max-record-per-page">
-                        Records/page
-                      </label>
-                      <input
-                        id="max-record-per-page"
-                        className="form-control ml-4"
-                        type="number"
-                        value={recordsPerPage}
-                        onChange={(e) => {
-                          setActiveIndex(1);
-                          e.target.value > 0 && e.target.value !== ""
-                            ? setRecordPerPage(e.target.value)
-                            : setRecordPerPage(1);
-                        }}
-                      />
+                    <Col columnSize={["12"]}>
+                      <div className="form-group d-flex flex-nowrap justify-content-between align-items-center">
+                        <label className="mb-0" htmlFor="max-record-per-page">
+                          Records/page
+                        </label>
+                        <input
+                          id="max-record-per-page"
+                          className="form-control ml-4"
+                          type="number"
+                          value={recordsPerPage}
+                          onChange={(e) => {
+                            setActiveIndex(1);
+                            e.target.value > 0 && e.target.value !== ""
+                              ? setRecordPerPage(e.target.value)
+                              : setRecordPerPage(1);
+                          }}
+                        />
+                      </div>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col columnSize={["12"]}>
+                      <div className="form-group d-flex flex-nowrap justify-content-between align-items-center mb-0">
+                        <label
+                          className="mb-0"
+                          htmlFor="go-to-page"
+                          style={{ whiteSpace: "nowrap" }}
+                        >
+                          Go to page
+                        </label>
+                        <input
+                          id="go-to-page"
+                          className="form-control ml-4"
+                          type="number"
+                          placeholder={activeIndex}
+                          onChange={(e) => {
+                            const { value } = e.target;
+                            if (value) {
+                              if (parseInt(value) < 1) {
+                                setActiveIndex(1);
+                              } else if (parseInt(value) > pageAmount) {
+                                setActiveIndex(pageAmount);
+                              } else {
+                                setActiveIndex(parseInt(value));
+                              }
+                            } else {
+                              setActiveIndex(1);
+                            }
+                          }}
+                        />
+                      </div>
                     </Col>
                   </Row>
                 </div>
@@ -373,7 +427,11 @@ function Table({
           </Col>
         </Row>
       )}
-      <div className="table-responsive mb-0 border-bottom">
+      <div
+        className="table-responsive mb-0 border-bottom"
+        ref={tableRef}
+        style={tableStyle}
+      >
         <table className="table table-sm table-nowrap card-table">
           <thead>
             <tr>
@@ -400,10 +458,11 @@ function Table({
       </div>
       <nav
         className={`d-flex align-items-center flex-wrap px-3 py-1 ${
-          innerWidth < 330
+          isPaginationCenter
             ? "justify-content-center"
             : "justify-content-between"
         }`}
+        style={{ gap: "5px" }}
       >
         <span
           className={`badge badge-success${innerWidth < 330 ? " my-3" : ""}`}
@@ -413,7 +472,7 @@ function Table({
         </span>
         <ul className="pagination mb-0">
           <li
-            className="page-item"
+            className="rounded page-item"
             onClick={() => {
               activeIndex > 1 && setActiveIndex(activeIndex - 1);
             }}
@@ -421,6 +480,11 @@ function Table({
           >
             <button className="rounded page-link border-0">Previous</button>
           </li>
+          {isPageListExceed.pageStart && (
+            <li className="page-item start-exceed d-flex align-items-center">
+              ...
+            </li>
+          )}
           {pageList.map((indexPagination) => (
             <li
               key={indexPagination}
@@ -435,10 +499,15 @@ function Table({
               </button>
             </li>
           ))}
+          {isPageListExceed.pageEnd && (
+            <li className="page-item end-exceed d-flex align-items-center">
+              ...
+            </li>
+          )}
           <li
             className="rounded page-item"
             onClick={() => {
-              activeIndex < pageList.length && setActiveIndex(activeIndex + 1);
+              activeIndex < pageAmount && setActiveIndex(activeIndex + 1);
             }}
             style={{ cursor: "pointer" }}
           >
@@ -523,14 +592,56 @@ const RowHover = styled.tr`
   }
 `;
 
+Table.defaultProps = {
+  recordPerPage: 5,
+  maxPageDisplay: 4,
+};
 Table.propTypes = {
   tableName: PropTypes.string,
+  /**
+   * If you use the ***forEditing*** props, the ***syncField*** of forEditing
+   * must is the first field of fieldList. The ***syncField*** is the field
+   * that all tables in the **Card** have.
+   */
   fieldList: PropTypes.arrayOf(PropTypes.string).isRequired,
-  recordList: PropTypes.arrayOf(PropTypes.any),
+  /**
+   * Per element of array must is in order and suitable with fieldList
+   */
+  recordList: PropTypes.arrayOf(PropTypes.any).isRequired,
+  /**
+   * Used for editing table that reflect the Airtable database
+   */
+  forEditing: PropTypes.shape({
+    /**
+     * Table Array get from Airtable (per element is a retrived table)
+     */
+    syncTables: PropTypes.arrayOf(
+      PropTypes.arrayOf(
+        PropTypes.shape({
+          createdTime: PropTypes.string,
+          fields: PropTypes.object,
+          /**
+           * The RecordId on Airtable
+           */
+          id: PropTypes.string,
+        })
+      )
+    ),
+    /**
+     * The Field that all tables have and linking together by a single value
+     */
+    syncField: PropTypes.string,
+    /**
+     * We use redux to store the selected record, the reducer array is must
+     * in order and suitable with ***syncTables***
+     */
+    syncReducers: PropTypes.arrayOf(PropTypes.func),
+  }),
   isHasSettings: PropTypes.bool,
-  isEditable: PropTypes.bool,
-  handleOpenEditModal: PropTypes.func,
+  onRecordClick: PropTypes.func,
   recordPerPage: PropTypes.number,
+  maxPageDisplay: PropTypes.number,
+  tableStyle: PropTypes.object,
 };
 
 export default Table;

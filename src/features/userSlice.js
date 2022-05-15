@@ -1,8 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { getLocalUser } from "../services/localStorage.service";
 
 const initialState = {
   loading: false,
-  userCredential: null,
+  userCredential: getLocalUser(),
   error: {
     status: false,
     type: "",

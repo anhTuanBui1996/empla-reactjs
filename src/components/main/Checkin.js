@@ -9,9 +9,10 @@ import Container from "../layout/Container";
 import Table from "../common/Table";
 import { mapResultToTableData } from "../../services/airtable.service";
 import { selectUserCredential } from "../../features/userSlice";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Loader from "../common/Loader";
 import {
+  retriveCheckinList,
   selectCheckinTableData,
   selectError,
   selectIsSuccess,
@@ -24,6 +25,7 @@ import CheckInMap from "../specific/CheckInMap";
 import { companySpecific } from "../../constants";
 
 function Checkin() {
+  const dispatch = useDispatch();
   const { addToast } = useToasts();
   const fieldList = useMemo(() => {
     return ["RecordId", "CreatedDate", "Type", "Notes"];
@@ -36,7 +38,8 @@ function Checkin() {
   const error = useSelector(selectError);
   const checkinList = useSelector(selectCheckinTableData);
 
-  /* eslint-disable */
+  // eslint-disable-next-line
+  useEffect(() => dispatch(retriveCheckinList(userCredential?.StaffId[0])), []);
   useEffect(() => {
     if (checkinList) {
       const tableDataList = mapResultToTableData(checkinList, fieldList);
@@ -58,6 +61,7 @@ function Checkin() {
         }
       }
     }
+    // eslint-disable-next-line
   }, [userCredential, checkinList]);
 
   // sort the recordList by createdDate
@@ -215,7 +219,9 @@ function Checkin() {
       }
     }
     return newRecordList;
+    // eslint-disable-next-line
   }, [sortedRecordList]);
+
   return (
     <>
       {loading && <Loader />}

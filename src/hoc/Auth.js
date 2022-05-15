@@ -1,20 +1,37 @@
-import React, { useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { setUserCredential } from "../features/userSlice";
-import { getLocalUser } from "../services/localStorage.service";
+import React, { useEffect, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { selectUserCredential } from "../features/userSlice";
 import { useNavigate } from "react-router";
+import { createNewLog } from "../features/logsSlice";
+import { useToasts } from "react-toast-notifications";
+import { browserDetect } from "../utils/userAgentUtils";
 
 function Auth({ children }) {
   const dispatch = useDispatch();
+  const userCredential = useSelector(selectUserCredential);
+  const userAccount = useMemo(() => {
+    if (!userCredential) return undefined;
+    return userCredential.UserAccount;
+  }, [userCredential]);
   const navigate = useNavigate();
-  const localUser = getLocalUser();
+  const { addToast } = useToasts();
 
   useEffect(() => {
-    dispatch(setUserCredential(localUser));
-    if (localUser === null) {
+    if (userAccount) {
+      dispatch(
+        createNewLog({
+          Actions: "Login",
+          Account: userAccount,
+          Status: "Done",
+          Notes: `Browser: ${browserDetect()}`,
+        })
+      );
+      addToast("Login Successfully!", { appearance: "success" });
+    } else {
       navigate("/login");
     }
-  }, [localUser, navigate, dispatch]);
+    // eslint-disable-next-line
+  }, [userAccount]);
 
   return <>{children}</>;
 }

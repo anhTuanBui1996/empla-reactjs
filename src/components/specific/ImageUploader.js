@@ -5,6 +5,7 @@ import Row from "../layout/Row";
 import styled from "styled-components";
 import Col from "../layout/Col";
 import PropTypes from "prop-types";
+import { MdClose, MdRotateLeft } from "react-icons/md";
 const ReactFilestack = loadable(() => import("filestack-react"));
 
 function ImageUploader({
@@ -62,7 +63,7 @@ function ImageUploader({
                 });
               }}
             >
-              &times;
+              <MdClose />
             </ImageClearButton>
           </div>
         ) : (
@@ -84,7 +85,7 @@ function ImageUploader({
                   handleRetriveImg();
                 }}
               >
-                &#8635;
+                <MdRotateLeft />
               </ImageRetiveButton>
             )}
           </div>
@@ -129,13 +130,13 @@ const ImageHover = styled.div`
   transition: 0.3s all;
 `;
 const ImageClearButton = styled.button`
+  line-height: 1;
   position: absolute;
   top: 0;
   right: 0;
   font-size: 20px;
   width: 25px;
   height: 25px;
-  line-height: 1;
   padding: 0 !important;
   color: #ff1919e7 !important;
   :hover {
@@ -144,13 +145,13 @@ const ImageClearButton = styled.button`
   }
 `;
 const ImageRetiveButton = styled.button`
+  line-height: 1;
   position: absolute;
   top: 0;
   right: 0;
   font-size: 18px;
   width: 25px;
   height: 25px;
-  line-height: 1;
   padding: 0 !important;
   color: #0051ff !important;
   z-index: 1000;

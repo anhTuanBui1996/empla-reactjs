@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import { adminAccessOnly } from "../constants";
+import { privateRoutes } from "../constants";
 import { selectUserCredential } from "../features/userSlice";
 import SideBar from "../components/layout/SideBar";
 
@@ -17,7 +17,7 @@ function AdminCheck({ children }) {
         location.pathname !== "/"
       ) {
         if (
-          adminAccessOnly.find((route) => location.pathname.startsWith(route))
+          privateRoutes.find((route) => location.pathname.startsWith(route))
         ) {
           alert("You are illegal to access this page!");
           navigate("/");
