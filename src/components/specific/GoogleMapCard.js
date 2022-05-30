@@ -170,6 +170,9 @@ function GoogleMapCard({ title, styleContainer, zoom, dataList }) {
               title={<MdReorder />}
               isForceClose={isCloseLocationList}
             >
+              {locationList?.length === 0 && (
+                <span className="text-center">{"No record"}</span>
+              )}
               {locationList?.map((item, index) => (
                 <button
                   key={index}

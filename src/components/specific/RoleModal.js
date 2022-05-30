@@ -9,11 +9,11 @@ import ImageUploader from "./ImageUploader";
 import DatePicker from "./DatePicker";
 import { VALIDATE_RULE } from "../../constants";
 import {
-  initialErrorFormForStaff,
-  initialStaffFormForCreate,
-  initialStaffFormForEdit,
+  initialErrorFormForRole,
+  initialRoleFormForCreate,
+  initialRoleFormForEdit,
   optionList,
-} from "../../features/staffModal";
+} from "../../features/roleModal";
 import useAutoGenerate from "../hooks/useAutoGenerate";
 import { MdRefresh, MdRemoveRedEye } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
@@ -97,15 +97,6 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   let [componentAvailable, setComponentAvailable] = useState(true);
   const dispatch = useDispatch();
   const { addToast } = useToasts();
-  const retriveSelectStatus = useSelector(selectIsSuccess);
-  const retriveSelectResult = useSelector(selectOptionList);
-  const retriveSelectError = useSelector(selectError);
-  const staffError = useSelector(errorStaff);
-  const statusError = useSelector(errorStatus);
-  const accountError = useSelector(errorAccount);
-  const staffProgression = useSelector(progressingStaff);
-  const statusProgression = useSelector(progressingStatus);
-  const accountProgression = useSelector(progressingAccount);
 
   const logData = useSelector(selectLogsData);
 
@@ -115,35 +106,6 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   const selectedStaffForEdit = useSelector(selectSelectedStaffForEdit);
   const selectedStatusForEdit = useSelector(selectSelectedStatusForEdit);
   const selectedAccountForEdit = useSelector(selectSelectedAccountForEdit);
-
-  const willBeUpdatedStaff = useSelector(selectWillBeUpdatedStaffData);
-  const willBeUpdatedStatus = useSelector(selectWillBeUpdatedStatusData);
-  const willBeUpdatedAccount = useSelector(selectWillBeUpdatedAccountData);
-  const willUpdatingStaff = useSelector(selectWillUpdatingStaffData);
-  const willUpdatingStatus = useSelector(selectWillUpdatingStatusData);
-  const willUpdatingAccount = useSelector(selectWillUpdatingAccountData);
-
-  const deletedStaff = useSelector(selectDeletedStaffData);
-  const deletedStatus = useSelector(selectDeletedStatusData);
-  const deletedAccount = useSelector(selectDeletedAccountData);
-
-  const autoGenerate = useAutoGenerate();
-  const initialPasswordString = autoGenerate(12);
-  const [showPassword, setShowPassword] = useState(false);
-  // get the AccountTableList to define Username (not duplicating)
-  const accountDataTableList = useSelector(selectAccountTableData);
-  const [usernameValidation, setUsernameValidation] = useState(false);
-
-  // using string generator hook
-  const generateNewPassword = (length) => {
-    const newPassword = autoGenerate(length);
-    setNewStaffForm((state) => {
-      const newState = { ...state };
-      newState.Account.Password.label = newPassword;
-      newState.Account.Password.value = newPassword;
-      return newState;
-    });
-  };
 
   // all the input form below must have this 2 properties
   // (name, data-table)

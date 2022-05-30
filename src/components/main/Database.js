@@ -198,7 +198,6 @@ function Database() {
       ...state.slice(keyIndex + 1),
     ]);
     setLayouts((state) => ({
-      lg: [...state.lg.slice(0, keyIndex), ...state.lg.slice(keyIndex + 1)],
       xxs: [...state.xxs.slice(0, keyIndex), ...state.xxs.slice(keyIndex + 1)],
     }));
   };

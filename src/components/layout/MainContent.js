@@ -5,7 +5,6 @@ function MainContent({ children }) {
     <div
       className="main-content"
       style={{
-        height: "100vh",
         overflow: "auto",
       }}
     >

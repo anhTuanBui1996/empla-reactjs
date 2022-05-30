@@ -22,8 +22,21 @@ function Home() {
       <MainContent>
         <MainHeader title="Dashboard" subTitle="Console of your work" />
         <Container fluid>
-          <h1 className="greeting-title">
+          <h1
+            className="greeting-title d-flex flex-column"
+            style={{ gap: "10px" }}
+          >
             Hello, {userCredential?.FullName} ({userCredential?.Username})
+            <span
+              className={"badge font-weight-bold ml-2 badge-primary"}
+              style={{
+                lineHeight: 1.5,
+                fontSize: "0.5em",
+                width: "fit-content",
+              }}
+            >
+              {userCredential.RoleType[0]}
+            </span>
           </h1>
           <Row>
             <Col columnSize={["lg-6", "12"]}>

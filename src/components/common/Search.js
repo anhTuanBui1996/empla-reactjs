@@ -2,7 +2,17 @@ import React from "react";
 import { MdSearch } from "react-icons/md";
 import PropTypes from "prop-types";
 
-function Search({ noBorder, value, placeholder, onChange }) {
+function Search({ noBorder, value, placeholder, onChange, onSubmit }) {
+  const onKeyPress = (e) => {
+    if (e.key === "Enter") {
+      if (onSubmit) {
+        onSubmit();
+      } else {
+        e.preventDefault();
+        return false;
+      }
+    }
+  };
   return (
     <div className="input-group input-group-rounded input-group-merge">
       <input
@@ -12,6 +22,7 @@ function Search({ noBorder, value, placeholder, onChange }) {
         }`}
         placeholder={placeholder}
         onChange={onChange}
+        onKeyPress={onKeyPress}
         value={value}
       />
       <div className="input-group-prepend">

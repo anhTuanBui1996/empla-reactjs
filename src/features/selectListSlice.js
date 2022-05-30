@@ -28,7 +28,7 @@ export const fetchAllEmptySelectList = createAsyncThunk(
             selectOptionState[tableKey][fieldKey].fromTable
           );
           let fetchToList = newState[tableKey][fieldKey];
-          fetchToList.list = res.map((item) => ({
+          fetchToList.list = res?.map((item) => ({
             "data-table": tableKey,
             value: item.id,
             // we want to display field Domain from Account table

@@ -90,9 +90,9 @@ function SideBarContent({
     <nav
       className="navbar navbar-vertical fixed-left navbar-expand-md navbar-light"
       id="sidebar"
-      style={{ zIndex: 999 }}
+      style={{ zIndex: 999, height: innerWidth <= 767 ? "" : "100vh" }}
     >
-      <div className="container-fluid">
+      <div className="container-fluid h-100">
         <button
           className="navbar-toggler"
           onClick={handleToggleCollapse}
@@ -116,105 +116,111 @@ function SideBarContent({
           className="navbar-collapse collapsing"
           style={{
             height: isCollaped ? "0" : "287.766px",
-            overflowY: "auto",
+            overflowY: innerWidth <= 767 ? "auto" : "",
           }}
         >
-          <form className="mt-4 mb-3 d-md-flex">
+          <form className="mb-3 d-md-flex">
             <Search placeholder="Search..." />
           </form>
-          <ul className="navbar-nav">
-            {innerWidth <= 767 && <h6 className="navbar-heading px-3">Menu</h6>}
-            <IconContext.Provider value={{ size: "1.5em" }}>
-              {SIDENAV.map((route) => {
-                if (
-                  isAdminAccess === null &&
-                  privateRoutes.includes(route.path)
-                ) {
-                  return <li key={route.path}></li>;
-                } else
-                  return (
-                    <li className="nav-item" key={route.path}>
-                      <NavLink
-                        style={({ isActive }) => {
-                          return {
-                            backgroundColor: isActive ? "#e7e7e7" : "",
-                          };
-                        }}
-                        className="nav-link"
-                        to={route.path}
-                        onClick={forceCollapse}
-                      >
-                        <IconWrapper>{route.icon}</IconWrapper>
-                        {route.label}
-                      </NavLink>
-                    </li>
-                  );
-              })}
+          <div
+            className="navbar-list"
+            style={{ flex: 1, overflow: "hidden auto" }}
+          >
+            <ul className="navbar-nav h-100">
               {innerWidth <= 767 && (
-                <>
-                  <hr className="dropdown-divider my-3" />
-                  <h6 className="navbar-heading px-3">Account</h6>
-                  <NavLink
-                    style={({ isActive }) => {
-                      return {
-                        backgroundColor: isActive ? "#e7e7e7" : "",
-                      };
-                    }}
-                    to="/profile"
-                    className="nav-link d-flex"
-                    onClick={forceCollapse}
-                  >
-                    <IconWrapper>
-                      <MdSupervisorAccount size="25px" />
-                    </IconWrapper>{" "}
-                    Profile
-                  </NavLink>
-                  <NavLink
-                    style={({ isActive }) => {
-                      return {
-                        backgroundColor: isActive ? "#e7e7e7" : "",
-                      };
-                    }}
-                    to="/settings"
-                    className="nav-link d-flex"
-                    onClick={forceCollapse}
-                  >
-                    <IconWrapper>
-                      <MdSettings size="25px" />
-                    </IconWrapper>{" "}
-                    Settings
-                  </NavLink>
-                  <NavLink
-                    style={({ isActive }) => {
-                      return {
-                        backgroundColor: isActive ? "#e7e7e7" : "",
-                      };
-                    }}
-                    to="/notification"
-                    className="nav-link d-flex"
-                    onClick={forceCollapse}
-                  >
-                    <IconWrapper>
-                      <MdNotifications size="25px" />
-                    </IconWrapper>{" "}
-                    Notification
-                  </NavLink>
-                  <hr className="dropdown-divider mx-3" />
-                  <Link
-                    to="/login"
-                    className="nav-link d-flex"
-                    onClick={handleLogout}
-                  >
-                    <IconWrapper>
-                      <MdLogout size="25px" />
-                    </IconWrapper>{" "}
-                    Logout
-                  </Link>
-                </>
+                <h6 className="navbar-heading px-3">Menu</h6>
               )}
-            </IconContext.Provider>
-          </ul>
-          <div className="mt-auto"></div>
+              <IconContext.Provider value={{ size: "1.5em" }}>
+                {SIDENAV.map((route) => {
+                  if (
+                    isAdminAccess === null &&
+                    privateRoutes.includes(route.path)
+                  ) {
+                    return false;
+                  } else
+                    return (
+                      <li className="nav-item" key={route.path}>
+                        <NavLink
+                          style={({ isActive }) => {
+                            return {
+                              backgroundColor: isActive ? "#e7e7e7" : "",
+                            };
+                          }}
+                          className="nav-link"
+                          to={route.path}
+                          onClick={forceCollapse}
+                        >
+                          <IconWrapper>{route.icon}</IconWrapper>
+                          {route.label}
+                        </NavLink>
+                      </li>
+                    );
+                })}
+                {innerWidth <= 767 && (
+                  <>
+                    <hr className="dropdown-divider my-3" />
+                    <h6 className="navbar-heading px-3">Account</h6>
+                    <NavLink
+                      style={({ isActive }) => {
+                        return {
+                          backgroundColor: isActive ? "#e7e7e7" : "",
+                        };
+                      }}
+                      to="/profile"
+                      className="nav-link d-flex"
+                      onClick={forceCollapse}
+                    >
+                      <IconWrapper>
+                        <MdSupervisorAccount size="25px" />
+                      </IconWrapper>{" "}
+                      Profile
+                    </NavLink>
+                    <NavLink
+                      style={({ isActive }) => {
+                        return {
+                          backgroundColor: isActive ? "#e7e7e7" : "",
+                        };
+                      }}
+                      to="/settings"
+                      className="nav-link d-flex"
+                      onClick={forceCollapse}
+                    >
+                      <IconWrapper>
+                        <MdSettings size="25px" />
+                      </IconWrapper>{" "}
+                      Settings
+                    </NavLink>
+                    <NavLink
+                      style={({ isActive }) => {
+                        return {
+                          backgroundColor: isActive ? "#e7e7e7" : "",
+                        };
+                      }}
+                      to="/notification"
+                      className="nav-link d-flex"
+                      onClick={forceCollapse}
+                    >
+                      <IconWrapper>
+                        <MdNotifications size="25px" />
+                      </IconWrapper>{" "}
+                      Notification
+                    </NavLink>
+                    <hr className="dropdown-divider mx-3" />
+                    <Link
+                      to="/login"
+                      className="nav-link d-flex"
+                      onClick={handleLogout}
+                    >
+                      <IconWrapper>
+                        <MdLogout size="25px" />
+                      </IconWrapper>{" "}
+                      Logout
+                    </Link>
+                  </>
+                )}
+              </IconContext.Provider>
+            </ul>
+          </div>
         </div>
         <div className="navbar-user d-md-flex">
           <Link

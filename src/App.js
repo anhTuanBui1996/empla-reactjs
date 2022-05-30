@@ -43,29 +43,29 @@ function App() {
               {/**
                * Condition routes (sensity content will be defined in components)
                */}
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/notifications" element={<Notifications />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/teams" element={<Teams />} />
-              <Route path="/role" element={<Role />} />
               <Route path="/department" element={<Department />} />
-              <Route path="/workingplace" element={<WorkingPlace />} />
-              <Route path="/collaboratory" element={<Collaboratory />} />
+              <Route path="/clients" element={<Clients />} />
+              <Route path="/staff" element={<Staff />} />
 
               {/**
                * Private routes
                */}
               <Route path="/admin" element={<Admin />} />
-              <Route path="/staff" element={<Staff />} />
               <Route path="/database" element={<Database />} />
-              <Route path="/clients" element={<Clients />} />
+              <Route path="/role" element={<Role />} />
+              <Route path="/workingplace" element={<WorkingPlace />} />
+              <Route path="/collaboratory" element={<Collaboratory />} />
 
               {/**
                * Public routes
                */}
               <Route path="/report" element={<Report />} />
               <Route path="/checkin" element={<Checkin />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/notifications" element={<Notifications />} />
               <Route path="/" element={<Home />} />
             </Routes>
           </AdminCheck>
