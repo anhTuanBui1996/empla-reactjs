@@ -79,7 +79,7 @@ Initialization for Firebase Hosting, some inportant step during processing:
 
 ### `firebase deploy`
 
-Can be used after initialize firebase and activate theh Firebase Hosting on the [console](https://console.firebase.google.com/). Must run `npm run build` first to build a optimize build before deloyment.
+Can be used after initialize firebase and activate theh Firebase Hosting on the [console](https://console.firebase.google.com/). Must run `npm run build` first to build a optimize build before deployment.
 
 ## Learn More
 
