@@ -4,7 +4,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ### Change some infomation of the app arcording to your option
 
-The default Applicaton name is `empla`, you can change it in `package.json` and `package-lock.json` (search the text "name" and change the value)<br />
+The default Applicaton name is `empla`, you can change it in `package.json` and `package-lock.json` (search the text "name" and change the value) then change the folder name<br />
 The Application icon is the `favicon.ico`, you can change it with other icon (format must be `.ico`)
 There an image file use for `apple-touch`, you can store an image with name `logo192.png` and store in public directory, we do not use the apple-touch icon by default.
 
