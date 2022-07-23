@@ -20,7 +20,7 @@ const initialState = {
   error: null,
 };
 
-export const retriveStaffList = createAsyncThunk("staff/fetch", async () => {
+export const retrieveStaffList = createAsyncThunk("staff/retrieve", async () => {
   const res = await retrieveData("Staff");
   return res;
 });
@@ -78,21 +78,21 @@ export const staffSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(retriveStaffList.pending, (state, action) => {
+      .addCase(retrieveStaffList.pending, (state, action) => {
         state.loading = true;
         state.isSuccess = false;
         state.error = null;
         state.staffTableData = null;
         state.progressing = action.type;
       })
-      .addCase(retriveStaffList.rejected, (state, action) => {
+      .addCase(retrieveStaffList.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = action.error;
         state.staffTableData = null;
         state.progressing = action.type;
       })
-      .addCase(retriveStaffList.fulfilled, (state, action) => {
+      .addCase(retrieveStaffList.fulfilled, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = null;

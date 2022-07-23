@@ -33,7 +33,7 @@ import {
   selectError as errorStaff,
   deleteExistingStaff,
   selectProgressing as progressingStaff,
-  retriveStaffList,
+  retrieveStaffList,
   selectDeletedStaffData,
   selectWillUpdatingStaffData,
   setWillBeUpdatedStaffData,
@@ -48,7 +48,7 @@ import {
   selectError as errorStatus,
   deleteExistingStatus,
   selectProgressing as progressingStatus,
-  retriveStatusList,
+  retrieveStatusList,
   selectDeletedStatusData,
   selectNewStatusData,
   selectWillUpdatingStatusData,
@@ -65,7 +65,7 @@ import {
   selectError as errorAccount,
   deleteExistingAccount,
   selectProgressing as progressingAccount,
-  retriveAccountList,
+  retrieveAccountList,
   selectDeletedAccountData,
   selectNewAccountData,
   selectWillUpdatingAccountData,
@@ -97,12 +97,16 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   let [componentAvailable, setComponentAvailable] = useState(true);
   const dispatch = useDispatch();
   const { addToast } = useToasts();
-  const retriveSelectStatus = useSelector(selectIsSuccess);
-  const retriveSelectResult = useSelector(selectOptionList);
-  const retriveSelectError = useSelector(selectError);
+
+  // watch retrieve status of select list for options of <Select>
+  const retrieveSelectStatus = useSelector(selectIsSuccess);
+  const retrieveSelectResult = useSelector(selectOptionList);
+  const retrieveSelectError = useSelector(selectError);
+  // watch error of redux async thunk progression
   const staffError = useSelector(errorStaff);
   const statusError = useSelector(errorStatus);
   const accountError = useSelector(errorAccount);
+  // watch status of redux async thunk progression
   const staffProgression = useSelector(progressingStaff);
   const statusProgression = useSelector(progressingStatus);
   const accountProgression = useSelector(progressingAccount);
@@ -116,9 +120,11 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   const selectedStatusForEdit = useSelector(selectSelectedStatusForEdit);
   const selectedAccountForEdit = useSelector(selectSelectedAccountForEdit);
 
+  // the fields with old value of selected record will be updated
   const willBeUpdatedStaff = useSelector(selectWillBeUpdatedStaffData);
   const willBeUpdatedStatus = useSelector(selectWillBeUpdatedStatusData);
   const willBeUpdatedAccount = useSelector(selectWillBeUpdatedAccountData);
+  // the fields with new value of selected record will updating to
   const willUpdatingStaff = useSelector(selectWillUpdatingStaffData);
   const willUpdatingStatus = useSelector(selectWillUpdatingStatusData);
   const willUpdatingAccount = useSelector(selectWillUpdatingAccountData);
@@ -148,9 +154,9 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   // all the input form below must have this 2 properties
   // (name, data-table)
 
-  // define the select list use for dropdown form control
-  // empty select lists have to retrive data from Airtable
-  // optionList is defined in constants.js
+  // define the select list use for dropdown form control,
+  // empty select lists have to retrieve data from Airtable
+  // optionList is defined in features/staffModal.js
   const [selectList, setSelectList] = useState(optionList);
 
   // define the data object that used for display and upload to
@@ -197,14 +203,14 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
     StartWorkingDay: useRef(null),
   };
 
-  // retrive data from airtable into empty select list
+  // retrieve data from airtable into empty select list
   useEffect(() => {
-    if (retriveSelectResult) {
-      componentAvailable && setSelectList(retriveSelectResult);
+    if (retrieveSelectResult) {
+      componentAvailable && setSelectList(retrieveSelectResult);
     } else {
-      if (retriveSelectStatus) {
-        if (retriveSelectError) {
-          console.log(retriveSelectError);
+      if (retrieveSelectStatus) {
+        if (retrieveSelectError) {
+          console.log(retrieveSelectError);
         }
       } else {
         dispatch(fetchAllEmptySelectList(selectList));
@@ -217,9 +223,9 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   }, [
     componentAvailable,
     dispatch,
-    retriveSelectStatus,
-    retriveSelectResult,
-    retriveSelectError,
+    retrieveSelectStatus,
+    retrieveSelectResult,
+    retrieveSelectError,
   ]);
   // Handle the input change (valitdate right after the input change)
   // Normal input/select handle
@@ -514,15 +520,15 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
     });
   };
 
-  // handle retrive 3 tables after a create/update/delete
-  const handleRetriveStaffTable = () => {
-    dispatch(retriveStaffList());
+  // handle retrieve 3 tables after a create/update/delete
+  const handleRetrieveStaffTable = () => {
+    dispatch(retrieveStaffList());
   };
-  const handleRetriveStatusTable = () => {
-    dispatch(retriveStatusList());
+  const handleRetrieveStatusTable = () => {
+    dispatch(retrieveStatusList());
   };
-  const handleRetriveAccountTable = () => {
-    dispatch(retriveAccountList());
+  const handleRetrieveAccountTable = () => {
+    dispatch(retrieveAccountList());
   };
 
   // handle submit the new staff creation or update staff info
@@ -628,7 +634,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             addToast("Create a new staff record successfully!", {
               appearance: "success",
             });
-            handleRetriveStaffTable();
+            handleRetrieveStaffTable();
             dispatch(setLoading(false));
             const newStaffRecordId = [staffRes.id];
             newRecord.Status.Staff = newStaffRecordId;
@@ -705,7 +711,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
 
   // effect catch the create/update/delete api
   // there are 3 prefix progression of 3 table
-  // (<staff|status|account>/<fetch|create|update|delete>)
+  // (<staff|status|account>/<retrieve|create|update|delete>)
   // and a status behind (pending/rejected/fulfilled)
   // (ex. staff/create/pending, status/update/rejected ,...)
   // added toast display
@@ -748,7 +754,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         addToast("Update the staff record successfully!", {
           appearance: "success",
         });
-        handleRetriveStaffTable();
+        handleRetrieveStaffTable();
         break;
       case "staff/delete/rejected":
         console.log(staffError);
@@ -783,7 +789,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         addToast("Delete the staff record successfully!", {
           appearance: "success",
         });
-        handleRetriveStaffTable();
+        handleRetrieveStaffTable();
         break;
       default:
         break;
@@ -820,7 +826,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         addToast("Create a new status record successfully!", {
           appearance: "success",
         });
-        handleRetriveStatusTable();
+        handleRetrieveStatusTable();
         break;
       case "status/update/rejected":
         console.log(statusError);
@@ -860,7 +866,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         addToast("Update the status record successfully!", {
           appearance: "success",
         });
-        handleRetriveStatusTable();
+        handleRetrieveStatusTable();
         break;
       case "status/delete/rejected":
         console.log(statusError);
@@ -893,7 +899,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         addToast("Delete the status record successfully!", {
           appearance: "success",
         });
-        handleRetriveStatusTable();
+        handleRetrieveStatusTable();
         break;
       default:
         break;
@@ -932,7 +938,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         addToast("Create a new account record successfully!", {
           appearance: "success",
         });
-        handleRetriveAccountTable();
+        handleRetrieveAccountTable();
         break;
       case "account/update/rejected":
         console.log(accountError);
@@ -970,7 +976,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         addToast("Update the account record successfully!", {
           appearance: "success",
         });
-        handleRetriveAccountTable();
+        handleRetrieveAccountTable();
         break;
       case "account/delete/rejected":
         console.log(accountError);
@@ -1003,7 +1009,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         addToast("Delete the staff record successfully!", {
           appearance: "success",
         });
-        handleRetriveAccountTable();
+        handleRetrieveAccountTable();
         break;
       default:
         break;
@@ -1232,6 +1238,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
               newStaffForm.Staff.Portrait.value &&
               newStaffForm.Staff.Portrait.label
             }
+            type={type}
             handleUploadSuccessfully={handleStaffInput}
             handleClearImg={handleStaffInput}
           />
@@ -1664,6 +1671,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
               newStaffForm.Account.Avatar.value &&
               newStaffForm.Account.Avatar.label
             }
+            type={type}
             handleUploadSuccessfully={handleStaffInput}
             handleClearImg={handleStaffInput}
           />

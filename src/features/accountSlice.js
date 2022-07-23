@@ -19,7 +19,7 @@ const initialState = {
   error: null,
 };
 
-export const retriveAccountList = createAsyncThunk(
+export const retrieveAccountList = createAsyncThunk(
   "account/fetch",
   async () => {
     const res = await retrieveData("Account");
@@ -83,21 +83,21 @@ export const accountSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(retriveAccountList.pending, (state, action) => {
+      .addCase(retrieveAccountList.pending, (state, action) => {
         state.loading = true;
         state.isSuccess = false;
         state.error = null;
         state.accountTableData = null;
         state.progressing = action.type;
       })
-      .addCase(retriveAccountList.rejected, (state, action) => {
+      .addCase(retrieveAccountList.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = action.error;
         state.accountTableData = null;
         state.progressing = action.type;
       })
-      .addCase(retriveAccountList.fulfilled, (state, action) => {
+      .addCase(retrieveAccountList.fulfilled, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = null;

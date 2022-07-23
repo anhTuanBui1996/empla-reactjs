@@ -35,7 +35,7 @@ function Home() {
                 width: "fit-content",
               }}
             >
-              {userCredential.RoleType[0]}
+              {userCredential?.RoleType[0]}
             </span>
           </h1>
           <Row>

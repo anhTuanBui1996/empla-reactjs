@@ -2,14 +2,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useToasts } from "react-toast-notifications";
 import {
-  retriveRoleList,
+  retrieveRoleList,
   selectError,
   selectIsSuccess,
   selectLoading,
   selectRoleTableData,
 } from "../../features/roleSlice";
 import {
-  retriveStaffList,
+  retrieveStaffList,
   selectStaffTableData,
 } from "../../features/staffSlice";
 import { selectUserCredential } from "../../features/userSlice";
@@ -174,10 +174,10 @@ function Admin() {
     }));
   };
 
-  // retrive the data if redux store doesn't have value
+  // retrieve the data if redux store doesn't have value
   useEffect(() => {
-    !staffList && dispatch(retriveStaffList());
-    !roleList && dispatch(retriveRoleList());
+    !staffList && dispatch(retrieveStaffList());
+    !roleList && dispatch(retrieveRoleList());
     // eslint-disable-next-line
   }, []);
   // effect hook for loading table data from Airtable
@@ -185,7 +185,7 @@ function Admin() {
     if (isSuccess) {
       if (error) {
         console.log(error);
-        addToast("Retrive data failed! Please check your connection...", {
+        addToast("Retrieve data failed! Please check your connection...", {
           appearance: "error",
         });
       }

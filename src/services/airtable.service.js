@@ -3,7 +3,7 @@ import tableConfig from "./../utils/airtable";
 
 /**
  * Read data from Airtable, the result is
- * array of object that has proerties below
+ * array of object that has properties below
  * * createdTime: string | (time string can be parse),
  * * fields: object | { ...fieldName: cellValue } | data object of record
  * * id: string | the record id (format: rec...)
@@ -23,9 +23,9 @@ const retrieveData = async (tableName, formula, config) => {
 };
 
 /**
- * Mapping from retriveData res into new array,
+ * Mapping from retrieveData res into new array,
  * use for insert the Table component
- * @param {Array} res res Array from retriveData function
+ * @param {Array} res res Array from retrieveData function
  * @param {Array} fieldList field name list to map from res
  * @returns {Array} the array has been mapped,
  * the index is mapped with fieldList

@@ -2,7 +2,7 @@
 // (name, data-table)
 
 // define the select list use for dropdown form control
-// empty select lists have to retrive data from Airtable
+// empty select lists have to retrieve data from Airtable
 export const optionList = {
   Role: {
     Gender: {

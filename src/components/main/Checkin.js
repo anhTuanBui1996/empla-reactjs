@@ -12,7 +12,7 @@ import { selectUserCredential } from "../../features/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Loader from "../common/Loader";
 import {
-  retriveCheckinList,
+  retrieveCheckinList,
   selectCheckinTableData,
   selectError,
   selectIsSuccess,
@@ -39,7 +39,7 @@ function Checkin() {
   const checkinList = useSelector(selectCheckinTableData);
 
   // eslint-disable-next-line
-  useEffect(() => dispatch(retriveCheckinList(userCredential?.StaffId[0])), []);
+  useEffect(() => dispatch(retrieveCheckinList(userCredential?.StaffId[0])), []);
   useEffect(() => {
     if (checkinList) {
       const tableDataList = mapResultToTableData(checkinList, fieldList);
@@ -55,7 +55,7 @@ function Checkin() {
         if (error) {
           console.log(error);
           addToast(
-            "Retrive Check-in Data failed! Please check your connection...",
+            "Retrieve Check-in Data failed! Please check your connection...",
             { appearance: "error" }
           );
         }

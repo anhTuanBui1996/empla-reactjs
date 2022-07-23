@@ -613,7 +613,7 @@ Table.propTypes = {
    */
   forEditing: PropTypes.shape({
     /**
-     * Table Array get from Airtable (per element is a retrived table)
+     * Table Array get from Airtable (per element is a retrieved table)
      */
     syncTables: PropTypes.arrayOf(
       PropTypes.arrayOf(

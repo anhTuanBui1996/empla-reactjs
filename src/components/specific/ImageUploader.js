@@ -13,11 +13,12 @@ function ImageUploader({
   "data-table": dataTable,
   imgData,
   imgThumbnail,
+  type,
   handleUploadSuccessfully,
   handleClearImg,
 }) {
   const [imgStored, setImgStored] = useState(null);
-  const handleRetriveImg = () => {
+  const handleRetrieveImg = () => {
     handleUploadSuccessfully({
       filesUploaded: [imgStored],
       filesFailed: [],
@@ -26,7 +27,7 @@ function ImageUploader({
     });
   };
   useEffect(() => {
-    imgData?.length && setImgStored(imgData[0]);
+    type == "edit" && imgData?.length && setImgStored(imgData[0]);
   }, [imgData]);
   return (
     <ReactFilestack
@@ -82,7 +83,7 @@ function ImageUploader({
                 className="btn btn-link image-clear-btn rounded"
                 onMouseDownCapture={(e) => {
                   e.stopPropagation();
-                  handleRetriveImg();
+                  handleRetrieveImg();
                 }}
               >
                 <MdRotateLeft />
@@ -166,6 +167,7 @@ ImageUploader.propTypes = {
   "data-table": PropTypes.string,
   imgData: PropTypes.arrayOf(PropTypes.object),
   imgThumbnail: PropTypes.string,
+  type: PropTypes.string,
   handleUploadSuccessfully: PropTypes.func,
   handleClearImg: PropTypes.func,
 };

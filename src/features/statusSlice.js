@@ -20,7 +20,7 @@ const initialState = {
   error: null,
 };
 
-export const retriveStatusList = createAsyncThunk("status/fetch", async () => {
+export const retrieveStatusList = createAsyncThunk("status/fetch", async () => {
   const res = await retrieveData("Status");
   return res;
 });
@@ -81,21 +81,21 @@ export const statusSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(retriveStatusList.pending, (state, action) => {
+      .addCase(retrieveStatusList.pending, (state, action) => {
         state.loading = true;
         state.isSuccess = false;
         state.error = null;
         state.statusTableData = null;
         state.progressing = action.type;
       })
-      .addCase(retriveStatusList.rejected, (state, action) => {
+      .addCase(retrieveStatusList.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = action.error;
         state.statusTableData = null;
         state.progressing = action.type;
       })
-      .addCase(retriveStatusList.fulfilled, (state, action) => {
+      .addCase(retrieveStatusList.fulfilled, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = null;

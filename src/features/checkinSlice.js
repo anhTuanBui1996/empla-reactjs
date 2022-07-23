@@ -9,7 +9,7 @@ const initialState = {
   error: null,
 };
 
-export const retriveCheckinList = createAsyncThunk(
+export const retrieveCheckinList = createAsyncThunk(
   "checkin/fetch",
   async (userStaffId) => {
     const res = await retrieveData("Check-in", {
@@ -43,17 +43,17 @@ export const checkinSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(retriveCheckinList.pending, (state, action) => {
+      .addCase(retrieveCheckinList.pending, (state, action) => {
         state.loading = true;
         state.isSuccess = false;
         state.error = null;
       })
-      .addCase(retriveCheckinList.rejected, (state, action) => {
+      .addCase(retrieveCheckinList.rejected, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.error = action.error;
       })
-      .addCase(retriveCheckinList.fulfilled, (state, action) => {
+      .addCase(retrieveCheckinList.fulfilled, (state, action) => {
         state.loading = false;
         state.isSuccess = true;
         state.checkinTableData = action.payload;

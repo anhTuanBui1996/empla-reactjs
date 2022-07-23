@@ -17,7 +17,7 @@ const initialState = {
 };
 
 export const fetchAllEmptySelectList = createAsyncThunk(
-  "selectList/retriveAllEmpty",
+  "selectList/retrieveAllEmpty",
   async (selectOptionState) => {
     let newState = { ...selectOptionState };
     let checkEmptySelectList = countEmptySelectList(newState);

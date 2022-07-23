@@ -10,7 +10,7 @@ import {
   selectCheckinTableData,
   selectNewCheckinData,
   createNewCheckin,
-  retriveCheckinList,
+  retrieveCheckinList,
   setNewCheckinData,
 } from "../../features/checkinSlice";
 import Card from "../common/Card";
@@ -77,7 +77,7 @@ function QuickCheckinCard() {
         });
         setCheckStatus(false);
         dispatch(setNewCheckinData(null));
-        dispatch(retriveCheckinList(userCredential.StaffId[0]));
+        dispatch(retrieveCheckinList(userCredential.StaffId[0]));
       }
     } else {
       if (error) {
@@ -85,7 +85,7 @@ function QuickCheckinCard() {
         addToast("An error occurs", { appearance: "error" });
       } else {
         if (userCredential) {
-          dispatch(retriveCheckinList(userCredential.StaffId[0]));
+          dispatch(retrieveCheckinList(userCredential.StaffId[0]));
         }
       }
     }
