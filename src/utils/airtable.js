@@ -1,13 +1,10 @@
 import { AIRTABLE } from "./../constants";
 
-const AirtablePlus = require("airtable-plus");
-const tableConfig = (tableName) => {
-  const config = new AirtablePlus({
-    baseID: AIRTABLE.BASE_ID,
-    apiKey: AIRTABLE.API_KEY,
-    tableName: tableName,
-  });
-  return config;
-};
+const Airtable = require("airtable");
+Airtable.configure({
+  endpointUrl: "https://api.airtable.com",
+  apiKey: AIRTABLE.API_KEY,
+});
+const base = Airtable.base(AIRTABLE.BASE_ID);
 
-export default tableConfig;
+export default base;

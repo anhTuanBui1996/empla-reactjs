@@ -14,36 +14,23 @@ import {
   initialRoleFormForEdit,
   optionList,
 } from "../../features/roleModal";
-import useAutoGenerate from "../hooks/useAutoGenerate";
 import { MdRefresh, MdRemoveRedEye } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { useToasts } from "react-toast-notifications";
 import {
   fetchAllEmptySelectList,
-  selectError,
-  selectIsSuccess,
-  selectOptionList,
 } from "../../features/selectListSlice";
 import {
   setSelectedRoleForEdit,
   selectSelectedRoleForEdit,
-  setLoading,
-  setNewRoleData,
-  updateExistingRole,
-  selectError as errorRole,
   deleteExistingRole,
-  selectProgressing as progressingRole,
   retrieveRoleList,
-  selectDeletedRoleData,
-  selectWillUpdatingRoleData,
   setWillBeUpdatedRoleData,
-  selectWillBeUpdatedRoleData,
   setWillUpdatingRoleData,
   selectNewRoleData,
 } from "../../features/roleSlice";
 import { SpinnerCircular } from "spinners-react";
 import convertFullNameToUsername from "../../utils/convertToUsername";
-import { createNewRecord } from "../../services/airtable.service";
 import { compareTwoArrayOfString } from "../../utils/arrayUtils";
 import {
   createNewLog,
@@ -535,6 +522,7 @@ function RoleModal({ isModalDisplay, type, setModalHide }) {
   // and a status behind (pending/rejected/fulfilled)
   // (ex. role/create/pending, status/update/rejected ,...)
   // added toast display
+  // added logs creation
   useEffect(() => {
     // role progression
     switch (roleProgression) {

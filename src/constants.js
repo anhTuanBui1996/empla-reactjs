@@ -1,5 +1,4 @@
 import {
-  MdAdminPanelSettings,
   MdInsertInvitation,
   MdStickyNote2,
   MdSupervisorAccount,
@@ -30,7 +29,6 @@ export const FILESTACK = {
 
 export const SIDENAV = [
   { label: "Homepage", path: "/", icon: <MdHouse /> },
-  { label: "Admin", path: "/admin", icon: <MdAdminPanelSettings /> },
   { label: "Staff", path: "/staff", icon: <MdSupervisorAccount /> },
   { label: "Database", path: "/database", icon: <MdOutlineDeveloperBoard /> },
   { label: "Clients", path: "/clients", icon: <MdSocialDistance /> },

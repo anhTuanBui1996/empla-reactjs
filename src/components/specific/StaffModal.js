@@ -715,6 +715,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   // and a status behind (pending/rejected/fulfilled)
   // (ex. staff/create/pending, status/update/rejected ,...)
   // added toast display
+  // added logs creation
   useEffect(() => {
     // staff progression
     switch (staffProgression) {

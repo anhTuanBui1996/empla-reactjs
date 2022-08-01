@@ -18,14 +18,19 @@ function Auth({ children }) {
 
   useEffect(() => {
     if (userAccount) {
-      dispatch(
-        createNewLog({
-          Actions: "Login",
-          Account: userAccount,
-          Status: "Done",
-          Notes: `Browser: ${browserDetect()}`,
-        })
-      );
+      try {
+        dispatch(
+          createNewLog({
+            Actions: "Login",
+            Account: userAccount,
+            Status: "Done",
+            Notes: `Browser: ${browserDetect()}`,
+          })
+        );
+      } catch (error) {
+        console.log(error);
+      }
+      
       addToast("Login Successfully!", { appearance: "success" });
     } else {
       navigate("/login");

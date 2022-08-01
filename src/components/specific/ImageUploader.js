@@ -27,8 +27,12 @@ function ImageUploader({
     });
   };
   useEffect(() => {
-    type == "edit" && imgData?.length && setImgStored(imgData[0]);
-  }, [imgData]);
+    if (type === "edit") {
+      imgData?.length && setImgStored(imgData[0]);
+    } else if (type === "create") {
+      setImgStored(null);
+    }
+  }, [imgData, type]);
   return (
     <ReactFilestack
       apikey={FILESTACK.API_KEY}

@@ -65,10 +65,10 @@ export const selectIsSuccess = (state) => state.role.isSuccess;
 export const selectRoleTableData = (state) => state.role.roleTableData;
 export const selectNewRoleData = (state) => state.role.newRoleData;
 export const selectWillBeUpdatedRoleData = (state) => state.role.willBeUpdatedRoleData;
-export const selectWillUpdatingRoleData = (state) => state.role. willUpdatingRoleData;
-export const selectUpdatedRoleData = (state) => state.role. updatedRoleData;
-export const selectSelectedRoleData = (state) => state.role. selectedRoleData;
-export const selectDeletedRoleData = (state) => state.role. deletedRoleData;
+export const selectWillUpdatingRoleData = (state) => state.role.willUpdatingRoleData;
+export const selectUpdatedRoleData = (state) => state.role.updatedRoleData;
+export const selectSelectedRoleData = (state) => state.role.selectedRoleData;
+export const selectDeletedRoleData = (state) => state.role.deletedRoleData;
 export const selectError = (state) => state.role.error;
 
 export default roleSlice.reducer;

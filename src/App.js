@@ -11,12 +11,9 @@ import Checkin from "./components/main/Checkin";
 import Profile from "./components/main/Profile";
 import Settings from "./components/main/Settings";
 import Notifications from "./components/main/Notifications";
-import Admin from "./components/main/Admin";
 import AdminCheck from "./hoc/AdminCheck";
 import Database from "./components/main/Database";
 import useGeolocation from "./components/hooks/useGeolocation";
-import "react-grid-layout/css/styles.css";
-import "react-grid-layout/node_modules/react-resizable/css/styles.css";
 import Clients from "./components/main/Clients";
 import Projects from "./components/main/Projects";
 import Teams from "./components/main/Teams";
@@ -52,7 +49,6 @@ function App() {
               {/**
                * Private routes
                */}
-              <Route path="/admin" element={<Admin />} />
               <Route path="/database" element={<Database />} />
               <Route path="/role" element={<Role />} />
               <Route path="/workingplace" element={<WorkingPlace />} />
