@@ -23,15 +23,17 @@ import BigCalendar from "../specific/BigCalendar";
 import { MdArticle, MdSummarize, MdTableView } from "react-icons/md";
 import CheckInMap from "../specific/CheckInMap";
 import { companySpecific } from "../../constants";
+import { selectInnerWidth } from "../../features/windowSlice";
 
 function Checkin() {
   const dispatch = useDispatch();
   const { addToast } = useToasts();
   const fieldList = useMemo(() => {
-    return ["RecordId", "CreatedDate", "Type", "Notes"];
+    return ["CheckinId", "CreatedDate", "Type", "Notes"];
   }, []);
   const [recordList, setRecordList] = useState([]);
   const userCredential = useSelector(selectUserCredential);
+  const innerWidth = useSelector(selectInnerWidth);
 
   const loading = useSelector(selectLoading);
   const isSuccess = useSelector(selectIsSuccess);
@@ -39,7 +41,10 @@ function Checkin() {
   const checkinList = useSelector(selectCheckinTableData);
 
   // eslint-disable-next-line
-  useEffect(() => dispatch(retrieveCheckinList(userCredential?.StaffId[0])), []);
+  useEffect(
+    () => dispatch(retrieveCheckinList(userCredential?.StaffId[0])),
+    [dispatch, userCredential?.StaffId]
+  );
   useEffect(() => {
     if (checkinList) {
       const tableDataList = mapResultToTableData(checkinList, fieldList);
@@ -230,9 +235,15 @@ function Checkin() {
           title="Check-in"
           subTitle="Check-in before working and check-out before leaving. Remember!"
         />
-        <Container fluid>
-          <Row className="justify-content-between">
-            <Col columnSize={["12", "lg-6"]}>
+        <Container fluid gap={20}>
+          <Row
+            className="justify-content-between"
+            style={{ gap: innerWidth < 992 ? "20px" : "" }}
+          >
+            <Col
+              columnSize={["12", "lg-6"]}
+              style={{ display: "flex", flexDirection: "column", gap: "20px" }}
+            >
               <Row>
                 <Col columnSize={["12"]}>
                   <QuickCheckinCard />

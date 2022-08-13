@@ -90,7 +90,9 @@ const countEmptySelectList = (selectOptionState) => {
   let count = 0;
   Object.keys(selectOptionState).forEach((tableKey) => {
     Object.keys(selectOptionState[tableKey]).forEach((fieldKey) => {
-      if (selectOptionState[tableKey][fieldKey].list.length === 0) {
+      if (selectOptionState[tableKey][fieldKey].list === undefined) {
+        count++
+      } else if (selectOptionState[tableKey][fieldKey].list.length === 0) {
         count++;
       }
     });

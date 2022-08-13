@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
 
-function Scheduler({ events }) {
+function BirthdayScheduler({ events }) {
   // we import all data from Status table then mapping
   const birthdayList = useMemo(() => {
     return events?.map((record) => {
@@ -68,7 +68,7 @@ function Scheduler({ events }) {
       <h3 className="month-title text-center font-weight-bold">
         {`${monthList[currentMonth]} ${currentDay}, ${currentYear}`}
       </h3>
-      <table className="calendar-scheduler w-100">
+      <table className="calendar-scheduler w-100" style={{ marginTop: "23.5px" }}>
         <thead className="border border-0">
           <tr className="weekday-title border border-0">
             {weekday.map((item, index) => {
@@ -194,4 +194,4 @@ const fillDateForWeek = (current) => {
   return dateArray;
 };
 
-export default Scheduler;
+export default BirthdayScheduler;

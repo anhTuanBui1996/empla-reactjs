@@ -32,7 +32,7 @@ function BigCalendar({ title, events }) {
           startAccessor="start"
           endAccessor="end"
           style={{
-            height: "687.5px",
+            height: "697.5px",
             width: "100%",
             borderBottom: "1px solid #ddd",
             borderLeft: "1px solid #ddd",

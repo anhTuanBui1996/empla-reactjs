@@ -12,9 +12,7 @@ const initialState = {
 export const retrieveCheckinList = createAsyncThunk(
   "checkin/fetch",
   async (userStaffId) => {
-    const res = await retrieveData("Check-in", {
-      filterByFormula: `StaffId = "${userStaffId}"`,
-    });
+    const res = await retrieveData("Check-in", `StaffId = "${userStaffId}"`);
     return res;
   }
 );

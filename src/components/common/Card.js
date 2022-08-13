@@ -176,6 +176,7 @@ const CardWrapper = styled.div`
   opacity: ${(props) => props.cardOpacity};
   transition: opacity ease-in-out 0.5s;
   margin-bottom: 0;
+  box-shadow: 1px 1px 3px 1px #e0e0d1;
 `;
 const NavLinkHover = styled.div`
   cursor: pointer;

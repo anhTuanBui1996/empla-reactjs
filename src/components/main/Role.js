@@ -20,13 +20,18 @@ import Table from "../common/Table";
 import Container from "../layout/Container";
 import MainContent from "../layout/MainContent";
 import MainHeader from "../layout/MainHeader";
-import styledComponents from "styled-components";
+import RoleModal from "../specific/RoleModal";
 
 function Role() {
   const dispatch = useDispatch();
   const { addToast } = useToasts();
   const fieldListForRoleTable = useMemo(
-    () => ["Name", "DatabaseAccessibility", "DepartmentName"],
+    () => [
+      "RoleName",
+      "DatabaseAccessibility",
+      "DepartmentName",
+      "Description",
+    ],
     []
   );
 
@@ -37,22 +42,15 @@ function Role() {
   const roleList = useSelector(selectRoleTableData);
   const userCredential = useSelector(selectUserCredential);
 
+  const [isModalDisplay, setModalDisplay] = useState(false);
+  const [modalType, setModalType] = useState("create");
+
   const userStaffId = userCredential?.StaffId[0];
-  const userAdminRow = staffList?.find(
+  const userRole = staffList?.find(
     (staff) => staff.fields.StaffId === userStaffId
   );
-  const userRole = userAdminRow?.fields.RoleType;
-  const userPermission = useMemo(
-    () => [
-      {
-        title: "User can access thess routes: ",
-        routes: ["Admin: /admin", "Staff: /staff", "Database: /database"],
-      },
-      "Can add or remove the staff in Staff database",
-      "Can check all table in database of Airtable in Database",
-    ],
-    []
-  );
+  const userRoleType = userRole?.fields.RoleType;
+  const userPermission = userRole?.fields.Description;
 
   const roleTable = useMemo(
     () => roleList && mapResultToTableData(roleList, fieldListForRoleTable),
@@ -94,7 +92,7 @@ function Role() {
             }}
             isLoading={userRole ? false : true}
             isHasHideCard
-            elementList={[<h1 className="text-center">{userRole}</h1>]}
+            elementList={[<h1 className="text-center">{userRoleType}</h1>]}
           />
           <Card
             cardHeader={{
@@ -102,31 +100,7 @@ function Role() {
               extension: true,
             }}
             isHasHideCard
-            elementList={[
-              <ul
-                className="text-left"
-                style={{
-                  overflow: "auto",
-                }}
-              >
-                {userPermission.map((item, i) => {
-                  if (i === 0) {
-                    return (
-                      <li key={i}>
-                        {item.title}
-                        <ul>
-                          {item.routes.map((subItem, j) => (
-                            <li key={j} className="text-secondary">
-                              {subItem}
-                            </li>
-                          ))}
-                        </ul>
-                      </li>
-                    );
-                  } else return <li key={i}>{item}</li>;
-                })}
-              </ul>,
-            ]}
+            elementList={[userPermission]}
           />
           <Card
             cardHeader={{
@@ -150,6 +124,11 @@ function Role() {
           />
         </Container>
       </MainContent>
+      <RoleModal
+        type={modalType}
+        isModalDisplay={isModalDisplay}
+        setModalHide={() => setModalDisplay(false)}
+      />
     </>
   );
 }

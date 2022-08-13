@@ -38,7 +38,7 @@ import {
   setSelectedAccountForEdit,
   setProgressing as accountProgressSet,
 } from "../../features/accountSlice";
-import Scheduler from "../specific/Scheduler";
+import BirthdayScheduler from "../specific/BirthdayScheduler";
 import { MdCelebration } from "react-icons/md";
 import newStaffImg from "./../../assets/images/welcome-new-staff.jpeg";
 import { useToasts } from "react-toast-notifications";
@@ -46,7 +46,7 @@ import { selectInnerWidth } from "../../features/windowSlice";
 import { selectLoading } from "../../features/logsSlice";
 
 function Staff() {
-  const windowWidth = useSelector(selectInnerWidth);
+  const innerWidth = useSelector(selectInnerWidth);
 
   const _staff_loading = useSelector(staffLoading);
   const _staff_retrieveStatus = useSelector(staffIsSuccess);
@@ -215,14 +215,14 @@ function Staff() {
   const handleOpenModalForEdit = () => {
     setModalType("edit");
     setModalDisplay(true);
-  }
+  };
 
   return (
     <>
       <MainContent>
         <MainHeader title="Staff" subTitle="All of your employee is here" />
-        <Container fluid>
-          <Row>
+        <Container fluid gap={20}>
+          <Row style={{ gap: innerWidth < 992 ? "20px" : "" }}>
             <Col columnSize={["12", "lg-6"]}>
               <Card
                 cardHeader={{
@@ -237,7 +237,7 @@ function Staff() {
                     </Row>
                     <Row
                       className={`justify-content-${
-                        windowWidth < 389 ? "center" : "between"
+                        innerWidth < 389 ? "center" : "between"
                       } align-items-baseline`}
                     >
                       <img alt="" src={newStaffImg} width={200} height={110} />
@@ -263,7 +263,9 @@ function Staff() {
                   extension: true,
                 }}
                 isHasHideCard
-                elementList={[<Scheduler events={_status_retrieveResult} />]}
+                elementList={[
+                  <BirthdayScheduler events={_status_retrieveResult} />,
+                ]}
               />
             </Col>
           </Row>

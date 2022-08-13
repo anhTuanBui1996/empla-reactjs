@@ -90,7 +90,11 @@ function SideBarContent({
     <nav
       className="navbar navbar-vertical fixed-left navbar-expand-md navbar-light"
       id="sidebar"
-      style={{ zIndex: 999, height: innerWidth <= 767 ? "" : "100vh" }}
+      style={{
+        zIndex: 999,
+        height: innerWidth <= 767 ? "" : "100vh",
+        boxShadow: "1px 1px 2px 1px #e0e0d1",
+      }}
     >
       <div className="container-fluid h-100">
         <button
@@ -128,7 +132,7 @@ function SideBarContent({
           >
             <ul className="navbar-nav h-100">
               {innerWidth <= 767 && (
-                <h6 className="navbar-heading px-3">Menu</h6>
+                <h6 className="navbar-heading px-4">Menu</h6>
               )}
               <IconContext.Provider value={{ size: "1.5em" }}>
                 {SIDENAV.map((route) => {
@@ -159,7 +163,7 @@ function SideBarContent({
                 {innerWidth <= 767 && (
                   <>
                     <hr className="dropdown-divider my-3" />
-                    <h6 className="navbar-heading px-3">Account</h6>
+                    <h6 className="navbar-heading px-4">Account</h6>
                     <NavLink
                       style={({ isActive }) => {
                         return {

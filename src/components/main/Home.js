@@ -23,7 +23,7 @@ function Home() {
         <MainHeader title="Dashboard" subTitle="Console of your work" />
         <Container fluid>
           <h1
-            className="greeting-title d-flex flex-column"
+            className="greeting-title d-flex pb-3"
             style={{ gap: "10px" }}
           >
             Hello, {userCredential?.FullName} ({userCredential?.Username})

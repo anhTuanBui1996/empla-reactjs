@@ -9,11 +9,11 @@ import ImageUploader from "./ImageUploader";
 import DatePicker from "./DatePicker";
 import { VALIDATE_RULE } from "../../constants";
 import {
-  initialErrorFormForStaff,
   initialStaffFormForCreate,
   initialStaffFormForEdit,
-  optionList,
-} from "../../features/staffModal";
+} from "../../assets/forms/staffForm";
+import { optionList } from "../../assets/options/staffOptionSelects";
+import { initialErrorFormForStaff } from "../../assets/errors/errorStrutureForModal";
 import useAutoGenerate from "../hooks/useAutoGenerate";
 import { MdRefresh, MdRemoveRedEye } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
@@ -165,7 +165,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   // the new record will be add by this linkedField,
   // the field key and the linkedField is looked up field if
   // they are the same
-  // initialStaffFormForCreate is defined in constants.js
+  // initialStaffFormForCreate is defined in assets/forms/staffForm
   // added Password generation
   const [newStaffForm, setNewStaffForm] = useState({
     ...initialStaffFormForCreate,
@@ -1123,11 +1123,6 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
               newState[tableKey][fieldKey].value = [];
             } else {
               newState[tableKey][fieldKey].value = "";
-            }
-            if (fieldKey === "Covid19VaccineType") {
-              newState[tableKey][fieldKey].label = [];
-            } else {
-              newState[tableKey][fieldKey].label = "";
             }
           }
         });

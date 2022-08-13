@@ -30,7 +30,6 @@ export const FILESTACK = {
 export const SIDENAV = [
   { label: "Homepage", path: "/", icon: <MdHouse /> },
   { label: "Staff", path: "/staff", icon: <MdSupervisorAccount /> },
-  { label: "Database", path: "/database", icon: <MdOutlineDeveloperBoard /> },
   { label: "Clients", path: "/clients", icon: <MdSocialDistance /> },
   { label: "Role", path: "/role", icon: <MdFolderShared /> },
   { label: "Working Place", path: "/workingplace", icon: <MdHomeWork /> },
@@ -49,7 +48,6 @@ export const SIDENAV = [
  */
 export const privateRoutes = [
   "/admin",
-  "/database",
   "/role",
   "/collaboratory",
   "/workingplace",

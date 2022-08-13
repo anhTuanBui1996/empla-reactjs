@@ -21,7 +21,13 @@ const retrieveData = async (tableName, formula) => {
         filterByFormula: formula ? formula : "",
       })
       .all();
-    return res.map((record) => record._rawJson);
+    return res
+      .map((record) => record._rawJson)
+      .sort(
+        (firstRecord, secondRecord) =>
+          Date.parse(firstRecord.createdTime) -
+          Date.parse(secondRecord.createdTime)
+      );
   } catch (e) {
     console.log(e);
   }
@@ -75,6 +81,7 @@ const createNewRecord = async (tableName, data) => {
     return res[0]._rawJson;
   } catch (e) {
     console.log(e);
+    return null;
   }
 };
 
@@ -96,6 +103,7 @@ const createNewRecords = async (tableName, data) => {
     return res;
   } catch (e) {
     console.log(e);
+    return null;
   }
 };
 
@@ -123,6 +131,7 @@ const updateRecord = async (tableName, recordId, data) => {
     return res;
   } catch (e) {
     console.log(e);
+    return null;
   }
 };
 
@@ -162,6 +171,7 @@ const updateRecordWhere = async (tableName, whereString, data) => {
     return res;
   } catch (e) {
     console.log(e);
+    return null;
   }
 };
 
@@ -180,6 +190,7 @@ const deleteRecord = async (tableName, recordId) => {
     return res;
   } catch (e) {
     console.log(e);
+    return null;
   }
 };
 
@@ -212,6 +223,7 @@ const deleteRecordWhere = async (tableName, whereString) => {
     return res;
   } catch (e) {
     console.log(e);
+    return null;
   }
 };
 

@@ -12,7 +12,6 @@ import Profile from "./components/main/Profile";
 import Settings from "./components/main/Settings";
 import Notifications from "./components/main/Notifications";
 import AdminCheck from "./hoc/AdminCheck";
-import Database from "./components/main/Database";
 import useGeolocation from "./components/hooks/useGeolocation";
 import Clients from "./components/main/Clients";
 import Projects from "./components/main/Projects";
@@ -21,6 +20,7 @@ import Role from "./components/main/Role";
 import Department from "./components/main/Department";
 import WorkingPlace from "./components/main/WorkingPlace";
 import Collaboratory from "./components/main/Collaboratory";
+import Nomatch from "./components/main/Nomatch";
 require("dotenv").config();
 
 function App() {
@@ -49,7 +49,6 @@ function App() {
               {/**
                * Private routes
                */}
-              <Route path="/database" element={<Database />} />
               <Route path="/role" element={<Role />} />
               <Route path="/workingplace" element={<WorkingPlace />} />
               <Route path="/collaboratory" element={<Collaboratory />} />
@@ -63,6 +62,9 @@ function App() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/" element={<Home />} />
+
+              {/* Nomatch route */}
+              <Route path="*" element={<Nomatch />} />
             </Routes>
           </AdminCheck>
         </Auth>
