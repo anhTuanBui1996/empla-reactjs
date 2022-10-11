@@ -34,9 +34,8 @@ function Login() {
     });
   };
 
-  const onSubmitLogin = async (e) => {
+  const onSubmitLogin = (e) => {
     e.preventDefault();
-    dispatch(setLoading(true));
     if (loginForm.username === "") {
       dispatch(
         setError({
@@ -54,42 +53,48 @@ function Login() {
         })
       );
     } else {
-      const res = await retrieveData("Account", {
-        filterByFormula: `UserAccount = "${loginForm.username}"`,
-      });
-      if (res.length === 0) {
-        dispatch(
-          setError({
-            status: true,
-            type: "username",
-            message: "This user isn't existed!",
-          })
-        );
-      } else {
-        const actualPassword = res[0].fields.Password;
-        if (loginForm.password === actualPassword) {
-          setLocalUser({ ...res[0].fields, logInByPage: true });
-          dispatch(setUserCredential(res[0].fields));
-          dispatch(
-            setError({
-              status: false,
-              type: "",
-              message: "",
-            })
-          );
-          navigate("/");
-        } else {
-          dispatch(
-            setError({
-              status: true,
-              type: "password",
-              message: "Password is incorrect!",
-            })
-          );
-        }
-      }
+      dispatch(setLoading(true));
+      retrieveData("Staff", `{Account} = "${loginForm.username}"`)
+        .then((res) => {
+          if (res.length === 0) {
+            dispatch(
+              setError({
+                status: true,
+                type: "username",
+                message: "This user isn't existed!",
+              })
+            );
+          } else {
+            const actualPassword = res[0].fields.Password;
+            if (loginForm.password === actualPassword) {
+              setLocalUser({ ...res[0].fields, logInByPage: true });
+              dispatch(setUserCredential(res[0].fields));
+              dispatch(
+                setError({
+                  status: false,
+                  type: "",
+                  message: "",
+                })
+              );
+              navigate("/");
+            } else {
+              dispatch(
+                setError({
+                  status: true,
+                  type: "password",
+                  message: "Password is incorrect!",
+                })
+              );
+            }
+          }
+        })
+        .catch((error) => {
+          console.log("Error while login", error);
+        })
+        .finally(() => {
+          dispatch(setLoading(false));
+        });
     }
-    dispatch(setLoading(false));
   };
 
   return getLocalUser() ? (

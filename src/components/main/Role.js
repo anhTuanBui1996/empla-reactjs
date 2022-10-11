@@ -53,7 +53,8 @@ function Role() {
   const userPermission = userRole?.fields.Description;
 
   const roleTable = useMemo(
-    () => roleList && mapResultToTableData(roleList, fieldListForRoleTable),
+    () =>
+      roleList && mapResultToTableData(roleList, "Role", fieldListForRoleTable),
     [roleList, fieldListForRoleTable]
   );
 

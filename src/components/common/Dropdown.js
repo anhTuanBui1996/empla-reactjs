@@ -69,7 +69,7 @@ Dropdown.propTypes = {
   /**
    * The position of dropbox to the toggle button
    */
-  position: PropTypes.string,
+  position: PropTypes.oneOf(["up", "down", "left", "right"]),
   /**
    * Style for container
    */

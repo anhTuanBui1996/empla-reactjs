@@ -4,7 +4,6 @@ import styled from "styled-components";
 import useAutoGenerate from "../hooks/useAutoGenerate";
 
 function CustomSwitch({ inputValue, onSwitchChange }) {
-  const [value, setValue] = useState(inputValue ? inputValue : false);
   const [toggleId, setToggleId] = useState("");
   const generate = useAutoGenerate();
   /* eslint-disable */
@@ -17,9 +16,8 @@ function CustomSwitch({ inputValue, onSwitchChange }) {
         type="checkbox"
         className="custom-control-input"
         id={`cardToggle${toggleId}`}
-        checked={value}
+        checked={inputValue}
         onChange={(e) => {
-          setValue(e.target.checked);
           onSwitchChange(e.target.checked);
         }}
       />

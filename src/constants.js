@@ -3,7 +3,6 @@ import {
   MdStickyNote2,
   MdSupervisorAccount,
   MdHouse,
-  MdOutlineDeveloperBoard,
   MdSettingsApplications,
   MdConnectWithoutContact,
   MdOutlineDynamicFeed,
@@ -17,6 +16,55 @@ import {
 export const AIRTABLE = {
   BASE_ID: process.env.REACT_APP_AIRTABLE_BASE_ID,
   API_KEY: process.env.REACT_APP_AIRTABLE_API_KEY,
+  // because we use free airtable services so we can't get the metadata
+  // so we must self create the field data type of tables
+  // field data type list can be viewed in assets/form/modalExample
+  FIELD_TYPE: {
+    Staff: {
+      StaffId: { dataType: "singleLineText" },
+      FullName: { dataType: "singleLineText" },
+      Phone: { dataType: "singleLineText" },
+      PersonalEmail: { dataType: "singleLineText" },
+      Username: { dataType: "singleLineText" },
+      Account: { dataType: "singleLineText" },
+      Password: { dataType: "singleLineText" },
+      Notes: { dataType: "longText" },
+      Portrait: { dataType: "attachment" },
+      Avatar: { dataType: "attachment" },
+      CurriculumVitae: { dataType: "attachment" },
+      Gender: { dataType: "singleSelect" },
+      ContractType: { dataType: "singleSelect" },
+      WorkingType: { dataType: "singleSelect" },
+      WorkingPeriod: { dataType: "singleSelect" },
+      WorkingStatus: { dataType: "singleSelect" },
+      MarriageStatus: { dataType: "singleSelect" },
+      HealthStatus: { dataType: "singleSelect" },
+      AccountStatus: { dataType: "singleSelect" },
+      DateOfBirth: { dataType: "date" },
+      StartWorkingDay: { dataType: "date" },
+      CreatedTime: { dataType: "dateTime" },
+      LastModifiedTime: { dataType: "dateTime" },
+      BirthdayCelebration: { dataType: "date" },
+      RoleType: { dataType: "lookup", sourceType: "singleLineText" },
+      Company: { dataType: "lookup", sourceType: "singleLineText" },
+      CurrentWorkingPlace: { dataType: "lookup", sourceType: "singleLineText" },
+      DatabaseAccessibility: { dataType: "lookup", sourceType: "checkbox" },
+      Domain: { dataType: "lookup", sourceType: "singleLineText" },
+      Collaboratory: { dataType: "linkToAnotherTable" },
+      Role: { dataType: "linkToAnotherTable" },
+      "Check-in": { dataType: "linkToAnotherTable" },
+      WorkingPlace: { dataType: "linkToAnotherTable" },
+      "Teams (Member)": { dataType: "linkToAnotherTable" },
+      "Teams (Leader)": { dataType: "linkToAnotherTable" },
+      Projects: { dataType: "linkToAnotherTable" },
+      "Tasks (AssignedTo)": { dataType: "linkToAnotherTable" },
+      "Tasks (Supervisor)": { dataType: "linkToAnotherTable" },
+    },
+  },
+  NOT_SUPPORT_DATA_TYPE: {
+    FOR_SORTING: ["attachment", "checkbox", "lookup", "linkToAnotherTable"],
+    FOR_SEARCHING: ["attachment", "checkbox", "lookup", "linkToAnotherTable"],
+  },
 };
 
 export const GOOGLE = {
@@ -31,7 +79,7 @@ export const SIDENAV = [
   { label: "Homepage", path: "/", icon: <MdHouse /> },
   { label: "Staff", path: "/staff", icon: <MdSupervisorAccount /> },
   { label: "Clients", path: "/clients", icon: <MdSocialDistance /> },
-  { label: "Role", path: "/role", icon: <MdFolderShared /> },
+  //{ label: "Role", path: "/role", icon: <MdFolderShared /> },
   { label: "Working Place", path: "/workingplace", icon: <MdHomeWork /> },
   { label: "Department", path: "/department", icon: <MdHomeRepairService /> },
   { label: "Collaboratory", path: "/collaboratory", icon: <MdSchema /> },
@@ -44,14 +92,8 @@ export const SIDENAV = [
 
 /**
  * List of private path (visible only for admin DatabaseAccessbility=[true])
- * and condition path (base on DatabaseEditable and TableEditable)
  */
-export const privateRoutes = [
-  "/admin",
-  "/role",
-  "/collaboratory",
-  "/workingplace",
-];
+export const privateRoutes = ["/role", "/collaboratory", "/workingplace"];
 
 // defined company specific requires and configuration
 export const companySpecific = {
@@ -94,26 +136,3 @@ export const VALIDATE_RULE = {
     minLength: 12,
   },
 };
-
-// used for search, sort in Table component
-export const NOT_SUPPORT_FIELD_FEATURE = [
-  // attachment type
-  "Portrait",
-  "Avatar",
-  // date type
-  "DOB",
-  "StartWorkingDay",
-  "CreatedTime",
-  "CreatedDate",
-  "LastModifiedTime",
-  // boolean type,
-  "DatabaseAccessibility",
-];
-
-// used for render Date, this is field name that have Date data type
-export const FIELD_DATE_TYPE = [
-  "Created",
-  "CreatedTime",
-  "CreatedDate",
-  "LastModifiedTime",
-];

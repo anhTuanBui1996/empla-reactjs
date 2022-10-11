@@ -5,10 +5,10 @@ import Row from "../layout/Row";
 import Col from "../layout/Col";
 import Select from "react-select";
 import Button from "../common/Button";
-import ImageUploader from "./ImageUploader";
+import FileUploader from "./FileUploader";
 import DatePicker from "./DatePicker";
 import { VALIDATE_RULE } from "../../constants";
-import { initialErrorFormForRole } from "../../assets/errors/errorStrutureForModal";
+import { initialErrorFormForRole } from "../../assets/errors/errorForStaffModal";
 import {
   initialRoleFormForCreate,
   initialRoleFormForEdit,
@@ -711,13 +711,10 @@ function RoleModal({ isModalDisplay, type, setModalHide }) {
         {/* Attachment */}
         <div className="form-group">
           <label htmlFor="Portrait">Portrait</label>
-          <ImageUploader
+          <FileUploader
             name="Portrait"
             data-table="Role"
             imgData={newRoleForm.Role.Portrait.value}
-            imgThumbnail={
-              newRoleForm.Role.Portrait.value && newRoleForm.Portrait.label
-            }
             handleUploadSuccessfully={handleRoleInput}
             handleClearImg={handleRoleInput}
           />

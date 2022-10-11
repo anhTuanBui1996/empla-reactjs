@@ -20,13 +20,13 @@ class InitialRoleForm {
         linkedField: "RoleName",
         value: "",
         label: "",
-        fieldType: "singleLineText",
+        type: "singleLineText",
       },
       DatabaseAccessibility: {
         linkedField: "DatabaseAccessibility",
         value: "",
         label: "",
-        fieldType: "checkbox",
+        type: "checkbox",
       },
       
     };

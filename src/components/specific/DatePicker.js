@@ -51,16 +51,20 @@ function DatePicker(props) {
             useDarkMode
             value={props.value}
             onChange={(v) => {
-              const dateString = v.toLocaleDateString();
+              const dateValue = new Date(v);
+              const dateString = dateValue.toLocaleDateString("en-GB", {
+                timeZone: "UTC+7",
+                hour12: true,
+              });
               setDateValue(dateString);
               props.onChange({
                 target: {
                   "data-table": props["data-table"],
                   name: props.name,
-                  value: dateString,
+                  value: dateValue,
                   label: dateString,
                 },
-                inputType: "DatePicker",
+                inputType: "datePicker",
               });
               setShowPickerBox(false);
             }}

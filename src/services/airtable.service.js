@@ -1,4 +1,4 @@
-import { FIELD_DATE_TYPE } from "../constants";
+import { AIRTABLE } from "../constants";
 import base from "./../utils/airtable";
 
 /**
@@ -8,17 +8,17 @@ import base from "./../utils/airtable";
  * * fields: object | { ...fieldName: cellValue } | data object of record
  * * id: string | the record id (format: rec...)
  * @param {String} tableName table name string match with Airtable
- * @param {String} formula object that has params for the result
+ * @param {String} whereString string formula that filters the result
  * * read more
- * {@link https://support.airtable.com/hc/en-us/articles/203255215-Formula-Field-Reference| Airtable Filter Formula}
+ * {@link https://support.airtable.com//docs/formula-field-reference| Airtable Filter Formula}
  * @returns an array that hase the result data from airtable
  */
-const retrieveData = async (tableName, formula) => {
+const retrieveData = async (tableName, whereString) => {
   try {
     const res = await base(tableName)
       .select({
         view: "Grid view",
-        filterByFormula: formula ? formula : "",
+        filterByFormula: whereString === undefined ? "" : whereString,
       })
       .all();
     return res
@@ -36,24 +36,26 @@ const retrieveData = async (tableName, formula) => {
 /**
  * Mapping from retrieveData res into new array,
  * use for insert the Table component
- * @param {Array} res res Array from retrieveData function
+ * @param {Object[]} res res Array from retrieveData function
+ * @param {String} tableName table name that get data from
  * @param {Array} fieldList field name list to map from res
  * @returns {Array} the array has been mapped,
  * the index is mapped with fieldList
  * element object of return array
  * * {rowId: string, data: any[] string|array|object}
  */
-const mapResultToTableData = (res, fieldList) => {
+const mapResultToTableData = (res, tableName, fieldList) => {
   let dataList = [];
   res.forEach((recordData) => {
     dataList.push({
       rowId: recordData.id,
-      fieldList,
+      tableName,
+      columnList: fieldList,
       data: fieldList.map((fieldName) => {
         let cellData = recordData.fields[fieldName];
-        if (FIELD_DATE_TYPE.includes(fieldName))
-          return new Date(Date.parse(cellData)).toLocaleString();
-        return cellData;
+        let { dataType, sourceType } =
+          AIRTABLE.FIELD_TYPE[tableName][fieldName];
+        return { cellData, dataType, sourceType };
       }),
     });
   });

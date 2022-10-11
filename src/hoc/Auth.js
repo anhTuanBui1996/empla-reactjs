@@ -11,7 +11,7 @@ function Auth({ children }) {
   const userCredential = useSelector(selectUserCredential);
   const userAccount = useMemo(() => {
     if (!userCredential) return undefined;
-    return userCredential.UserAccount;
+    return userCredential.Account;
   }, [userCredential]);
   const navigate = useNavigate();
   const { addToast } = useToasts();

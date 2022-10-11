@@ -20,24 +20,6 @@ import {
   setSelectedStaffForEdit,
   setProgressing as staffProgressSet,
 } from "../../features/staffSlice";
-import {
-  retrieveStatusList,
-  selectLoading as statusLoading,
-  selectIsSuccess as statusIsSuccess,
-  selectError as statusError,
-  selectStatusTableData,
-  setSelectedStatusForEdit,
-  setProgressing as statusProgressSet,
-} from "../../features/statusSlice";
-import {
-  retrieveAccountList,
-  selectLoading as accountLoading,
-  selectIsSuccess as accountIsSuccess,
-  selectError as accountError,
-  selectAccountTableData,
-  setSelectedAccountForEdit,
-  setProgressing as accountProgressSet,
-} from "../../features/accountSlice";
 import BirthdayScheduler from "../specific/BirthdayScheduler";
 import { MdCelebration } from "react-icons/md";
 import newStaffImg from "./../../assets/images/welcome-new-staff.jpeg";
@@ -52,31 +34,23 @@ function Staff() {
   const _staff_retrieveStatus = useSelector(staffIsSuccess);
   const _staff_retrieveResult = useSelector(selectStaffTableData);
   const _staff_retrieveError = useSelector(staffError);
-  const _status_loading = useSelector(statusLoading);
-  const _status_retrieveStatus = useSelector(statusIsSuccess);
-  const _status_retrieveResult = useSelector(selectStatusTableData);
-  const _status_retrieveError = useSelector(statusError);
-  const _account_loading = useSelector(accountLoading);
-  const _account_retrieveStatus = useSelector(accountIsSuccess);
-  const _account_retrieveResult = useSelector(selectAccountTableData);
-  const _account_retrieveError = useSelector(accountError);
 
   const _logLoading = useSelector(selectLoading);
 
   const dispatch = useDispatch();
   const { addToast } = useToasts();
-  const [_staff_recordList, _staff_setRecordList] = useState([]);
+  const [_info_recordList, _info_setRecordList] = useState([]);
   const [_status_recordList, _status_setRecordList] = useState([]);
   const [_account_recordList, _account_setRecordList] = useState([]);
   const [isModalDisplay, setModalDisplay] = useState(false);
   const [modalType, setModalType] = useState("create");
-  const staffFieldList = useMemo(() => {
+  const infoFieldList = useMemo(() => {
     return [
       "StaffId",
       "FullName",
       "Portrait",
       "Gender",
-      "DOB",
+      "DateOfBirth",
       "Phone",
       "PersonalEmail",
       "RoleType",
@@ -86,25 +60,23 @@ function Staff() {
   }, []);
   const statusFieldList = useMemo(() => {
     return [
-      "StaffId",
+      "ContractType",
       "WorkingType",
+      "WorkingPeriod",
       "WorkingStatus",
       "StartWorkingDay",
       "MarriageStatus",
       "HealthStatus",
+      "CurriculumVitae",
       "Notes",
-      "Covid19Vaccinated",
-      "Covid19VaccineType",
     ];
   }, []);
   const accountFieldList = useMemo(() => {
     return [
-      "StaffId",
       "Username",
       "Domain",
-      "UserAccount",
+      "Account",
       "Password",
-      "FullName",
       "Avatar",
       "CreatedTime",
       "LastModifiedTime",
@@ -115,11 +87,24 @@ function Staff() {
   // Staff table retrieve progression
   useEffect(() => {
     if (_staff_retrieveResult) {
-      const staffDataTableList = mapResultToTableData(
+      const infoDataTableList = mapResultToTableData(
         _staff_retrieveResult,
-        staffFieldList
+        "Staff",
+        infoFieldList
       );
-      _staff_setRecordList(staffDataTableList);
+      const statusDataTableList = mapResultToTableData(
+        _staff_retrieveResult,
+        "Staff",
+        statusFieldList
+      );
+      const accountDataTableList = mapResultToTableData(
+        _staff_retrieveResult,
+        "Staff",
+        accountFieldList
+      );
+      _info_setRecordList(infoDataTableList);
+      _status_setRecordList(statusDataTableList);
+      _account_setRecordList(accountDataTableList);
       dispatch(staffProgressSet(null));
     } else {
       if (_staff_retrieveStatus) {
@@ -135,72 +120,12 @@ function Staff() {
       }
     }
   }, [
-    staffFieldList,
+    infoFieldList,
+    statusFieldList,
+    accountFieldList,
     _staff_retrieveStatus,
     _staff_retrieveResult,
     _staff_retrieveError,
-    dispatch,
-    addToast,
-  ]);
-
-  // Status table retrieve progression
-  useEffect(() => {
-    if (_status_retrieveResult) {
-      const statusDataTableList = mapResultToTableData(
-        _status_retrieveResult,
-        statusFieldList
-      );
-      _status_setRecordList(statusDataTableList);
-      dispatch(statusProgressSet(null));
-    } else {
-      if (_status_retrieveStatus) {
-        if (_status_retrieveError) {
-          console.log(_status_retrieveError);
-          addToast(
-            "Retrieve Status Data failed! Please check your connection...",
-            { appearance: "error" }
-          );
-        }
-      } else {
-        dispatch(retrieveStatusList());
-      }
-    }
-  }, [
-    statusFieldList,
-    _status_retrieveStatus,
-    _status_retrieveResult,
-    _status_retrieveError,
-    dispatch,
-    addToast,
-  ]);
-
-  // Account table retrieve progression
-  useEffect(() => {
-    if (_account_retrieveResult) {
-      const accountDataTableList = mapResultToTableData(
-        _account_retrieveResult,
-        accountFieldList
-      );
-      _account_setRecordList(accountDataTableList);
-      dispatch(accountProgressSet(null));
-    } else {
-      if (_account_retrieveStatus) {
-        if (_account_retrieveError) {
-          console.log(_account_retrieveError);
-          addToast(
-            "Retrieve Account Data failed! Please check your connection...",
-            { appearance: "error" }
-          );
-        }
-      } else {
-        dispatch(retrieveAccountList());
-      }
-    }
-  }, [
-    accountFieldList,
-    _account_retrieveStatus,
-    _account_retrieveResult,
-    _account_retrieveError,
     dispatch,
     addToast,
   ]);
@@ -209,8 +134,6 @@ function Staff() {
     setModalType("create");
     setModalDisplay(true);
     dispatch(setSelectedStaffForEdit(null));
-    dispatch(setSelectedStatusForEdit(null));
-    dispatch(setSelectedAccountForEdit(null));
   };
   const handleOpenModalForEdit = () => {
     setModalType("edit");
@@ -240,7 +163,12 @@ function Staff() {
                         innerWidth < 389 ? "center" : "between"
                       } align-items-baseline`}
                     >
-                      <img alt="" src={newStaffImg} width={200} height={110} />
+                      <img
+                        alt="new-staff-img"
+                        src={newStaffImg}
+                        width={200}
+                        height={110}
+                      />
                       <Button
                         className="py-2 px-4"
                         onClick={handleOpenModalForCreate}
@@ -264,7 +192,7 @@ function Staff() {
                 }}
                 isHasHideCard
                 elementList={[
-                  <BirthdayScheduler events={_status_retrieveResult} />,
+                  <BirthdayScheduler events={_staff_retrieveResult} />,
                 ]}
               />
             </Col>
@@ -275,78 +203,45 @@ function Staff() {
                 cardHeader={{
                   title: "Your employee information",
                   extension: true,
-                  navList: ["Staff", "Status", "Account"],
+                  navList: ["Info", "Status", "Account"],
                 }}
                 isHasHideCard
                 elementList={[
                   <Table
                     tableName="Staff"
-                    fieldList={staffFieldList}
-                    recordList={_staff_recordList}
+                    fieldList={infoFieldList}
+                    recordList={_info_recordList}
                     isHasSettings
                     forEditing={{
-                      syncTables: [
-                        _staff_retrieveResult,
-                        _status_retrieveResult,
-                        _account_retrieveResult,
-                      ],
-                      syncField: "StaffId",
-                      syncReducers: [
-                        setSelectedStaffForEdit,
-                        setSelectedStatusForEdit,
-                        setSelectedAccountForEdit,
-                      ],
+                      syncRecords: _staff_retrieveResult,
+                      syncReducer: setSelectedStaffForEdit,
                     }}
                     onRecordClick={handleOpenModalForEdit}
                   />,
                   <Table
-                    tableName="Status"
+                    tableName="Staff"
                     fieldList={statusFieldList}
                     recordList={_status_recordList}
                     isHasSettings
                     forEditing={{
-                      syncTables: [
-                        _staff_retrieveResult,
-                        _status_retrieveResult,
-                        _account_retrieveResult,
-                      ],
-                      syncField: "StaffId",
-                      syncReducers: [
-                        setSelectedStaffForEdit,
-                        setSelectedStatusForEdit,
-                        setSelectedAccountForEdit,
-                      ],
+                      syncRecords: _staff_retrieveResult,
+                      syncReducer: setSelectedStaffForEdit,
                     }}
                     onRecordClick={handleOpenModalForEdit}
                   />,
                   <Table
-                    tableName="Account"
+                    tableName="Staff"
                     fieldList={accountFieldList}
                     recordList={_account_recordList}
                     isHasSettings
                     forEditing={{
-                      syncTables: [
-                        _staff_retrieveResult,
-                        _status_retrieveResult,
-                        _account_retrieveResult,
-                      ],
-                      syncField: "StaffId",
-                      syncReducers: [
-                        setSelectedStaffForEdit,
-                        setSelectedStatusForEdit,
-                        setSelectedAccountForEdit,
-                      ],
+                      syncRecords: _staff_retrieveResult,
+                      syncReducer: setSelectedStaffForEdit,
                     }}
                     onRecordClick={handleOpenModalForEdit}
                   />,
                 ]}
-                isLoading={
-                  _staff_recordList.length ||
-                  _status_recordList.length ||
-                  _account_recordList.length
-                    ? false
-                    : true
-                }
+                isLoading={_staff_retrieveResult ? false : true}
                 noBodyPadding
               />
             </Col>
@@ -358,10 +253,9 @@ function Staff() {
         type={modalType}
         setModalHide={() => setModalDisplay(false)}
       />
-      {(_staff_loading ||
-        _status_loading ||
-        _account_loading ||
-        _logLoading) && <Loader />}
+      {(_staff_loading || _logLoading || _staff_retrieveResult === null) && (
+        <Loader />
+      )}
     </>
   );
 }

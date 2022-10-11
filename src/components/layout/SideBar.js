@@ -60,6 +60,7 @@ function SideBar({ localUser }) {
         handleLogout={handleLogout}
         handleToggleCollapse={handleToggleCollapse}
         forceCollapse={handleOutClick}
+        isPositionFixedAtTop
       />
     </Outclick>
   ) : (
@@ -81,6 +82,7 @@ function SideBarContent({
   handleLogout,
   handleToggleCollapse,
   forceCollapse,
+  isPositionFixedAtTop,
 }) {
   const userCredential = useSelector(selectUserCredential);
   const avatarUrl = userCredential?.Avatar
@@ -93,7 +95,9 @@ function SideBarContent({
       style={{
         zIndex: 999,
         height: innerWidth <= 767 ? "" : "100vh",
-        boxShadow: "1px 1px 2px 1px #e0e0d1",
+        boxShadow: "2px 2px 8px 2px #e0e0d1",
+        paddingLeft: isPositionFixedAtTop ? "" : 0,
+        paddingRight: isPositionFixedAtTop ? "" : 0,
       }}
     >
       <div className="container-fluid h-100">
@@ -117,22 +121,25 @@ function SideBarContent({
           <div className="text-secondary font-italic mt-1">Empla</div>
         </Link>
         <div
-          className="navbar-collapse collapsing"
+          className="navbar-collapse collapsing px-0 mx-0"
           style={{
             height: isCollaped ? "0" : "287.766px",
             overflowY: innerWidth <= 767 ? "auto" : "",
           }}
         >
           <form className="mb-3 d-md-flex">
-            <Search placeholder="Search..." />
+            <Search
+              className={`${isPositionFixedAtTop ? "" : "px-4"}`}
+              placeholder="Search..."
+            />
           </form>
           <div
             className="navbar-list"
             style={{ flex: 1, overflow: "hidden auto" }}
           >
-            <ul className="navbar-nav h-100">
+            <ul className="navbar-nav h-100 mx-0">
               {innerWidth <= 767 && (
-                <h6 className="navbar-heading px-4">Menu</h6>
+                <h6 className="navbar-heading px-2">Menu</h6>
               )}
               <IconContext.Provider value={{ size: "1.5em" }}>
                 {SIDENAV.map((route) => {
@@ -148,9 +155,12 @@ function SideBarContent({
                           style={({ isActive }) => {
                             return {
                               backgroundColor: isActive ? "#e7e7e7" : "",
+                              color: isActive ? "#12263f" : "",
                             };
                           }}
-                          className="nav-link"
+                          className={`nav-link ${
+                            isPositionFixedAtTop ? "px-3" : "px-4"
+                          }`}
                           to={route.path}
                           onClick={forceCollapse}
                         >
@@ -163,7 +173,7 @@ function SideBarContent({
                 {innerWidth <= 767 && (
                   <>
                     <hr className="dropdown-divider my-3" />
-                    <h6 className="navbar-heading px-4">Account</h6>
+                    <h6 className="navbar-heading px-2">Account</h6>
                     <NavLink
                       style={({ isActive }) => {
                         return {

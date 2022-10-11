@@ -5,7 +5,7 @@ import Row from "../layout/Row";
 import Col from "../layout/Col";
 import Select from "react-select";
 import Button from "../common/Button";
-import ImageUploader from "./ImageUploader";
+import FileUploader from "./FileUploader";
 import DatePicker from "./DatePicker";
 import { VALIDATE_RULE } from "../../constants";
 import {
@@ -13,7 +13,7 @@ import {
   initialStaffFormForEdit,
 } from "../../assets/forms/staffForm";
 import { optionList } from "../../assets/options/staffOptionSelects";
-import { initialErrorFormForStaff } from "../../assets/errors/errorStrutureForModal";
+import { initialErrorFormForStaff } from "../../assets/errors/errorForStaffModal";
 import useAutoGenerate from "../hooks/useAutoGenerate";
 import { MdRefresh, MdRemoveRedEye } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
@@ -28,7 +28,6 @@ import {
   setSelectedStaffForEdit,
   selectSelectedStaffForEdit,
   setLoading,
-  setNewStaffData,
   updateExistingStaff,
   selectError as errorStaff,
   deleteExistingStaff,
@@ -39,43 +38,11 @@ import {
   setWillBeUpdatedStaffData,
   selectWillBeUpdatedStaffData,
   setWillUpdatingStaffData,
+  createNewStaff,
+  selectStaffTableData,
 } from "../../features/staffSlice";
-import {
-  setSelectedStatusForEdit,
-  selectSelectedStatusForEdit,
-  updateExistingStatus,
-  createNewStatus,
-  selectError as errorStatus,
-  deleteExistingStatus,
-  selectProgressing as progressingStatus,
-  retrieveStatusList,
-  selectDeletedStatusData,
-  selectNewStatusData,
-  selectWillUpdatingStatusData,
-  setWillBeUpdatedStatusData,
-  selectWillBeUpdatedStatusData,
-  setWillUpdatingStatusData,
-} from "../../features/statusSlice";
-import {
-  setSelectedAccountForEdit,
-  selectSelectedAccountForEdit,
-  updateExistingAccount,
-  createNewAccount,
-  selectAccountTableData,
-  selectError as errorAccount,
-  deleteExistingAccount,
-  selectProgressing as progressingAccount,
-  retrieveAccountList,
-  selectDeletedAccountData,
-  selectNewAccountData,
-  selectWillUpdatingAccountData,
-  setWillBeUpdatedAccountData,
-  setWillUpdatingAccountData,
-  selectWillBeUpdatedAccountData,
-} from "../../features/accountSlice";
 import { SpinnerCircular } from "spinners-react";
 import convertFullNameToUsername from "../../utils/convertToUsername";
-import { createNewRecord } from "../../services/airtable.service";
 import { compareTwoArrayOfString } from "../../utils/arrayUtils";
 import {
   createNewLog,
@@ -93,6 +60,7 @@ import { compareTwoObject } from "../../utils/objectUtils";
 // the normal input form-control still can use the custom props data-table
 // and name.
 
+/* eslint-disable */
 function StaffModal({ isModalDisplay, type, setModalHide }) {
   let [componentAvailable, setComponentAvailable] = useState(true);
   const dispatch = useDispatch();
@@ -104,40 +72,25 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   const retrieveSelectError = useSelector(selectError);
   // watch error of redux async thunk progression
   const staffError = useSelector(errorStaff);
-  const statusError = useSelector(errorStatus);
-  const accountError = useSelector(errorAccount);
   // watch status of redux async thunk progression
   const staffProgression = useSelector(progressingStaff);
-  const statusProgression = useSelector(progressingStatus);
-  const accountProgression = useSelector(progressingAccount);
 
   const logData = useSelector(selectLogsData);
 
-  const createdStatus = useSelector(selectNewStatusData);
-  const createdAccount = useSelector(selectNewAccountData);
-
   const selectedStaffForEdit = useSelector(selectSelectedStaffForEdit);
-  const selectedStatusForEdit = useSelector(selectSelectedStatusForEdit);
-  const selectedAccountForEdit = useSelector(selectSelectedAccountForEdit);
 
   // the fields with old value of selected record will be updated
   const willBeUpdatedStaff = useSelector(selectWillBeUpdatedStaffData);
-  const willBeUpdatedStatus = useSelector(selectWillBeUpdatedStatusData);
-  const willBeUpdatedAccount = useSelector(selectWillBeUpdatedAccountData);
   // the fields with new value of selected record will updating to
   const willUpdatingStaff = useSelector(selectWillUpdatingStaffData);
-  const willUpdatingStatus = useSelector(selectWillUpdatingStatusData);
-  const willUpdatingAccount = useSelector(selectWillUpdatingAccountData);
 
   const deletedStaff = useSelector(selectDeletedStaffData);
-  const deletedStatus = useSelector(selectDeletedStatusData);
-  const deletedAccount = useSelector(selectDeletedAccountData);
 
   const autoGenerate = useAutoGenerate();
   const initialPasswordString = autoGenerate(12);
   const [showPassword, setShowPassword] = useState(false);
   // get the AccountTableList to define Username (not duplicating)
-  const accountDataTableList = useSelector(selectAccountTableData);
+  const staffDataTableList = useSelector(selectStaffTableData);
   const [usernameValidation, setUsernameValidation] = useState(false);
 
   // using string generator hook
@@ -145,8 +98,8 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
     const newPassword = autoGenerate(length);
     setNewStaffForm((state) => {
       const newState = { ...state };
-      newState.Account.Password.label = newPassword;
-      newState.Account.Password.value = newPassword;
+      newState.Staff.Password.label = newPassword;
+      newState.Staff.Password.value = newPassword;
       return newState;
     });
   };
@@ -168,11 +121,10 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   // initialStaffFormForCreate is defined in assets/forms/staffForm
   // added Password generation
   const [newStaffForm, setNewStaffForm] = useState({
-    ...initialStaffFormForCreate,
-    Account: {
-      ...initialStaffFormForCreate.Account,
+    Staff: {
+      ...initialStaffFormForCreate.Staff,
       Password: {
-        ...initialStaffFormForCreate.Account.Password,
+        ...initialStaffFormForCreate.Staff.Password,
         value: initialPasswordString,
         label: initialPasswordString,
       },
@@ -185,17 +137,17 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   const [newStaffFormForEdit, setNewStaffFormForEdit] = useState(
     initialStaffFormForEdit
   );
-  const [isSfaffFormChanged, setSubmitChangeStatus] = useState(false);
+  const [isSfaffFormChanged, setStaffFormChangeStatus] = useState(false);
 
   // define the error status and message
   // initialErrorFormForStaff is defined in constants.js
   const [errorForm, setErrorForm] = useState(initialErrorFormForStaff);
 
-  // define the ref list
+  // define the ref list (for error form to focus)
   const refList = {
     FullName: useRef(null),
     Gender: useRef(null),
-    DOB: useRef(null),
+    DateOfBirth: useRef(null),
     Phone: useRef(null),
     Company: useRef(null),
     WorkingType: useRef(null),
@@ -227,10 +179,11 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
     retrieveSelectResult,
     retrieveSelectError,
   ]);
+
   // Handle the input change (valitdate right after the input change)
   // Normal input/select handle
   const handleStaffInput = (e, action) => {
-    setSubmitChangeStatus(false);
+    setStaffFormChangeStatus(false);
     if (e === null) {
       // when clearing a single select input
       setNewStaffForm((state) => {
@@ -240,9 +193,6 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         newState[dataTable][name].label = "";
         return newState;
       });
-      // handle compare changes
-      setSubmitChangeStatus(true);
-      return;
     } else if (typeof e === "object") {
       if (e.target) {
         setNewStaffForm((state) => {
@@ -256,7 +206,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             name = e.target.name;
             value = e.target.value;
             label = e.target.value;
-          } else if (e.inputType && e.inputType === "DatePicker") {
+          } else if (e.inputType && e.inputType === "datePicker") {
             // used for DatePicker input
             dataTable = e.target["data-table"];
             name = e.target.name;
@@ -266,58 +216,45 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
           const newState = { ...state };
           newState[dataTable][name].value = value;
           newState[dataTable][name].label = label;
-          // handle compare changes
-          if (newStaffFormForEdit[dataTable][name].value !== value) {
-            setSubmitChangeStatus(true);
-          }
           // handle Username generator
           if (name === "FullName") {
             setUsernameValidation(true);
             let newUsername = convertFullNameToUsername(value);
-            const currentDomain = newState.Account.Domain.label;
-            const filteredRecordSameUsername = accountDataTableList.filter(
+            const currentDomain = newState.Staff.Domain.label;
+            const filteredRecordSameUsername = staffDataTableList?.filter(
               (record) => record.fields.Username.startsWith(newUsername)
             );
             if (filteredRecordSameUsername.length === 0) {
-              newState.Account.Username.value = newUsername;
-              newState.Account.Username.label = newUsername;
-              newState.Account.UserAccount.value = newUsername + currentDomain;
-              newState.Account.UserAccount.label = newUsername + currentDomain;
-            } else if (
-              filteredRecordSameUsername.length === 1 &&
-              filteredRecordSameUsername[0].fields.Username === newUsername
-            ) {
-              newState.Account.Username.value = newUsername + 1;
-              newState.Account.Username.label = newUsername + 1;
-              newState.Account.UserAccount.value =
-                newUsername + 1 + currentDomain;
-              newState.Account.UserAccount.label =
-                newUsername + 1 + currentDomain;
+              newState.Staff.Username.value = newUsername;
+              newState.Staff.Username.label = newUsername;
+              newState.Staff.Account.value = newUsername + currentDomain;
+              newState.Staff.Account.label = newUsername + currentDomain;
             } else {
-              for (let i = 1; i <= filteredRecordSameUsername.length; i++) {
-                const findUsername = filteredRecordSameUsername.find(
-                  (record) => record.fields.Username === newUsername + i
+              const filteredRecordSameUsernameExactly =
+                filteredRecordSameUsername?.filter(
+                  (record) => record.fields.Username === newUsername
                 );
-                if (findUsername !== undefined) {
-                  newState.Account.Username.value = newUsername + i;
-                  newState.Account.Username.label = newUsername + i;
-                  newState.Account.UserAccount.value =
-                    newUsername + i + currentDomain;
-                  newState.Account.UserAccount.label =
-                    newUsername + i + currentDomain;
-                  break;
-                }
-                const findUsernameNext = filteredRecordSameUsername.find(
-                  (record) => record.fields.Username === newUsername + (i + 1)
-                );
-                if (findUsernameNext !== undefined) {
-                  newState.Account.Username.value = newUsername + (i + 1);
-                  newState.Account.Username.label = newUsername + (i + 1);
-                  newState.Account.UserAccount.value =
-                    newUsername + (i + 1) + currentDomain;
-                  newState.Account.UserAccount.label =
-                    newUsername + (i + 1) + currentDomain;
-                  break;
+              if (filteredRecordSameUsernameExactly.length === 0) {
+                newState.Staff.Username.value = newUsername;
+                newState.Staff.Username.label = newUsername;
+                newState.Staff.Account.value = newUsername + currentDomain;
+                newState.Staff.Account.label = newUsername + currentDomain;
+              } else {
+                let startCount = 1;
+                while (true) {
+                  let newCountUsername = newUsername + startCount;
+                  if (
+                    filteredRecordSameUsername.indexOf(newCountUsername) === -1
+                  ) {
+                    newState.Staff.Username.value = newCountUsername;
+                    newState.Staff.Username.label = newCountUsername;
+                    newState.Staff.Account.value =
+                      newCountUsername + currentDomain;
+                    newState.Staff.Account.label =
+                      newCountUsername + currentDomain;
+                    break;
+                  }
+                  startCount++;
                 }
               }
             }
@@ -330,22 +267,10 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         // filesFailed, filesUploaded are arrays
         if (e.filesUploaded.length) {
           setNewStaffForm((state) => {
-            let newState = { ...state };
+            const newState = { ...state };
             const { name, "data-table": dataTable, filesUploaded } = e;
-            newState[dataTable][name].value = [
-              {
-                filename: filesUploaded[0].filename,
-                url: filesUploaded[0].url,
-              },
-            ];
+            newState[dataTable][name].value = [filesUploaded[0]];
             newState[dataTable][name].label = filesUploaded[0].url;
-            // handle compare changes
-            if (
-              newStaffFormForEdit[dataTable][name].label !==
-              filesUploaded[0].url
-            ) {
-              setSubmitChangeStatus(true);
-            }
             return newState;
           });
         } else {
@@ -355,20 +280,18 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
           } else {
             // clear image from newStaffForm
             setNewStaffForm((state) => {
-              let newState = { ...state };
+              const newState = { ...state };
               const { name, "data-table": dataTable } = e;
               newState[dataTable][name].value = [];
               newState[dataTable][name].label = "";
               return newState;
             });
-            // handle compare changes
-            setSubmitChangeStatus(true);
           }
         }
       } else {
         setNewStaffForm((state) => {
           // used for select input
-          let newState = { ...state };
+          const newState = { ...state };
           if (Array.isArray(e)) {
             // multi select
             let refObj = {};
@@ -393,42 +316,26 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             });
             newState[dataTable][name].value = newSelectedValue;
             newState[dataTable][name].label = newSelectedLabel;
-            // handle compare changes
-            if (
-              !compareTwoArrayOfString(
-                newStaffFormForEdit[dataTable][name].value,
-                newSelectedValue
-              )
-            ) {
-              setSubmitChangeStatus(true);
-            }
           } else {
             const newState = { ...state };
             const { "data-table": dataTable, name, value, label } = e;
             // when chosing Company it will change the Username and Domain too
             if (name === "Company") {
-              const username = newState.Account.Username;
-              const domain = newState.Account.Domain;
-              const userAccount = newState.Account.UserAccount;
+              const username = newState[dataTable].Username;
+              const domain = newState[dataTable].Domain;
+              const userAccount = newState[dataTable].Account;
               domain.value = [value];
-              domain.label = selectList.Account.Domain.list.find(
+              domain.label = selectList[dataTable].Domain.list.find(
                 (item) => item.value === value
               ).label;
               userAccount.value = username.value + domain.value;
               userAccount.label = username.label + domain.label;
             }
-            if (newStaffForm[dataTable][name].linkedField === name) {
+            if (newStaffForm[dataTable][name]["data-type"] === "singleSelect") {
               // pure single select
               newState[dataTable][name].value = value;
-              if (newStaffFormForEdit[dataTable][name].value !== value) {
-                setSubmitChangeStatus(true);
-              }
             } else {
-              // looked up/linked field
-              newState[dataTable][name].value = [value];
-              if (newStaffFormForEdit[dataTable][name].value[0] !== value[0]) {
-                setSubmitChangeStatus(true);
-              }
+              console.log("Unknown field!", `${dataTable}.${name}`);
             }
             newState[dataTable][name].label = label;
           }
@@ -437,6 +344,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
       }
     }
     handleValidate();
+    handleCompareChanges(newStaffForm, newStaffFormForEdit);
   };
 
   // validate the newStaffForm
@@ -451,7 +359,6 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         });
       });
       const staffForm = newStaffForm.Staff;
-      const statusForm = newStaffForm.Status;
       // FullName
       if (staffForm.FullName.value === "") {
         newErr.errMsg.Staff.FullName = "The Full Name is mustn't empty";
@@ -478,8 +385,8 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         newErr.errStatus = true;
       }
       // Date Of Birth
-      if (staffForm.DOB.value === "") {
-        newErr.errMsg.Staff.DOB = "The DOB is mustn't empty";
+      if (staffForm.DateOfBirth.value === "") {
+        newErr.errMsg.Staff.DateOfBirth = "The DateOfBirth is mustn't empty";
         newErr.errStatus = true;
       }
       // Phone
@@ -500,19 +407,19 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         newErr.errStatus = true;
       }
       // Working Type
-      if (statusForm.WorkingType.value === "") {
-        newErr.errMsg.Status.WorkingType = "The Working Type is mustn't empty";
+      if (staffForm.WorkingType.value === "") {
+        newErr.errMsg.Staff.WorkingType = "The Working Type is mustn't empty";
         newErr.errStatus = true;
       }
       // Working Status
-      if (statusForm.WorkingStatus.value === "") {
-        newErr.errMsg.Status.WorkingStatus =
+      if (staffForm.WorkingStatus.value === "") {
+        newErr.errMsg.Staff.WorkingStatus =
           "The Working Status is mustn't empty";
         newErr.errStatus = true;
       }
       // Start Working Day
-      if (statusForm.StartWorkingDay.value === "") {
-        newErr.errMsg.Status.StartWorkingDay =
+      if (staffForm.StartWorkingDay.value === "") {
+        newErr.errMsg.Staff.StartWorkingDay =
           "The Start Working Day is mustn't empty";
         newErr.errStatus = true;
       }
@@ -520,15 +427,17 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
     });
   };
 
-  // handle retrieve 3 tables after a create/update/delete
+  // compare changes of modal form
+  const handleCompareChanges = (newForm, newFormForEdit) => {
+    const compareResult = compareTwoObject(newForm, newFormForEdit);
+    // console.log(newForm, newFormForEdit);
+    // console.log(compareResult);
+    setStaffFormChangeStatus(!compareResult);
+  };
+
+  // handle retrieve table after a create/update/delete
   const handleRetrieveStaffTable = () => {
     dispatch(retrieveStaffList());
-  };
-  const handleRetrieveStatusTable = () => {
-    dispatch(retrieveStatusList());
-  };
-  const handleRetrieveAccountTable = () => {
-    dispatch(retrieveAccountList());
   };
 
   // handle submit the new staff creation or update staff info
@@ -537,7 +446,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
     if (errorForm.errStatus) {
       setErrorForm({ ...errorForm, isShowMsg: true });
       let findFirstErrRef = false;
-      Object.values(errorForm.errMsg).forEach((tableErrObj) => {
+      for (const tableErrObj of errorForm.errMsg) {
         if (findFirstErrRef) return;
         for (const fieldKey in tableErrObj) {
           if (tableErrObj[fieldKey] !== "") {
@@ -546,19 +455,19 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             return;
           }
         }
-      });
+      }
       return;
     }
     // create new record object suitable with fields in airtable
     // this is the data to upload to airtable
-    let newRecord = { Staff: {}, Status: {}, Account: {} };
+    let newRecord = { Staff: null };
     // this is the old data that has been overwrited
-    let oldRecord = { Staff: {}, Status: {}, Account: {} };
+    let oldRecord = { Staff: null };
     Object.keys(newRecord).forEach((tableKey) => {
       Object.entries(
         type === "create"
-          ? newStaffFormForEdit[tableKey] // type === "create"
-          : newStaffForm[tableKey] // type === "edit"
+          ? newStaffForm[tableKey] // type === "create"
+          : newStaffFormForEdit[tableKey] // type === "edit"
       ).forEach((field) => {
         if (type === "edit") {
           // exclude the field that can't be updated (duplicated/computed/empty)
@@ -606,83 +515,19 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
 
     // save the old data to redux (available with Update action)
     dispatch(setWillBeUpdatedStaffData(oldRecord.Staff));
-    dispatch(setWillBeUpdatedStatusData(oldRecord.Status));
-    dispatch(setWillBeUpdatedAccountData(oldRecord.Account));
 
-    // processing create new staff
-    // we can't use the redux-thunk here because the async thunk
-    // doesn't have access to the result of the async (we can only get it
-    // from slice, then we can't catch the result when it's done in a same
-    // function)
+    // processing submit new staff object to database
     if (type === "create") {
       dispatch(setLoading(true));
-      createNewRecord("Staff", newRecord.Staff)
-        .then((staffRes) => {
-          try {
-            dispatch(setNewStaffData(staffRes));
-            dispatch(
-              createNewLog({
-                Actions: "Create",
-                Account: getLocalUser().UserAccount,
-                RecordAffected: staffRes.id,
-                TableAffected: "Staff",
-                Status: "Done",
-                NewValue: JSON.stringify(staffRes.fields),
-                Notes: "Create a new Staff",
-              })
-            );
-            addToast("Create a new staff record successfully!", {
-              appearance: "success",
-            });
-            handleRetrieveStaffTable();
-            dispatch(setLoading(false));
-            const newStaffRecordId = [staffRes.id];
-            newRecord.Status.Staff = newStaffRecordId;
-            newRecord.Account.Staff = newStaffRecordId;
-            dispatch(createNewStatus(newRecord.Status));
-            dispatch(createNewAccount(newRecord.Account));
-          } catch (e) {
-            console.log("Source code error", e);
-          }
-        })
-        .catch((e) => {
-          console.log("Error while creating new staff", e);
-          dispatch(
-            createNewLog({
-              Actions: "Create",
-              Account: getLocalUser().UserAccount,
-              TableAffected: "Staff",
-              Status: "Failed",
-              Notes: `Create a new Staff errored,\n${JSON.stringify(e)}`,
-            })
-          );
-          addToast("Fail to create a new staff record!", {
-            appearance: "error",
-          });
-        });
+      dispatch(createNewStaff(newRecord.Staff));
     } else {
       try {
-        Object.keys(newRecord.Staff).length > 0 &&
-          dispatch(
-            updateExistingStaff({
-              recordId: selectedStaffForEdit.id,
-              updateData: newRecord.Staff,
-            })
-          );
-        Object.keys(newRecord.Status).length > 0 &&
-          dispatch(
-            updateExistingStatus({
-              recordId: selectedStatusForEdit.id,
-              updateData: newRecord.Status,
-            })
-          );
-        Object.keys(newRecord.Account).length > 0 &&
-          dispatch(
-            updateExistingAccount({
-              recordId: selectedAccountForEdit.id,
-              updateData: newRecord.Account,
-            })
-          );
+        dispatch(
+          updateExistingStaff({
+            recordId: selectedStaffForEdit.id,
+            updateData: newRecord.Staff,
+          })
+        );
       } catch (e) {
         console.log("Source code error", e);
       }
@@ -693,38 +538,64 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   const handleDeleteStaff = (e) => {
     e.preventDefault();
     const staffRecordId = selectedStaffForEdit.id;
-    const statusRecordId = selectedStatusForEdit.id;
-    const accountRecordId = selectedAccountForEdit.id;
     dispatch(deleteExistingStaff(staffRecordId));
-    dispatch(deleteExistingStatus(statusRecordId));
-    dispatch(deleteExistingAccount(accountRecordId));
   };
 
   // handle finish task (create/update/delete)
   const handleFinishTask = () => {
     setModalHide();
     dispatch(setSelectedStaffForEdit(null));
-    dispatch(setSelectedStatusForEdit(null));
-    dispatch(setSelectedAccountForEdit(null));
     dispatch(setLogsData(null));
   };
 
   // effect catch the create/update/delete api
-  // there are 3 prefix progression of 3 table
-  // (<staff|status|account>/<retrieve|create|update|delete>)
+  // there are 3 prefix progression of the table
+  // (<staff>/<retrieve|create|update|delete>)
   // and a status behind (pending/rejected/fulfilled)
-  // (ex. staff/create/pending, status/update/rejected ,...)
+  // (ex. staff/create/pending, staff/update/rejected ,...)
   // added toast display
   // added logs creation
   useEffect(() => {
     // staff progression
     switch (staffProgression) {
+      case "staff/create/rejected":
+        console.log(staffError);
+        dispatch(
+          createNewLog({
+            Actions: "Create",
+            Account: getLocalUser().Account,
+            TableAffected: "Staff",
+            Status: "Failed",
+            Notes: `Create a new Staff errored,\n${JSON.stringify(e)}`,
+          })
+        );
+        addToast("Fail to create a new staff record!", {
+          appearance: "error",
+        });
+        break;
+      case "staff/create/fulfilled":
+        dispatch(
+          createNewLog({
+            Actions: "Create",
+            Account: getLocalUser().Account,
+            RecordAffected: staffRes.id,
+            TableAffected: "Staff",
+            Status: "Done",
+            NewValue: JSON.stringify(staffRes.fields),
+            Notes: "Create a new Staff",
+          })
+        );
+        addToast("Create a new staff record successfully!", {
+          appearance: "success",
+        });
+        handleRetrieveStaffTable();
+        break;
       case "staff/update/rejected":
         console.error(staffError);
         dispatch(
           createNewLog({
             Actions: "Update",
-            Account: getLocalUser().UserAccount,
+            Account: getLocalUser().Account,
             RecordAffected: willUpdatingStaff.recordId,
             TableAffected: "Staff",
             Status: "Failed",
@@ -743,7 +614,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         dispatch(
           createNewLog({
             Actions: "Update",
-            Account: getLocalUser().UserAccount,
+            Account: getLocalUser().Account,
             RecordAffected: willUpdatingStaff.recordId,
             TableAffected: "Staff",
             Status: "Done",
@@ -762,7 +633,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         dispatch(
           createNewLog({
             Actions: "Delete",
-            Account: getLocalUser().UserAccount,
+            Account: getLocalUser().Account,
             RecordAffected: selectedStaffForEdit.id,
             TableAffected: "Staff",
             Status: "Failed",
@@ -779,7 +650,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         dispatch(
           createNewLog({
             Actions: "Delete",
-            Account: getLocalUser().UserAccount,
+            Account: getLocalUser().Account,
             RecordAffected: deletedStaff.id,
             TableAffected: "Staff",
             Status: "Done",
@@ -792,242 +663,15 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         });
         handleRetrieveStaffTable();
         break;
-      default:
-        break;
     }
-    // status progression
-    switch (statusProgression) {
-      case "status/create/rejected":
-        console.log(statusError);
-        dispatch(
-          createNewLog({
-            Actions: "Create",
-            Account: getLocalUser().UserAccount,
-            TableAffected: "Status",
-            Status: "Failed",
-            Notes: `Create a Status errored,\n${JSON.stringify(statusError)}`,
-          })
-        );
-        addToast("Fail to create a new status record!", {
-          appearance: "error",
-        });
-        break;
-      case "status/create/fulfilled":
-        dispatch(
-          createNewLog({
-            Actions: "Create",
-            Account: getLocalUser().UserAccount,
-            RecordAffected: createdStatus.id,
-            TableAffected: "Status",
-            Status: "Done",
-            NewValue: JSON.stringify(createdStatus.fields),
-            Notes: `Create a new Status`,
-          })
-        );
-        addToast("Create a new status record successfully!", {
-          appearance: "success",
-        });
-        handleRetrieveStatusTable();
-        break;
-      case "status/update/rejected":
-        console.log(statusError);
-        dispatch(
-          createNewLog({
-            Actions: "Update",
-            Account: getLocalUser().UserAccount,
-            RecordAffected: willUpdatingStatus.recordId,
-            TableAffected: "Status",
-            Status: "Failed",
-            OldValue: JSON.stringify(willBeUpdatedStatus),
-            NewValue: JSON.stringify(willUpdatingStatus.updateData),
-            Notes: `Update an existing Status errored,\n${JSON.stringify(
-              statusError
-            )}`,
-          })
-        );
-        addToast("Fail to update the status record!", {
-          appearance: "error",
-        });
-        break;
-      case "status/update/fulfilled":
-        dispatch(
-          createNewLog({
-            Actions: "Update",
-            Account: getLocalUser().UserAccount,
-            RecordAffected: willUpdatingStatus.recordId,
-            TableAffected: "Status",
-            Status: "Done",
-            OldValue: JSON.stringify(willBeUpdatedStatus),
-            NewValue: JSON.stringify(willUpdatingStatus.updateData),
-            Notes: `Update an existing Status errored,\n${JSON.stringify(
-              statusError
-            )}`,
-          })
-        );
-        addToast("Update the status record successfully!", {
-          appearance: "success",
-        });
-        handleRetrieveStatusTable();
-        break;
-      case "status/delete/rejected":
-        console.log(statusError);
-        dispatch(
-          createNewLog({
-            Actions: "Delete",
-            Account: getLocalUser().UserAccount,
-            TableAffected: "Status",
-            Status: "Failed",
-            Notes: `Delete an existing Status errored,\n${JSON.stringify(
-              statusError
-            )}`,
-          })
-        );
-        addToast("Fail to delete the status record!", {
-          appearance: "error",
-        });
-        break;
-      case "status/delete/fulfilled":
-        dispatch(
-          createNewLog({
-            Actions: "Delete",
-            Account: getLocalUser().UserAccount,
-            TableAffected: "Status",
-            Status: "Done",
-            OldValue: JSON.stringify(deletedStatus.fields),
-            Notes: `Delete an existing Status`,
-          })
-        );
-        addToast("Delete the status record successfully!", {
-          appearance: "success",
-        });
-        handleRetrieveStatusTable();
-        break;
-      default:
-        break;
-    }
-    // account progression
-    switch (accountProgression) {
-      case "account/create/rejected":
-        console.log(accountError);
-        dispatch(
-          createNewLog({
-            Actions: "Create",
-            Account: getLocalUser().UserAccount,
-            TableAffected: "Account",
-            Status: "Failed",
-            Notes: `Create an Account errored,\n${JSON.stringify(
-              accountError
-            )}`,
-          })
-        );
-        addToast("Fail to create a new account record!", {
-          appearance: "error",
-        });
-        break;
-      case "account/create/fulfilled":
-        dispatch(
-          createNewLog({
-            Actions: "Create",
-            Account: getLocalUser().UserAccount,
-            RecordAffected: createdAccount.id,
-            TableAffected: "Account",
-            Status: "Done",
-            NewValue: JSON.stringify(createdAccount.fields),
-            Notes: `Create a new Account`,
-          })
-        );
-        addToast("Create a new account record successfully!", {
-          appearance: "success",
-        });
-        handleRetrieveAccountTable();
-        break;
-      case "account/update/rejected":
-        console.log(accountError);
-        dispatch(
-          createNewLog({
-            Actions: "Update",
-            Account: getLocalUser().UserAccount,
-            RecordAffected: willUpdatingAccount.recordId,
-            TableAffected: "Account",
-            Status: "Failed",
-            OldValue: JSON.stringify(willBeUpdatedAccount),
-            NewValue: JSON.stringify(willUpdatingAccount.updateData),
-            Notes: `Update an existing Account errored,\n${JSON.stringify(
-              accountError
-            )}`,
-          })
-        );
-        addToast("Fail to update the account record!", {
-          appearance: "error",
-        });
-        break;
-      case "account/update/fulfilled":
-        dispatch(
-          createNewLog({
-            Actions: "Update",
-            Account: getLocalUser().UserAccount,
-            RecordAffected: willUpdatingAccount.recordId,
-            TableAffected: "Account",
-            Status: "Done",
-            OldValue: JSON.stringify(willBeUpdatedAccount),
-            NewValue: JSON.stringify(willUpdatingAccount.updateData),
-            Notes: `Update an existing Account`,
-          })
-        );
-        addToast("Update the account record successfully!", {
-          appearance: "success",
-        });
-        handleRetrieveAccountTable();
-        break;
-      case "account/delete/rejected":
-        console.log(accountError);
-        dispatch(
-          createNewLog({
-            Actions: "Delete",
-            Account: getLocalUser().UserAccount,
-            TableAffected: "Account",
-            Status: "Failed",
-            Notes: `Delete an existing Account errored,\n${JSON.stringify(
-              accountError
-            )}`,
-          })
-        );
-        addToast("Fail to delete the account record!", {
-          appearance: "error",
-        });
-        break;
-      case "account/delete/fulfilled":
-        dispatch(
-          createNewLog({
-            Actions: "Delete",
-            Account: getLocalUser().UserAccount,
-            TableAffected: "Account",
-            Status: "Done",
-            OldValue: JSON.stringify(deletedAccount.fields),
-            Notes: `Delete an existing Account`,
-          })
-        );
-        addToast("Delete the staff record successfully!", {
-          appearance: "success",
-        });
-        handleRetrieveAccountTable();
-        break;
-      default:
-        break;
-    }
-    // eslint-disable-next-line
-  }, [staffProgression, statusProgression, accountProgression]);
+  }, [staffProgression]);
 
   // logs listener, finish task when the log has been created
   useEffect(() => {
     if (logData) {
       handleFinishTask();
       dispatch(setWillBeUpdatedStaffData(null));
-      dispatch(setWillBeUpdatedStatusData(null));
-      dispatch(setWillBeUpdatedAccountData(null));
       dispatch(setWillUpdatingStaffData(null));
-      dispatch(setWillUpdatingStatusData(null));
-      dispatch(setWillUpdatingAccountData(null));
     }
     // eslint-disable-next-line
   }, [logData]);
@@ -1035,94 +679,57 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   // update the modal initial state (newStaffForm)
   // when select a staff to edit or clear staff when click Add new staff
   useEffect(() => {
+    // when select a staff to edit
     const setNewStaff = (state) => {
       let newState = { ...state };
       // set for Staff
       Object.entries(newState.Staff).forEach((formField) => {
         const valueOfFieldsSelected = selectedStaffForEdit.fields[formField[0]];
-        if (formField[0] === formField[1].linkedField) {
-          if (Array.isArray(valueOfFieldsSelected)) {
+        const fieldType = formField[1]["data-type"];
+        if (
+          fieldType === "linkToAnotherTable" ||
+          fieldType === "lookup" ||
+          fieldType === "multipleSelect"
+        ) {
+          // linked field and looked up field
+          newState.Staff[formField[0]].value =
+            selectedStaffForEdit.fields[formField[1].linkedField];
+          newState.Staff[formField[0]].label = valueOfFieldsSelected;
+        } else {
+          if (fieldType === "attachment") {
             // array of attachment
             newState.Staff[formField[0]].value = valueOfFieldsSelected;
-            newState.Staff[formField[0]].label = valueOfFieldsSelected[0].url;
+            newState.Staff[formField[0]].label =
+              valueOfFieldsSelected[0].thumbnails.large.url;
           } else {
             // string text value or single select
             newState.Staff[formField[0]].value = valueOfFieldsSelected;
             newState.Staff[formField[0]].label = valueOfFieldsSelected;
           }
-        } else {
-          // linked field and looked up field
-          newState.Staff[formField[0]].value =
-            selectedStaffForEdit.fields[formField[1].linkedField];
-          newState.Staff[formField[0]].label = valueOfFieldsSelected;
-        }
-      });
-      Object.entries(newState.Status).forEach((formField) => {
-        const valueOfFieldsSelected =
-          selectedStatusForEdit.fields[formField[0]];
-        if (formField[0] === formField[1].linkedField) {
-          if (Array.isArray(valueOfFieldsSelected)) {
-            if (valueOfFieldsSelected[0].url) {
-              // array of attachment
-              newState.Status[formField[0]].value = valueOfFieldsSelected;
-              newState.Status[formField[0]].label =
-                valueOfFieldsSelected[0].url;
-            } else {
-              // multi select
-              newState.Status[formField[0]].value = valueOfFieldsSelected;
-              newState.Status[formField[0]].label = valueOfFieldsSelected;
-            }
-          } else {
-            // string text value or single select
-            newState.Status[formField[0]].value = valueOfFieldsSelected;
-            newState.Status[formField[0]].label = valueOfFieldsSelected;
-          }
-        } else {
-          // linked field and looked up field
-          newState.Status[formField[0]].value =
-            selectedStatusForEdit.fields[formField[1].linkedField];
-          newState.Status[formField[0]].label = valueOfFieldsSelected;
-        }
-      });
-      Object.entries(newState.Account).forEach((formField) => {
-        const valueOfFieldsSelected =
-          selectedAccountForEdit.fields[formField[0]];
-        if (formField[0] === formField[1].linkedField) {
-          if (Array.isArray(valueOfFieldsSelected)) {
-            // array of attachment
-            newState.Account[formField[0]].value = valueOfFieldsSelected;
-            newState.Account[formField[0]].label = valueOfFieldsSelected[0].url;
-          } else {
-            // string text value or single select
-            newState.Account[formField[0]].value = valueOfFieldsSelected;
-            newState.Account[formField[0]].label = valueOfFieldsSelected;
-          }
-        } else {
-          // linked field and looked up field
-          newState.Account[formField[0]].value =
-            selectedAccountForEdit.fields[formField[1].linkedField];
-          newState.Account[formField[0]].label = valueOfFieldsSelected;
         }
       });
       return newState;
     };
+    // when click Add new staff button
     const resetNewStaff = (state) => {
       let newState = { ...state };
       Object.keys(newState).forEach((tableKey) => {
-        Object.keys(newState[tableKey]).forEach((fieldKey) => {
-          if (fieldKey === "Password") {
+        Object.entries(newState[tableKey]).forEach((formField) => {
+          // specific field Password, regenerate per time set new staff
+          if (formField[0] === "Password") {
             const newPasswordGenerated = autoGenerate(12);
-            newState[tableKey][fieldKey].value = newPasswordGenerated;
-            newState[tableKey][fieldKey].label = newPasswordGenerated;
+            newState[tableKey][formField[0]].value = newPasswordGenerated;
+            newState[tableKey][formField[0]].label = newPasswordGenerated;
           } else {
             if (
-              fieldKey === "Portrait" ||
-              fieldKey === "Avatar" ||
-              fieldKey === "Covid19VaccineType"
+              formField[1]["data-type"] === "attachment" ||
+              formField[1]["data-type"] === "multipleSelect" ||
+              (formField[1]["data-type"] === "linkToAnotherTable" &&
+                formField[1].isMultiple)
             ) {
-              newState[tableKey][fieldKey].value = [];
+              newState[tableKey][formField[0]].value = [];
             } else {
-              newState[tableKey][fieldKey].value = "";
+              newState[tableKey][formField[0]].value = "";
             }
           }
         });
@@ -1140,11 +747,8 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
       });
       return newState;
     };
-    if (
-      selectedStaffForEdit &&
-      selectedStatusForEdit &&
-      selectedAccountForEdit
-    ) {
+    if (selectedStaffForEdit) {
+      console.log("Test");
       setNewStaffForm(setNewStaff);
       setNewStaffFormForEdit(setNewStaff);
       // reset errorForm state, see the initialErrorFormForStaff
@@ -1156,10 +760,10 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
       // reset errorForm state, see the initialErrorFormForStaff
       setErrorForm(resetError);
     }
-    setSubmitChangeStatus(false);
-    // eslint-disable-next-line
-  }, [selectedStaffForEdit, selectedStatusForEdit, selectedAccountForEdit]);
+    setStaffFormChangeStatus(false);
+  }, [selectedStaffForEdit]);
 
+  // for the Select component, define the className as "<tableName> <fieldName>"
   return (
     <Modal onModalHide={setModalHide} isModalDisplay={isModalDisplay}>
       <Row className="py-4 justify-content-center">
@@ -1170,8 +774,8 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         </Col>
       </Row>
       <hr className="navbar-divider"></hr>
-      <h3 className="font-weight-bold text-center">General Information</h3>
       <form className="form">
+        <h3 className="font-weight-bold text-center">General Information</h3>
         <div className="form-group">
           <label htmlFor="FullName" ref={refList.FullName}>
             Full name <span className="text-danger">*</span>
@@ -1179,6 +783,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
           <input
             name="FullName"
             data-table="Staff"
+            data-type={newStaffForm.Staff.FullName["data-type"]}
             className="form-control"
             type="text"
             value={newStaffForm.Staff.FullName.label}
@@ -1203,6 +808,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             value={
               newStaffForm.Staff.Gender.value && {
                 "data-table": "Staff",
+                "data-type": newStaffForm.Staff.Gender["data-type"],
                 label: newStaffForm.Staff.Gender.label,
                 value: newStaffForm.Staff.Gender.value,
                 name: "Gender",
@@ -1226,34 +832,35 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         </div>
         <div className="form-group">
           <label htmlFor="Portrait">Portrait</label>
-          <ImageUploader
+          <FileUploader
             name="Portrait"
             data-table="Staff"
+            data-type={newStaffForm.Staff.Portrait["data-type"]}
             imgData={newStaffForm.Staff.Portrait.value}
-            imgThumbnail={
-              newStaffForm.Staff.Portrait.value &&
-              newStaffForm.Staff.Portrait.label
-            }
+            mediaType="image"
             type={type}
             handleUploadSuccessfully={handleStaffInput}
-            handleClearImg={handleStaffInput}
           />
         </div>
         <div className="form-group">
-          <label htmlFor="DOB" ref={refList.DOB}>
+          <label htmlFor="DateOfBirth" ref={refList.DateOfBirth}>
             Day of birth <span className="text-danger">*</span>
           </label>
           <DatePicker
             className="form-control"
-            name="DOB"
+            name="DateOfBirth"
             data-table="Staff"
-            value={newStaffForm.Staff.DOB.value && newStaffForm.Staff.DOB.label}
+            data-type={newStaffForm.Staff.DateOfBirth["data-type"]}
+            value={
+              newStaffForm.Staff.DateOfBirth.value &&
+              newStaffForm.Staff.DateOfBirth.label
+            }
             onChange={handleStaffInput}
             onBlur={handleValidate}
           />
-          {errorForm.errMsg.Staff.DOB !== "" && errorForm.isShowMsg && (
+          {errorForm.errMsg.Staff.DateOfBirth !== "" && errorForm.isShowMsg && (
             <div className="err-text text-danger mt-1">
-              {errorForm.errMsg.Staff.DOB}
+              {errorForm.errMsg.Staff.DateOfBirth}
             </div>
           )}
         </div>
@@ -1264,6 +871,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
           <input
             name="Phone"
             data-table="Staff"
+            data-type={newStaffForm.Staff.Phone["data-type"]}
             className="form-control"
             type="tel"
             value={
@@ -1284,6 +892,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
           <input
             name="PersonalEmail"
             data-table="Staff"
+            data-type={newStaffForm.Staff.PersonalEmail["data-type"]}
             className="form-control"
             value={
               newStaffForm.Staff.PersonalEmail.value &&
@@ -1306,12 +915,14 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             value={
               newStaffForm.Staff.Company.value && {
                 "data-table": "Staff",
+                "data-type": newStaffForm.Staff.Company["data-type"],
                 label: newStaffForm.Staff.Company.label,
                 value: newStaffForm.Staff.Company.value,
                 name: "Company",
               }
             }
             options={selectList.Staff.Company.list}
+            isMulti={newStaffForm.Staff.Company.isMultiple}
             placeholder="Who to work for..."
             styles={{
               menu: (provided) => ({
@@ -1335,12 +946,15 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             value={
               newStaffForm.Staff.CurrentWorkingPlace.value && {
                 "data-table": "Staff",
+                "data-type":
+                  newStaffForm.Staff.CurrentWorkingPlace["data-type"],
                 label: newStaffForm.Staff.CurrentWorkingPlace.label,
                 value: newStaffForm.Staff.CurrentWorkingPlace.value,
                 name: "CurrentWorkingPlace",
               }
             }
             options={selectList.Staff.CurrentWorkingPlace.list}
+            isMulti={newStaffForm.Staff.CurrentWorkingPlace.isMultiple}
             placeholder="Where to work..."
             styles={{
               menu: (provided) => ({
@@ -1351,7 +965,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
           />
         </div>
         <div className="form-group">
-          <label htmlFor="RoleType">Role</label>
+          <label htmlFor="RoleType">Role Type</label>
           <Select
             className="Staff RoleType"
             onChange={handleStaffInput}
@@ -1359,12 +973,14 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             value={
               newStaffForm.Staff.RoleType.value && {
                 "data-table": "Staff",
+                "data-type": newStaffForm.Staff.RoleType["data-type"],
                 label: newStaffForm.Staff.RoleType.label,
                 value: newStaffForm.Staff.RoleType.value,
                 name: "RoleType",
               }
             }
             options={selectList.Staff.RoleType.list}
+            isMulti={newStaffForm.Staff.RoleType.isMultiple}
             placeholder="Working as a/an..."
             styles={{
               menu: (provided) => ({
@@ -1377,22 +993,56 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         <hr className="navbar-divider"></hr>
         <h3 className="font-weight-bold text-center">Employee Status</h3>
         <div className="form-group">
+          <label htmlFor="ContractType" ref={refList.ContractType}>
+            Contract Type
+          </label>
+          <Select
+            className="Staff ContractType"
+            onChange={handleStaffInput}
+            onBlur={handleValidate}
+            value={
+              newStaffForm.Staff.ContractType.value && {
+                "data-table": "Staff",
+                "data-type": newStaffForm.Staff.ContractType["data-type"],
+                label: newStaffForm.Staff.ContractType.label,
+                value: newStaffForm.Staff.ContractType.value,
+                name: "ContractType",
+              }
+            }
+            options={selectList.Staff.ContractType.list}
+            placeholder="Contract type..."
+            styles={{
+              menu: (provided) => ({
+                ...provided,
+                zIndex: "1000",
+              }),
+            }}
+          />
+          {errorForm.errMsg.Staff.ContractType !== "" &&
+            errorForm.isShowMsg && (
+              <div className="err-text text-danger mt-1">
+                {errorForm.errMsg.Staff.ContractType}
+              </div>
+            )}
+        </div>
+        <div className="form-group">
           <label htmlFor="WorkingType" ref={refList.WorkingType}>
             Working Type <span className="text-danger">*</span>
           </label>
           <Select
-            className="Status WorkingType"
+            className="Staff WorkingType"
             onChange={handleStaffInput}
             onBlur={handleValidate}
             value={
-              newStaffForm.Status.WorkingType.value && {
-                "data-table": "Status",
-                label: newStaffForm.Status.WorkingType.label,
-                value: newStaffForm.Status.WorkingType.value,
+              newStaffForm.Staff.WorkingType.value && {
+                "data-table": "Staff",
+                "data-type": newStaffForm.Staff.WorkingType["data-type"],
+                label: newStaffForm.Staff.WorkingType.label,
+                value: newStaffForm.Staff.WorkingType.value,
                 name: "WorkingType",
               }
             }
-            options={selectList.Status.WorkingType.list}
+            options={selectList.Staff.WorkingType.list}
             placeholder="Working type..."
             styles={{
               menu: (provided) => ({
@@ -1401,10 +1051,42 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
               }),
             }}
           />
-          {errorForm.errMsg.Status.WorkingType !== "" &&
+          {errorForm.errMsg.Staff.WorkingType !== "" && errorForm.isShowMsg && (
+            <div className="err-text text-danger mt-1">
+              {errorForm.errMsg.Staff.WorkingType}
+            </div>
+          )}
+        </div>
+        <div className="form-group">
+          <label htmlFor="WorkingPeriod" ref={refList.WorkingPeriod}>
+            Working Period <span className="text-danger">*</span>
+          </label>
+          <Select
+            className="Staff WorkingPeriod"
+            onChange={handleStaffInput}
+            onBlur={handleValidate}
+            value={
+              newStaffForm.Staff.WorkingPeriod.value && {
+                "data-table": "Staff",
+                "data-type": newStaffForm.Staff.WorkingPeriod["data-type"],
+                label: newStaffForm.Staff.WorkingPeriod.label,
+                value: newStaffForm.Staff.WorkingPeriod.value,
+                name: "WorkingPeriod",
+              }
+            }
+            options={selectList.Staff.WorkingPeriod.list}
+            placeholder="Working period..."
+            styles={{
+              menu: (provided) => ({
+                ...provided,
+                zIndex: "1000",
+              }),
+            }}
+          />
+          {errorForm.errMsg.Staff.WorkingPeriod !== "" &&
             errorForm.isShowMsg && (
               <div className="err-text text-danger mt-1">
-                {errorForm.errMsg.Status.WorkingType}
+                {errorForm.errMsg.Staff.WorkingPeriod}
               </div>
             )}
         </div>
@@ -1413,18 +1095,19 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             Working Status <span className="text-danger">*</span>
           </label>
           <Select
-            className="Status WorkingStatus"
+            className="Staff WorkingStatus"
             onChange={handleStaffInput}
             onBlur={handleValidate}
             value={
-              newStaffForm.Status.WorkingStatus.value && {
-                "data-table": "Status",
-                label: newStaffForm.Status.WorkingStatus.label,
-                value: newStaffForm.Status.WorkingStatus.value,
+              newStaffForm.Staff.WorkingStatus.value && {
+                "data-table": "Staff",
+                "data-type": newStaffForm.Staff.WorkingStatus["data-type"],
+                label: newStaffForm.Staff.WorkingStatus.label,
+                value: newStaffForm.Staff.WorkingStatus.value,
                 name: "WorkingType",
               }
             }
-            options={selectList.Status.WorkingStatus.list}
+            options={selectList.Staff.WorkingStatus.list}
             placeholder="Working status..."
             styles={{
               menu: (provided) => ({
@@ -1433,10 +1116,10 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
               }),
             }}
           />
-          {errorForm.errMsg.Status.WorkingStatus !== "" &&
+          {errorForm.errMsg.Staff.WorkingStatus !== "" &&
             errorForm.isShowMsg && (
               <div className="err-text text-danger mt-1">
-                {errorForm.errMsg.Status.WorkingStatus}
+                {errorForm.errMsg.Staff.WorkingStatus}
               </div>
             )}
         </div>
@@ -1447,18 +1130,19 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
           <DatePicker
             className="form-control"
             name="StartWorkingDay"
-            data-table="Status"
+            data-table="Staff"
+            data-type={newStaffForm.Staff.StartWorkingDay["data-type"]}
             value={
-              newStaffForm.Status.StartWorkingDay.value &&
-              newStaffForm.Status.StartWorkingDay.label
+              newStaffForm.Staff.StartWorkingDay.value &&
+              newStaffForm.Staff.StartWorkingDay.label
             }
             onChange={handleStaffInput}
             onBlur={handleValidate}
           />
-          {errorForm.errMsg.Status.StartWorkingDay !== "" &&
+          {errorForm.errMsg.Staff.StartWorkingDay !== "" &&
             errorForm.isShowMsg && (
               <div className="err-text text-danger mt-1">
-                {errorForm.errMsg.Status.StartWorkingDay}
+                {errorForm.errMsg.Staff.StartWorkingDay}
               </div>
             )}
         </div>
@@ -1469,14 +1153,15 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             onChange={handleStaffInput}
             onBlur={handleValidate}
             value={
-              newStaffForm.Status.MarriageStatus.value && {
-                "data-table": "Status",
-                label: newStaffForm.Status.MarriageStatus.label,
-                value: newStaffForm.Status.MarriageStatus.value,
+              newStaffForm.Staff.MarriageStatus.value && {
+                "data-table": "Staff",
+                "data-type": newStaffForm.Staff.MarriageStatus["data-type"],
+                label: newStaffForm.Staff.MarriageStatus.label,
+                value: newStaffForm.Staff.MarriageStatus.value,
                 name: "MarriageStatus",
               }
             }
-            options={selectList.Status.MarriageStatus.list}
+            options={selectList.Staff.MarriageStatus.list}
             placeholder="Marriage status..."
             styles={{
               menu: (provided) => ({
@@ -1493,14 +1178,15 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             onChange={handleStaffInput}
             onBlur={handleValidate}
             value={
-              newStaffForm.Status.HealthStatus.value && {
-                "data-table": "Status",
-                label: newStaffForm.Status.HealthStatus.label,
-                value: newStaffForm.Status.HealthStatus.value,
+              newStaffForm.Staff.HealthStatus.value && {
+                "data-table": "Staff",
+                "data-type": newStaffForm.Staff.HealthStatus["data-type"],
+                label: newStaffForm.Staff.HealthStatus.label,
+                value: newStaffForm.Staff.HealthStatus.value,
                 name: "HealthStatus",
               }
             }
-            options={selectList.Status.HealthStatus.list}
+            options={selectList.Staff.HealthStatus.list}
             placeholder="Health status..."
             styles={{
               menu: (provided) => ({
@@ -1511,13 +1197,25 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
           />
         </div>
         <div className="form-group">
+          <label htmlFor="CurriculumVitae">Curriculum Vitae</label>
+          <FileUploader
+            name="CurriculumVitae"
+            data-table="Staff"
+            imgData={newStaffForm.Staff.CurriculumVitae.value}
+            mediaType="PDF"
+            type={type}
+            handleUploadSuccessfully={handleStaffInput}
+          />
+        </div>
+        <div className="form-group">
           <label htmlFor="Notes">Notes</label>
           <textarea
             name="Notes"
-            data-table="Status"
+            data-table="Staff"
+            data-type={newStaffForm.Staff.Notes["data-type"]}
             className="form-control"
             value={
-              newStaffForm.Status.Notes.value && newStaffForm.Status.Notes.label
+              newStaffForm.Staff.Notes.value && newStaffForm.Staff.Notes.label
             }
             onChange={handleStaffInput}
             onBlur={handleValidate}
@@ -1527,82 +1225,39 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             }}
           />
         </div>
-        <div className="form-group">
-          <label htmlFor="Covid19Vaccinated">Having vaccinated Covid-19?</label>
-          <Select
-            className="Status Covid19Vaccinated"
-            onChange={handleStaffInput}
-            onBlur={handleValidate}
-            value={
-              newStaffForm.Status.Covid19Vaccinated.value && {
-                "data-table": "Status",
-                label: newStaffForm.Status.Covid19Vaccinated.label,
-                value: newStaffForm.Status.Covid19Vaccinated.value,
-                name: "Covid19Vaccinated",
-              }
-            }
-            options={selectList.Status.Covid19Vaccinated.list}
-            placeholder="0/1/2 vaccinated..."
-            styles={{
-              menu: (provided) => ({
-                ...provided,
-                zIndex: "1000",
-              }),
-            }}
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="Covid19VaccineType">Vaccine Type</label>
-          <Select
-            className="Status Covid19VaccineType"
-            onChange={handleStaffInput}
-            onBlur={handleValidate}
-            isMulti
-            value={
-              newStaffForm.Status.Covid19VaccineType.value &&
-              newStaffForm.Status.Covid19VaccineType.value.map(
-                (value, index) => {
-                  return {
-                    "data-table": "Status",
-                    label: newStaffForm.Status.Covid19VaccineType.label[index],
-                    value,
-                    name: "Covid19VaccineType",
-                  };
-                }
-              )
-            }
-            options={selectList.Status.Covid19VaccineType.list}
-            placeholder="Which type vaccine..."
-            styles={{
-              menu: (provided) => ({
-                ...provided,
-                zIndex: "1000",
-              }),
-            }}
-          />
-        </div>
         <hr className="navbar-divider"></hr>
         <h3 className="font-weight-bold text-center">Account Information</h3>
         <div className="form-group">
           <label htmlFor="Username">Username</label>
-          <span name="Username" data-table="Account" className="form-control">
-            {newStaffForm.Account.Username.label}
+          <span
+            name="Username"
+            data-table="Staff"
+            data-type={newStaffForm.Staff.Username["data-type"]}
+            className="form-control"
+          >
+            {newStaffForm.Staff.Username.label}
           </span>
         </div>
         <div className="form-group">
           <label htmlFor="Domain">Domain</label>
-          <span name="Domain" data-table="Account" className="form-control">
-            {newStaffForm.Account.Domain.label}
+          <span
+            name="Domain"
+            data-table="Staff"
+            data-type={newStaffForm.Staff.Domain["data-type"]}
+            className="form-control"
+          >
+            {newStaffForm.Staff.Domain.label}
           </span>
         </div>
         <div className="form-group">
-          <label htmlFor="UserAccount">User Account</label>
+          <label htmlFor="Account">User Account</label>
           <span
-            name="UserAccount"
-            data-table="Account"
+            name="Account"
+            data-table="Staff"
+            data-type={newStaffForm.Staff.Account["data-type"]}
             className="form-control"
           >
-            {newStaffForm.Account.UserAccount.label}
+            {newStaffForm.Staff.Account.label}
           </span>
         </div>
         <div className="form-group">
@@ -1611,10 +1266,11 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             <input
               name="Password"
               autoComplete="none"
-              data-table="Account"
+              data-table="Staff"
+              data-type={newStaffForm.Staff.Password["data-type"]}
               className="form-control form-control-appended"
               type={showPassword ? "text" : "password"}
-              value={newStaffForm.Account.Password.label}
+              value={newStaffForm.Staff.Password.label}
               disabled
               readOnly
             />
@@ -1640,14 +1296,15 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
             onChange={handleStaffInput}
             onBlur={handleValidate}
             value={
-              newStaffForm.Account.AccountStatus.value && {
-                "data-table": "Account",
-                label: newStaffForm.Account.AccountStatus.label,
-                value: newStaffForm.Account.AccountStatus.value,
+              newStaffForm.Staff.AccountStatus.value && {
+                "data-table": "Staff",
+                "data-type": newStaffForm.Staff.AccountStatus["data-type"],
+                label: newStaffForm.Staff.AccountStatus.label,
+                value: newStaffForm.Staff.AccountStatus.value,
                 name: "AccountStatus",
               }
             }
-            options={selectList.Account.AccountStatus.list}
+            options={selectList.Staff.AccountStatus.list}
             placeholder="Account status..."
             styles={{
               menu: (provided) => ({
@@ -1659,14 +1316,12 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
         </div>
         <div className="form-group">
           <label htmlFor="Avatar">Avatar</label>
-          <ImageUploader
+          <FileUploader
             name="Avatar"
-            data-table="Account"
-            imgData={newStaffForm.Account.Avatar.value}
-            imgThumbnail={
-              newStaffForm.Account.Avatar.value &&
-              newStaffForm.Account.Avatar.label
-            }
+            data-table="Staff"
+            data-type={newStaffForm.Staff.Avatar["data-type"]}
+            imgData={newStaffForm.Staff.Avatar.value}
+            mediaType="image"
             type={type}
             handleUploadSuccessfully={handleStaffInput}
             handleClearImg={handleStaffInput}

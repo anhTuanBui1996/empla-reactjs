@@ -1,10 +1,10 @@
 import PropTypes from "prop-types";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { MdSettings } from "react-icons/md";
+import { MdExpand, MdSettings } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import Select from "react-select";
 import styled from "styled-components";
-import { NOT_SUPPORT_FIELD_FEATURE } from "../../constants";
+import { AIRTABLE } from "../../constants";
 import { selectInnerWidth } from "../../features/windowSlice";
 import Outclick from "../../hoc/Outclick";
 import Col from "../layout/Col";
@@ -13,6 +13,7 @@ import CustomSwitch from "./CustomSwitch";
 import Search from "./Search";
 
 function Table({
+  tableName,
   fieldList,
   recordList,
   forEditing,
@@ -25,15 +26,32 @@ function Table({
   const dispatch = useDispatch();
   const tableRef = useRef(null);
   const innerWidth = useSelector(selectInnerWidth);
-  const fieldsForSortAndSearch = useMemo(() => {
+  const fieldsForSearch = useMemo(() => {
     const newList = [];
     fieldList.forEach((field, index) => {
-      if (NOT_SUPPORT_FIELD_FEATURE.indexOf(field) === -1) {
+      let fieldMetadata = AIRTABLE.FIELD_TYPE[tableName][field];
+      let fieldDataType = fieldMetadata.dataType;
+      if (fieldDataType === "lookup") fieldDataType = fieldMetadata.sourceType;
+      let notSuportFields = AIRTABLE.NOT_SUPPORT_DATA_TYPE.FOR_SEARCHING;
+      if (notSuportFields.indexOf(fieldDataType) === -1) {
         return newList.push({ field, index });
       }
     });
     return newList;
-  }, [fieldList]);
+  }, [fieldList, tableName]);
+  const fieldsForSort = useMemo(() => {
+    const newList = [];
+    fieldList.forEach((field, index) => {
+      let fieldMetadata = AIRTABLE.FIELD_TYPE[tableName][field];
+      let fieldDataType = fieldMetadata.dataType;
+      if (fieldDataType === "lookup") fieldDataType = fieldMetadata.sourceType;
+      let notSuportFields = AIRTABLE.NOT_SUPPORT_DATA_TYPE.FOR_SORTING;
+      if (notSuportFields.indexOf(fieldDataType) === -1) {
+        return newList.push({ field, index });
+      }
+    });
+    return newList;
+  }, [fieldList, tableName]);
 
   const [activeIndex, setActiveIndex] = useState(1);
   const [recordsPerPage, setRecordPerPage] = useState(recordPerPage);
@@ -54,106 +72,122 @@ function Table({
 
   const [searchStatus, setSearchStatus] = useState(false);
   const [searchValue, setSearchValue] = useState("");
-  const [searchCritea, setSearchCritea] = useState(fieldsForSortAndSearch[0]);
+  const [searchCritea, setSearchCritea] = useState(fieldsForSearch[0]);
 
   const [sortStatus, setSortStatus] = useState(false);
-  const [sortCritea, setSortCritea] = useState(fieldsForSortAndSearch[0]);
+  const [sortCritea, setSortCritea] = useState(fieldsForSort[0]);
   const [sortDirection, setSortDirection] = useState("ascending");
   const sortOptionList = [
-    { label: "asc", value: "ascending" },
-    { label: "desc", value: "descending" },
+    { label: "⇧", value: "ascending" },
+    { label: "⇩", value: "descending" },
   ];
 
-  const handleEditRecord = (e, recordSelected) => {
+  const handleEditRecord = (e, recordSelectedForEdit) => {
     e.preventDefault();
     if (forEditing && onRecordClick) {
-      // The first value in record is the syncValue
-      const syncValue = recordSelected.data[0];
+      const recordId = recordSelectedForEdit.rowId;
 
-      const { syncTables, syncField, syncReducers } = forEditing;
-      syncTables.forEach((table, index) => {
-        const recordSelected = table.find((record) => {
-          return (
-            (Array.isArray(record.fields[syncField])
-              ? record.fields[syncField][0]
-              : record.fields[syncField]) ===
-            (Array.isArray(syncValue) ? syncValue[0] : syncValue)
-          );
-        });
-        dispatch(syncReducers[index](recordSelected));
-      });
-
+      const { syncRecords, syncReducer } = forEditing;
+      const recordSelected = syncRecords.find(
+        (record) => record.id === recordId
+      );
+      dispatch(syncReducer(recordSelected));
       setTimeout(onRecordClick, 50);
     }
   };
 
   // Effects when trigger the search/sort feature
   useEffect(() => {
-    setSearchCritea(fieldsForSortAndSearch[0]);
-    setSortCritea(fieldsForSortAndSearch[0]);
-  }, [fieldsForSortAndSearch]);
+    setSearchCritea({ field: fieldsForSearch[0], index: 0 });
+    setSortCritea({ field: fieldsForSort[0], index: 0 });
+  }, [fieldsForSearch, fieldsForSort]);
   useEffect(() => {
     let newRecordList = [];
     recordList.forEach((recordData) => {
-      const cellDataArr = recordData.data;
-      const cellDataForSearch = cellDataArr[searchCritea.index];
+      const dataArr = recordData.data;
+      let { cellData, dataType, sourceType } = dataArr[searchCritea.index];
+      if (dataType === "lookup") dataType = sourceType;
       if (searchStatus) {
+        // Reset search when fieldList changed (change Card's tab)
+        if (fieldsForSearch.indexOf(searchCritea.field) === -1) {
+          return () => {
+            setSearchCritea({ field: fieldList[0], index: 0 });
+            setSearchValue("");
+            setSearchStatus(false);
+          };
+        }
         setActiveIndex(1);
-        if (typeof cellDataForSearch === "string") {
-          if (cellDataForSearch.includes(searchValue)) {
+        if (dataType === "singleLineText" || dataType === "longText") {
+          if (cellData.includes(searchValue)) {
             newRecordList.push(recordData);
           }
-        } else if (Array.isArray(cellDataForSearch)) {
-          if (typeof cellDataForSearch[0] === "string") {
-            if (cellDataForSearch[0].includes(searchValue)) {
-              newRecordList.push(recordData);
-            }
-          }
+        } else if (dataType === "checkbox") {
+          // ...
         }
       } else {
         newRecordList.push(recordData);
       }
     });
     if (sortStatus) {
+      const targetFieldIndex = fieldsForSort.indexOf(sortCritea.field);
+      if (targetFieldIndex === -1) {
+        return () => {
+          setSortDirection("ascending");
+          setSortCritea({ field: fieldsForSort[0], index: 0 });
+          setSortStatus(false);
+        };
+      }
       if (sortDirection === "ascending") {
         newRecordList = newRecordList.sort((a, b) => {
+          let firstTargetData = a.data[targetFieldIndex];
+          let secondTargetData = b.data[targetFieldIndex];
           if (
-            Array.isArray(a.data[sortCritea.index]) ||
-            Array.isArray(b.data[sortCritea.index])
-          )
-            return a.data[sortCritea.index][0].localeCompare(
-              b.data[sortCritea.index][0]
+            (firstTargetData.dataType === "singleLineText" ||
+              firstTargetData.dataType === "longText") &&
+            (secondTargetData.dataType === "singleLineText" ||
+              secondTargetData.dataType === "longText")
+          ) {
+            return firstTargetData.cellData.localeCompare(
+              secondTargetData.cellData
             );
-          else
-            return a.data[sortCritea.index].localeCompare(
-              b.data[sortCritea.index]
+          } else {
+            // ...
+            return firstTargetData.cellData.localeCompare(
+              secondTargetData.cellData
             );
+          }
         });
-      } else {
+      } else if (sortDirection === "descending") {
         newRecordList = newRecordList.sort((a, b) => {
+          let firstTargetData = a.data[targetFieldIndex];
+          let secondTargetData = b.data[targetFieldIndex];
           if (
-            Array.isArray(a.data[sortCritea.index]) ||
-            Array.isArray(b.data[sortCritea.index])
-          )
-            return b.data[sortCritea.index][0].localeCompare(
-              a.data[sortCritea.index][0]
+            (firstTargetData.dataType === "singleLineText" ||
+              firstTargetData.dataType === "longText") &&
+            (secondTargetData.dataType === "singleLineText" ||
+              secondTargetData.dataType === "longText")
+          ) {
+            return secondTargetData.cellData.localeCompare(
+              firstTargetData.cellData
             );
-          else
-            return b.data[sortCritea.index].localeCompare(
-              a.data[sortCritea.index]
+          } else {
+            // ...
+            return secondTargetData.cellData.localeCompare(
+              firstTargetData.cellData
             );
+          }
         });
       }
     }
-    let newRecordListToDisplay = [];
+    let currentRecordsOfPage = [];
     newRecordList.forEach((recordData, recordIndex) => {
       const recordIndexMin = recordsPerPage * (activeIndex - 1);
       const recordIndexMax = recordsPerPage * activeIndex - 1;
       if (recordIndex >= recordIndexMin && recordIndex <= recordIndexMax) {
-        newRecordListToDisplay.push(recordData);
+        currentRecordsOfPage.push(recordData);
       }
     });
-    setRecordTableList(newRecordListToDisplay);
+    setRecordTableList(currentRecordsOfPage);
     setPageList(() => {
       const newState = [];
       let pageStart = 1;
@@ -204,13 +238,10 @@ function Table({
   ]);
   // Get cardWidth when windowWidth change
   useEffect(() => {
-    if (tableRef?.current?.clientWidth) {
-      let tableViewWidth = tableRef.current.clientWidth;
-      tableViewWidth < 435
-        ? setIsPaginationCenter(true)
-        : setIsPaginationCenter(false);
-    }
-  }, [tableRef?.current?.clientWidth]);
+    tableRef.current && tableRef.current.clientWidth < 435
+      ? setIsPaginationCenter(true)
+      : setIsPaginationCenter(false);
+  }, []);
 
   return (
     <>
@@ -263,7 +294,10 @@ function Table({
                             <label className="mb-0" htmlFor="search-critea">
                               Search by{" "}
                             </label>
-                            <CustomSwitch onSwitchChange={setSearchStatus} />
+                            <CustomSwitch
+                              inputValue={searchStatus}
+                              onSwitchChange={setSearchStatus}
+                            />
                           </Col>
                         </Row>
                         {searchStatus && (
@@ -280,13 +314,11 @@ function Table({
                               value: searchCritea.field,
                               index: searchCritea.index,
                             }}
-                            options={fieldsForSortAndSearch.map(
-                              (sortableField) => ({
-                                label: sortableField.field,
-                                value: sortableField.field,
-                                index: sortableField.index,
-                              })
-                            )}
+                            options={fieldsForSearch.map((fieldObj) => ({
+                              label: fieldObj.field,
+                              value: fieldObj.field,
+                              index: fieldObj.index,
+                            }))}
                             onChange={(e) => {
                               setSearchCritea({
                                 field: e.value,
@@ -312,7 +344,10 @@ function Table({
                             >
                               Sort by{" "}
                             </label>
-                            <CustomSwitch onSwitchChange={setSortStatus} />
+                            <CustomSwitch
+                              inputValue={sortStatus}
+                              onSwitchChange={setSortStatus}
+                            />
                           </Col>
                         </Row>
                         {sortStatus && (
@@ -330,16 +365,14 @@ function Table({
                                   }),
                                 }}
                                 defaultValue={{
-                                  label: fieldsForSortAndSearch[0].field,
-                                  value: fieldsForSortAndSearch[0].field,
+                                  label: fieldsForSort[0].field,
+                                  value: fieldsForSort[0].field,
                                 }}
-                                options={fieldsForSortAndSearch.map(
-                                  (sortableField) => ({
-                                    label: sortableField.field,
-                                    value: sortableField.field,
-                                    index: sortableField.index,
-                                  })
-                                )}
+                                options={fieldsForSort.map((fieldObj) => ({
+                                  label: fieldObj.field,
+                                  value: fieldObj.field,
+                                  index: fieldObj.index,
+                                }))}
                                 onChange={(e) => {
                                   setSortCritea({
                                     field: e.value,
@@ -521,68 +554,92 @@ function Table({
 
 // ====================================================================
 
-function injectDataToJSX(cellData) {
-  let cellJSX = null; // the cell data has been injected to an JSX to render
-  if (typeof cellData === "string") {
-    // Date type {formatted as string}
-    // String type
-    cellJSX = (
-      <div
-        className="cellData d-flex justify-content-start align-items-center"
-        style={{
-          maxWidth: "300px",
-          height: "auto",
-          overflowWrap: "break-word",
-        }}
-      >
-        {cellData}
-      </div>
-    );
-  } else if (Array.isArray(cellData)) {
-    if (typeof cellData[0] === "string") {
-      // Looked up field (type's bases on original value)
-      // Linked field (always in array)
-      // Mutiple select field
-      cellJSX = (
-        <div
-          className="cellData d-flex justify-content-start align-items-center"
-          style={{ height: "40px" }}
-        >
-          {cellData.map((item, i) => {
-            return i === cellData.length - 1 ? item : item + ", ";
-          })}
-        </div>
-      );
-    } else {
-      // Attachment object (ex: .png, .jpg, ...)
-      cellJSX = (
-        <div
-          className="cellData d-flex justify-content-start align-items-center"
-          style={{ height: "40px", overflowY: "hidden" }}
-        >
-          {cellData.map((item, i) => (
-            <img key={i} className="cellImg" src={item.url} alt="" width={30} />
-          ))}
-        </div>
-      );
-    }
-  } else if (cellData === true) {
-    // Checkbox type (true or undefined)
-    cellJSX = (
-      <div
-        className="cellData d-flex justify-content-center align-items-center"
-        style={{ height: "40px", overflowY: "hidden" }}
-      >
+/**
+ * Create an JSX for table cell to render
+ * @param {Object} cell cell object that retrieve after the mapResultToTableData function
+ * @param {Boolean} isSourceTypeKnown true if the cell that have sourceType property (probably the "lookup" dataType)
+ * @returns if isSourceTypeKnown=true then return a displayData only (injected again to this function),
+ * otherwise return a cellJSX ready to render
+ */
+function injectDataToJSX(cell, isLookupDataType) {
+  let displayData = null; // the cell data has been injected to an JSX to render
+  let { cellData, dataType, sourceType } = cell;
+  switch (dataType) {
+    case "singleLineText":
+      displayData = cellData;
+      break;
+    case "singleSelect":
+      displayData = cellData;
+      break;
+    case "multipleSelect":
+      // ...
+      break;
+    case "longText":
+      displayData = cellData;
+      break;
+    case "attachment":
+      displayData = cellData.map((item, i) => (
+        <img
+          key={i}
+          className="cell-img"
+          src={item.thumbnails.small.url}
+          alt={dataType}
+          width={30}
+          onClick={(e) => {
+            e.stopPropagation();
+            window.open(item.url);
+          }}
+        />
+      ));
+      break;
+    case "date":
+      displayData = new Date(cellData).toLocaleDateString();
+      break;
+    case "dateTime":
+      displayData = new Date(cellData).toLocaleString();
+      break;
+    case "checkbox":
+      displayData = (
         <input
-          className="custom-control-input cell-bool"
+          className="cell-checkbox mr-3"
           type="checkbox"
           checked
           readOnly
         />
-      </div>
-    );
+      );
+      break;
+    case "lookup":
+      const rowCellArr = cellData.map((data) => ({
+        cellData: data,
+        dataType: sourceType,
+      }));
+      displayData = rowCellArr.map((rowCell) => injectDataToJSX(rowCell, true));
+      break;
+    case "formula":
+      displayData = cellData;
+      break;
+    case "linkToAnotherTable":
+      // ...
+      break;
+    default:
+      console.error("Error while inject data to table", cellData, dataType);
+      break;
   }
-  return cellJSX;
+  return isLookupDataType ? (
+    displayData
+  ) : (
+    <div
+      className="cell-data d-flex justify-content-start align-items-center"
+      style={{
+        maxWidth: "300px",
+        height: "40px",
+        overflowWrap: "break-word",
+        overflowY: "hidden",
+      }}
+    >
+      {displayData}
+    </div>
+  );
 }
 
 const RowHover = styled.tr`
@@ -591,6 +648,33 @@ const RowHover = styled.tr`
     background-color: aliceblue;
   }
 `;
+function CellDetail({ children }) {
+  const [isCellDetailOpened, setCellDetailOpen] = useState(false);
+  const handleOpenCellDetail = () => setCellDetailOpen(true);
+  const handleCloseCellDetail = () => setCellDetailOpen(false);
+  return (
+    <div className="dropdown">
+      {children[0]}
+      <Outclick onOutClick={handleCloseCellDetail}>
+        <div
+          className="cell-detail dropdown-menu"
+          style={{ maxWidth: "300px" }}
+        >
+          <ul className="cell-detail-list">
+            {children.map((item, i) => (
+              <li key={i} className="cell-detail-item">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </Outclick>
+      <button className="cell-detail-toggle" onClick={handleOpenCellDetail}>
+        <MdExpand size={10} />
+      </button>
+    </div>
+  );
+}
 
 Table.defaultProps = {
   recordPerPage: 5,
@@ -613,29 +697,23 @@ Table.propTypes = {
    */
   forEditing: PropTypes.shape({
     /**
-     * Table Array get from Airtable (per element is a retrieved table)
+     * Records Array get from Airtable (per element is a retrieved table)
      */
-    syncTables: PropTypes.arrayOf(
-      PropTypes.arrayOf(
-        PropTypes.shape({
-          createdTime: PropTypes.string,
-          fields: PropTypes.object,
-          /**
-           * The RecordId on Airtable
-           */
-          id: PropTypes.string,
-        })
-      )
+    syncRecords: PropTypes.arrayOf(
+      PropTypes.shape({
+        createdTime: PropTypes.string,
+        fields: PropTypes.object,
+        /**
+         * The RecordId on Airtable
+         */
+        id: PropTypes.string,
+      })
     ),
     /**
-     * The Field that all tables have and linking together by a single value
-     */
-    syncField: PropTypes.string,
-    /**
      * We use redux to store the selected record, the reducer array is must
-     * in order and suitable with ***syncTables***
+     * in order and suitable with ***syncRecords***
      */
-    syncReducers: PropTypes.arrayOf(PropTypes.func),
+    syncReducer: PropTypes.func,
   }),
   isHasSettings: PropTypes.bool,
   onRecordClick: PropTypes.func,

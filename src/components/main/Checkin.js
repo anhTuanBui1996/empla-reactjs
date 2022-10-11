@@ -42,12 +42,17 @@ function Checkin() {
 
   // eslint-disable-next-line
   useEffect(
-    () => dispatch(retrieveCheckinList(userCredential?.StaffId[0])),
-    [dispatch, userCredential?.StaffId]
+    () =>
+      userCredential && dispatch(retrieveCheckinList(userCredential.StaffId)),
+    [dispatch, userCredential]
   );
   useEffect(() => {
     if (checkinList) {
-      const tableDataList = mapResultToTableData(checkinList, fieldList);
+      const tableDataList = mapResultToTableData(
+        checkinList,
+        "Check-in",
+        fieldList
+      );
       setRecordList(
         tableDataList.sort((a, b) => {
           const firstCreatedTime = Date.parse(a.data[1]);

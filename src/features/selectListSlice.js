@@ -22,19 +22,18 @@ export const fetchAllEmptySelectList = createAsyncThunk(
     let newState = { ...selectOptionState };
     let checkEmptySelectList = countEmptySelectList(newState);
     Object.keys(selectOptionState).forEach((tableKey) => {
-      Object.keys(selectOptionState[tableKey]).forEach(async (fieldKey) => {
-        if (selectOptionState[tableKey][fieldKey].list.length === 0) {
+      Object.entries(selectOptionState[tableKey]).forEach(async (field) => {
+        if (selectOptionState[tableKey][field[0]].list.length === 0) {
           const res = await retrieveData(
-            selectOptionState[tableKey][fieldKey].fromTable
+            selectOptionState[tableKey][field[0]].fromTable
           );
-          let fetchToList = newState[tableKey][fieldKey];
+          let fetchToList = newState[tableKey][field[0]];
+          let displayedField = field[1].displayedField;
           fetchToList.list = res?.map((item) => ({
             "data-table": tableKey,
             value: item.id,
-            // we want to display field Domain from Account table
-            label:
-              tableKey === "Account" ? item.fields.Domain : item.fields.Name,
-            name: fieldKey,
+            label: item.fields[displayedField],
+            name: field[0],
           }));
         }
         checkEmptySelectList = countEmptySelectList(newState);
@@ -91,7 +90,7 @@ const countEmptySelectList = (selectOptionState) => {
   Object.keys(selectOptionState).forEach((tableKey) => {
     Object.keys(selectOptionState[tableKey]).forEach((fieldKey) => {
       if (selectOptionState[tableKey][fieldKey].list === undefined) {
-        count++
+        count++;
       } else if (selectOptionState[tableKey][fieldKey].list.length === 0) {
         count++;
       }

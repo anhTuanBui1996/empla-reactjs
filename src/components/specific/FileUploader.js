@@ -8,14 +8,13 @@ import PropTypes from "prop-types";
 import { MdClose, MdRotateLeft } from "react-icons/md";
 const ReactFilestack = loadable(() => import("filestack-react"));
 
-function ImageUploader({
+function FileUploader({
   name,
   "data-table": dataTable,
   imgData,
-  imgThumbnail,
+  mediaType,
   type,
   handleUploadSuccessfully,
-  handleClearImg,
 }) {
   const [imgStored, setImgStored] = useState(null);
   const handleRetrieveImg = () => {
@@ -26,10 +25,18 @@ function ImageUploader({
       "data-table": dataTable,
     });
   };
+  const handleClearImg = () => {
+    handleUploadSuccessfully({
+      filesFailed: [],
+      filesUploaded: [],
+      name,
+      "data-table": dataTable,
+    });
+  };
   useEffect(() => {
     if (type === "edit") {
       imgData?.length && setImgStored(imgData[0]);
-    } else if (type === "create") {
+    } else {
       setImgStored(null);
     }
   }, [imgData, type]);
@@ -44,14 +51,14 @@ function ImageUploader({
                 <ImageBg className="image-bg">
                   <ImageViewer
                     className="image-previewer avatar-img rounded w-100"
-                    src={imgThumbnail}
+                    src={imgStored?.thumbnails.large.url}
                     alt=""
                   />
                   <ImageHover
                     className="hover-blur"
                     onMouseDownCapture={onPick}
                   >
-                    Change image
+                    {`Change ${mediaType}`}
                   </ImageHover>
                 </ImageBg>
               </Col>
@@ -60,12 +67,7 @@ function ImageUploader({
               className="btn btn-link image-clear-btn rounded"
               onMouseDownCapture={(e) => {
                 e.stopPropagation();
-                handleClearImg({
-                  filesFailed: [],
-                  filesUploaded: [],
-                  name,
-                  "data-table": dataTable,
-                });
+                handleClearImg();
               }}
             >
               <MdClose />
@@ -79,11 +81,11 @@ function ImageUploader({
                 type="button"
                 onMouseDownCapture={onPick}
               >
-                Add an image
+                {`Add an ${mediaType}`}
               </button>
             </div>
             {imgStored && (
-              <ImageRetiveButton
+              <ImageRetriveButton
                 className="btn btn-link image-clear-btn rounded"
                 onMouseDownCapture={(e) => {
                   e.stopPropagation();
@@ -91,7 +93,7 @@ function ImageUploader({
                 }}
               >
                 <MdRotateLeft />
-              </ImageRetiveButton>
+              </ImageRetriveButton>
             )}
           </div>
         )
@@ -149,7 +151,7 @@ const ImageClearButton = styled.button`
     color: #fff !important;
   }
 `;
-const ImageRetiveButton = styled.button`
+const ImageRetriveButton = styled.button`
   line-height: 1;
   position: absolute;
   top: 0;
@@ -166,14 +168,26 @@ const ImageRetiveButton = styled.button`
   }
 `;
 
-ImageUploader.propTypes = {
+FileUploader.propTypes = {
   name: PropTypes.string,
   "data-table": PropTypes.string,
+  "data-type": PropTypes.oneOf([
+    "singleLineText",
+    "formula",
+    "checkbox",
+    "longText",
+    "attachment",
+    "singleSelect",
+    "multipleSelect",
+    "date",
+    "dateTime",
+    "lookup",
+    "linkToAnotherTable",
+  ]),
   imgData: PropTypes.arrayOf(PropTypes.object),
-  imgThumbnail: PropTypes.string,
+  mediaType: PropTypes.string,
   type: PropTypes.string,
   handleUploadSuccessfully: PropTypes.func,
-  handleClearImg: PropTypes.func,
 };
 
-export default ImageUploader;
+export default FileUploader;

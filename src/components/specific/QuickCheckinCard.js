@@ -77,7 +77,7 @@ function QuickCheckinCard() {
         });
         setCheckStatus(false);
         dispatch(setNewCheckinData(null));
-        dispatch(retrieveCheckinList(userCredential.StaffId[0]));
+        dispatch(retrieveCheckinList(userCredential.StaffId));
       }
     } else {
       if (error) {
@@ -85,7 +85,7 @@ function QuickCheckinCard() {
         addToast("An error occurs", { appearance: "error" });
       } else {
         if (userCredential) {
-          dispatch(retrieveCheckinList(userCredential.StaffId[0]));
+          dispatch(retrieveCheckinList(userCredential.StaffId));
         }
       }
     }

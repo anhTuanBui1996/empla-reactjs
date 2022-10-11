@@ -2,7 +2,14 @@ import React from "react";
 import { MdSearch } from "react-icons/md";
 import PropTypes from "prop-types";
 
-function Search({ noBorder, value, placeholder, onChange, onSubmit }) {
+function Search({
+  className,
+  noBorder,
+  value,
+  placeholder,
+  onChange,
+  onSubmit,
+}) {
   const onKeyPress = (e) => {
     if (e.key === "Enter") {
       if (onSubmit) {
@@ -14,7 +21,11 @@ function Search({ noBorder, value, placeholder, onChange, onSubmit }) {
     }
   };
   return (
-    <div className="input-group input-group-rounded input-group-merge">
+    <div
+      className={`input-group input-group-rounded input-group-merge${
+        className ? ` ${className}` : ""
+      }`}
+    >
       <input
         type="text"
         className={`form-control form-control-rounded form-control-prepended${
@@ -35,6 +46,14 @@ function Search({ noBorder, value, placeholder, onChange, onSubmit }) {
 }
 
 Search.propTypes = {
+  className: PropTypes.string,
+  dataType: PropTypes.oneOf([
+    "singleLineText",
+    "longText",
+    "date",
+    "dateTime",
+    "checkbox",
+  ]),
   noBorder: PropTypes.bool,
   placeholder: PropTypes.string,
   onChange: PropTypes.func,
