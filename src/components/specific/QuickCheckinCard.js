@@ -51,7 +51,7 @@ function QuickCheckinCard() {
           }
         }
         // the Type's index is 2 in the fieldList
-        if (lastCheck.fields.Type === "Check-in") {
+        if (lastCheck.fields.Type === "Checkin") {
           setCheckIn(false);
         } else {
           setCheckIn(true);
@@ -96,7 +96,7 @@ function QuickCheckinCard() {
     const { lat, lng } = currentPosition;
     dispatch(
       createNewCheckin({
-        Type: "Check-in",
+        Type: "Checkin",
         Notes: notes,
         Staff: userCredential.Staff,
         CoordinatePosition: `${lat} ${lng}`,
@@ -122,7 +122,7 @@ function QuickCheckinCard() {
       inactive={!isCheckAvailable}
       isLoading={loading}
       cardHeader={{
-        title: loading ? "" : isCheckIn ? "Check-in" : "Check-out",
+        title: loading ? "" : isCheckIn ? "Checkin" : "Check-out",
         rightTitle: isCheckAvailable && (
           <Dropdown
             title={<MdNoteAdd size="20px" />}
@@ -168,7 +168,7 @@ function QuickCheckinCard() {
                 className="py-2 px-4"
                 onClick={isCheckIn ? handleCheckIn : handleCheckOut}
               >
-                {isCheckIn ? "Check-in" : "Check-out"}
+                {isCheckIn ? "Checkin" : "Check-out"}
               </Button>
             </Row>
           )}

@@ -12,7 +12,7 @@ const initialState = {
 export const retrieveCheckinList = createAsyncThunk(
   "checkin/fetch",
   async (userStaffId) => {
-    const res = await retrieveData("Check-in", `StaffId = "${userStaffId}"`);
+    const res = await retrieveData("Checkin", `StaffId = "${userStaffId}"`);
     return res;
   }
 );
@@ -20,7 +20,7 @@ export const retrieveCheckinList = createAsyncThunk(
 export const createNewCheckin = createAsyncThunk(
   "checkin/create",
   async (data) => {
-    const res = await createNewRecord("Check-in", data);
+    const res = await createNewRecord("Checkin", data);
     return res;
   }
 );

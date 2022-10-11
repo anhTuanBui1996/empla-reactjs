@@ -14,7 +14,7 @@
     "airtable": "^0.11.4",
     "dotenv": "^10.0.0",
     "filestack-react": "^3.2.1",
-    "firebase": "^9.6.1",
+    "firebase": "^9.11.0",
     "moment": "^2.29.1",
     "prop-types": "^15.7.2",
     "react": "^17.0.2",

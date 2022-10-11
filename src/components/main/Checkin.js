@@ -50,7 +50,7 @@ function Checkin() {
     if (checkinList) {
       const tableDataList = mapResultToTableData(
         checkinList,
-        "Check-in",
+        "Checkin",
         fieldList
       );
       setRecordList(
@@ -65,7 +65,7 @@ function Checkin() {
         if (error) {
           console.log(error);
           addToast(
-            "Retrieve Check-in Data failed! Please check your connection...",
+            "Retrieve Checkin Data failed! Please check your connection...",
             { appearance: "error" }
           );
         }
@@ -237,8 +237,8 @@ function Checkin() {
       {loading && <Loader />}
       <MainContent>
         <MainHeader
-          title="Check-in"
-          subTitle="Check-in before working and check-out before leaving. Remember!"
+          title="Checkin"
+          subTitle="Checkin before working and check-out before leaving. Remember!"
         />
         <Container fluid gap={20}>
           <Row
@@ -276,7 +276,7 @@ function Checkin() {
               <Card
                 isLoading={loading}
                 cardHeader={{
-                  title: "Check-in/out history",
+                  title: "Checkin/out history",
                   extension: (
                     <>
                       <ExtensionItemBtn>
@@ -293,7 +293,7 @@ function Checkin() {
                 isHasHideCard
                 elementList={[
                   <Table
-                    tableName="Check-in"
+                    tableName="Checkin"
                     fieldList={fieldList}
                     recordList={recordList}
                     isHasSettings

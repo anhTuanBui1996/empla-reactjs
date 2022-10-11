@@ -8,7 +8,7 @@ function CheckInMap() {
 
   return (
     <GoogleMapCard
-      title="Check-in locations"
+      title="Checkin locations"
       styleContainer={{
         width: "100%",
         height: "487px",
