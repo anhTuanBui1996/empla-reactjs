@@ -237,8 +237,8 @@ function Checkin() {
       {loading && <Loader />}
       <MainContent>
         <MainHeader
-          title="Checkin"
-          subTitle="Checkin before working and check-out before leaving. Remember!"
+          title="Check-in"
+          subTitle="Check-in before working and check-out before leaving. Remember!"
         />
         <Container fluid gap={20}>
           <Row
@@ -276,7 +276,7 @@ function Checkin() {
               <Card
                 isLoading={loading}
                 cardHeader={{
-                  title: "Checkin/out history",
+                  title: "Check-in/out history",
                   extension: (
                     <>
                       <ExtensionItemBtn>

@@ -122,7 +122,7 @@ function QuickCheckinCard() {
       inactive={!isCheckAvailable}
       isLoading={loading}
       cardHeader={{
-        title: loading ? "" : isCheckIn ? "Checkin" : "Check-out",
+        title: loading ? "" : isCheckIn ? "Check-in" : "Check-out",
         rightTitle: isCheckAvailable && (
           <Dropdown
             title={<MdNoteAdd size="20px" />}
