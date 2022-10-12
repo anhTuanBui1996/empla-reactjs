@@ -31,7 +31,6 @@ function Table({
     fieldList.forEach((field, index) => {
       let fieldMetadata = AIRTABLE.FIELD_TYPE[tableName][field];
       let fieldDataType = fieldMetadata.dataType;
-      console.log(fieldMetadata, fieldDataType);
       if (fieldDataType === "lookup") fieldDataType = fieldMetadata.sourceType;
       let notSuportFields = AIRTABLE.NOT_SUPPORT_DATA_TYPE.FOR_SEARCHING;
       if (notSuportFields.indexOf(fieldDataType) === -1) {
