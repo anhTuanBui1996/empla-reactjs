@@ -15,7 +15,7 @@ function CustomSwitch({ inputValue, onSwitchChange }) {
       <input
         type="checkbox"
         className="custom-control-input"
-        id={`cardToggle${toggleId}`}
+        id={`customSwitch_${toggleId}`}
         checked={inputValue}
         onChange={(e) => {
           onSwitchChange(e.target.checked);
@@ -23,7 +23,7 @@ function CustomSwitch({ inputValue, onSwitchChange }) {
       />
       <CustomLabel
         className="custom-control-label"
-        htmlFor={`cardToggle${toggleId}`}
+        htmlFor={`customSwitch_${toggleId}`}
       />
     </CustomSwitchWrapper>
   );

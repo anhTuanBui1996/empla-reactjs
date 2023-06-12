@@ -10,20 +10,20 @@ const initialState = {
   loading: false,
   isSuccess: false,
   progressing: null,
-  staffTableData: null,
-  newStaffData: null,
-  willBeUpdatedStaffData: null,
-  willUpdatingStaffData: null,
-  updatedStaffData: null,
-  selectedStaffForEdit: null,
-  deletedStaffData: null,
+  staffTableData: null, // retrieve
+  newStaffData: null, // create
+  updatedStaffData: null, // update
+  deletedStaffData: null, // delete
   error: null,
 };
 
-export const retrieveStaffList = createAsyncThunk("staff/retrieve", async () => {
-  const res = await retrieveData("Staff");
-  return res;
-});
+export const retrieveStaffList = createAsyncThunk(
+  "staff/retrieve",
+  async () => {
+    const res = await retrieveData("Staff");
+    return res;
+  }
+);
 
 export const createNewStaff = createAsyncThunk("staff/create", async (data) => {
   const res = await createNewRecord("Staff", data);
@@ -54,20 +54,17 @@ export const staffSlice = createSlice({
     setLoading: (state, action) => {
       state.loading = action.payload;
     },
+    setStaffTableData: (state, action) => {
+      state.staffTableData = action.payload;
+    },
     setNewStaffData: (state, action) => {
       state.newStaffData = action.payload;
     },
-    setSelectedStaffForEdit: (state, action) => {
-      state.selectedStaffForEdit = action.payload;
-    },
-    setWillBeUpdatedStaffData: (state, action) => {
-      state.willBeUpdatedStaffData = action.payload;
-    },
-    setWillUpdatingStaffData: (state, action) => {
-      state.willUpdatingStaffData = action.payload;
-    },
     setUpdatedStaffData: (state, action) => {
       state.updatedStaffData = action.payload;
+    },
+    setDeletedStaffData: (state, action) => {
+      state.deletedStaffData = action.payload;
     },
     setProgressing: (state, action) => {
       state.progressing = action.payload;
@@ -171,11 +168,10 @@ export const staffSlice = createSlice({
 
 export const {
   setLoading,
+  setStaffTableData,
   setNewStaffData,
-  setSelectedStaffForEdit,
-  setWillBeUpdatedStaffData,
-  setWillUpdatingStaffData,
   setUpdatedStaffData,
+  setDeletedStaffData,
   setProgressing,
   setError,
 } = staffSlice.actions;
@@ -184,12 +180,6 @@ export const selectIsSuccess = (state) => state.staff.isSuccess;
 export const selectProgressing = (state) => state.staff.progressing;
 export const selectStaffTableData = (state) => state.staff.staffTableData;
 export const selectNewStaffData = (state) => state.staff.newStaffData;
-export const selectSelectedStaffForEdit = (state) =>
-  state.staff.selectedStaffForEdit;
-export const selectWillBeUpdatedStaffData = (state) =>
-  state.staff.willBeUpdatedStaffData;
-export const selectWillUpdatingStaffData = (state) =>
-  state.staff.willUpdatingStaffData;
 export const selectUpdatedStaffData = (state) => state.staff.updatedStaffData;
 export const selectDeletedStaffData = (state) => state.staff.deletedStaffData;
 export const selectError = (state) => state.staff.error;

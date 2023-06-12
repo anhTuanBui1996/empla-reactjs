@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import styled from "styled-components";
 import {
   MdLogout,
@@ -13,8 +13,10 @@ import { privateRoutes, SIDENAV } from "../../constants";
 import { removeLocalUser } from "../../services/localStorage.service";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  removeToken,
+  resetUserSlice,
   selectUserCredential,
-  setUserCredential,
+  selectUserInfo,
 } from "../../features/userSlice";
 import PropTypes from "prop-types";
 import Search from "../common/Search";
@@ -25,28 +27,36 @@ import { createNewLog } from "../../features/logsSlice";
 import { useToasts } from "react-toast-notifications";
 import { browserDetect } from "../../utils/userAgentUtils";
 
-function SideBar({ localUser }) {
+function SideBar() {
   const dispatch = useDispatch();
   const { addToast } = useToasts();
-  const userAccessibility = localUser.DatabaseAccessibility[0];
-  const userAccount = localUser.UserAccount;
+
+  const userInfo = useSelector(selectUserInfo);
+  const userAccessibility = userInfo?.fields.DatabaseAccessibility[0];
+  const userAccount = userInfo?.fields.Account;
+  const userCredential = useSelector(selectUserCredential);
   const [isCollaped, setCollapse] = useState(true);
   const innerWidth = useSelector(selectInnerWidth);
   const handleOutClick = () => {
     setCollapse(true);
   };
   const handleLogout = () => {
-    removeLocalUser();
     dispatch(
       createNewLog({
         Actions: "Logout",
         Account: userAccount,
-        Status: "Done",
-        Notes: `Browser: ${browserDetect()}`,
+        RecordAffected: userInfo?.id,
+        IdAffected: userInfo?.fields.StaffId,
+        TableAffected: "Staff",
+        Notes: `Browser: ${browserDetect()}, logout and delete token ${
+          userCredential.Token
+        }`,
       })
     );
+    dispatch(removeToken(userCredential.Token));
+    removeLocalUser();
+    dispatch(resetUserSlice());
     addToast("Logout Successfully!", { appearance: "success" });
-    dispatch(setUserCredential(null));
   };
   const handleToggleCollapse = () => {
     setCollapse(!isCollaped);
@@ -84,9 +94,13 @@ function SideBarContent({
   forceCollapse,
   isPositionFixedAtTop,
 }) {
-  const userCredential = useSelector(selectUserCredential);
-  const avatarUrl = userCredential?.Avatar
-    ? userCredential.Avatar[0].url
+  const userInfo = useSelector(selectUserInfo);
+  const userInfoFields = useMemo(() => {
+    return userInfo?.fields;
+  }, [userInfo]);
+
+  const avatarUrl = userInfoFields?.Avatar
+    ? userInfoFields.Avatar[0].url
     : avatarDummy;
   return (
     <nav
@@ -236,7 +250,7 @@ function SideBarContent({
             </ul>
           </div>
         </div>
-        <div className="navbar-user d-md-flex">
+        <div className="navbar-user d-md-flex mx-0">
           <Link
             className="navbar-user-link d-none d-md-block"
             to="/notification"
@@ -275,7 +289,7 @@ function SideBarContent({
             </div>
           </div>
           <button
-            className="navbar-user-link d-none d-md-block"
+            className="navbar-user-link d-none d-md-block px-0"
             style={{
               backgroundColor: "transparent",
               textDecoration: "none",

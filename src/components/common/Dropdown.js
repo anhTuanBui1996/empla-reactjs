@@ -11,6 +11,7 @@ function Dropdown({
   position,
   style,
   toggleStyle,
+  toggleOnHover,
   boxStyle,
   isForceClose,
   onClose,
@@ -38,7 +39,9 @@ function Dropdown({
           className ? ` ${className}` : ""
         }`}
         style={toggleStyle ? toggleStyle : null}
-        onClick={handleToggle}
+        onClick={!toggleOnHover ? handleToggle : undefined}
+        onMouseEnter={toggleOnHover ? handleToggle : undefined}
+        onMouseLeave={toggleOnHover ? handleToggle : undefined}
       >
         {title || <MdArrowDropDown size={1.5} />}
       </ToggleButton>
@@ -48,6 +51,7 @@ function Dropdown({
             isOpened ? " d-flex" : ""
           }`}
           style={boxStyle ? boxStyle : null}
+          onMouseLeave={toggleOnHover ? handleToggle : undefined}
         >
           {children}
         </div>
@@ -78,6 +82,10 @@ Dropdown.propTypes = {
    * Style for toggle button
    */
   toggleStyle: PropTypes.object,
+  /**
+   * True if you want open dropdown box on hover
+   */
+  toggleOnHover: PropTypes.bool,
   /**
    * Style for dropdown box
    */

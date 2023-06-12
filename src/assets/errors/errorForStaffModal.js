@@ -1,7 +1,7 @@
 // error form using on modal form
 // only using for fields that can let user input
 
-// use for StaffModal
+// use for LeftSideFormModal
 export const initialErrorFormForStaff = {
   errStatus: false,
   isShowMsg: false,

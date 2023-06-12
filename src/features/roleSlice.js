@@ -57,8 +57,8 @@ export const roleSlice = createSlice({
     setNewRoleData: (state, action) => {
       state.newRoleData = action.payload;
     },
-    setSelectedRoleForEdit: (state, action) => {
-      state.selectedRoleForEdit = action.payload;
+    setSelectedRoleData: (state, action) => {
+      state.selectedRoleData = action.payload;
     },
     setWillBeUpdatedRoleData: (state, action) => {
       state.willBeUpdatedRoleData = action.payload;
@@ -99,7 +99,7 @@ export const roleSlice = createSlice({
 export const {
   setLoading,
   setNewRoleData,
-  setSelectedRoleForEdit,
+  setSelectedRoleData,
   setWillUpdatingRoleData,
   setWillBeUpdatedRoleData,
   setUpdatedRoleData,

@@ -3,6 +3,7 @@ import styled from "styled-components";
 import Outclick from "../../hoc/Outclick";
 import Button from "./Button";
 import { MdArrowRight } from "react-icons/md";
+import PropTypes from "prop-types";
 
 function Modal({ children, onModalHide, isModalDisplay }) {
   const modalRef = useRef();
@@ -21,6 +22,7 @@ function Modal({ children, onModalHide, isModalDisplay }) {
         <ModalContent isDisplay={isDisplay} ref={modalRef}>
           <ModalBody>
             <Button
+              padding={"15px 5px"}
               style={{ position: "absolute", left: "-5px", top: "0" }}
               className="py-1"
               onClick={handleHideModal}
@@ -83,5 +85,10 @@ export const ModalContent = styled.div`
 export const ModalBody = styled.div`
   margin: 1.5em 0;
 `;
+
+Modal.propTypes = {
+  onModalHide: PropTypes.func,
+  isModalDisplay: PropTypes.bool,
+};
 
 export default Modal;

@@ -8,6 +8,8 @@ import checkinReducer from "../features/checkinSlice";
 import geolocationSlice from "../features/geolocationSlice";
 import roleSlice from "../features/roleSlice";
 import logsSlice from "../features/logsSlice";
+import metadataSlice from "../features/metadataSlice";
+import editorSlice from "../features/editorSlice";
 
 export const store = configureStore({
   reducer: {
@@ -20,5 +22,7 @@ export const store = configureStore({
     geolocation: geolocationSlice,
     role: roleSlice,
     logs: logsSlice,
+    metadata: metadataSlice,
+    editor: editorSlice
   },
 });

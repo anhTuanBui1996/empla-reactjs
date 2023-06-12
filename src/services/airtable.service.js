@@ -1,5 +1,28 @@
 import { AIRTABLE } from "../constants";
 import base from "./../utils/airtable";
+import axios from "axios";
+
+/**
+ * Read metadata of tables from Airtable base
+ * @returns an object store metadata of tables from current base
+ */
+const retrieveMetadata = async () => {
+  try {
+    const baseId = AIRTABLE.BASE_ID;
+    const authToken = AIRTABLE.API_KEY;
+    const res = await axios.get(
+      `https://api.airtable.com/v0/meta/bases/${baseId}/tables`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      }
+    );
+    return res.data;
+  } catch (e) {
+    console.log(e);
+  }
+};
 
 /**
  * Read data from Airtable, the result is
@@ -36,25 +59,35 @@ const retrieveData = async (tableName, whereString) => {
 /**
  * Mapping from retrieveData res into new array,
  * use for insert the Table component
- * @param {Object[]} res res Array from retrieveData function
+ * @param {Object[]} res result Array from retrieveData function
  * @param {String} tableName table name that get data from
  * @param {Array} fieldList field name list to map from res
+ * @param {Object} tableMetadata metadata Object get from airtable
  * @returns {Array} the array has been mapped,
  * the index is mapped with fieldList
  * element object of return array
  * * {rowId: string, data: any[] string|array|object}
  */
-const mapResultToTableData = (res, tableName, fieldList) => {
+const mapResultToTableData = (res, tableName, fieldList, tableMetadata) => {
   let dataList = [];
   res.forEach((recordData) => {
     dataList.push({
       rowId: recordData.id,
       tableName,
       columnList: fieldList,
+      originalRecord: recordData,
       data: fieldList.map((fieldName) => {
         let cellData = recordData.fields[fieldName];
-        let { dataType, sourceType } =
-          AIRTABLE.FIELD_TYPE[tableName][fieldName];
+        let fieldMetadata = tableMetadata.fields.find(
+          (field) => field.name === fieldName
+        );
+        let dataType = fieldMetadata.type;
+        let sourceType = dataType;
+        if (dataType === "multipleRecordLinks") {
+          sourceType = "recordId";
+        } else if (dataType === "multipleLookupValues") {
+          sourceType = fieldMetadata.options.result.type;
+        }
         return { cellData, dataType, sourceType };
       }),
     });
@@ -215,13 +248,15 @@ const deleteRecordWhere = async (tableName, whereString) => {
         filterByFormula: whereString,
       })
       .all();
-    const res = filteredRecords.map(async (record) => {
-      let deletedRecord = await record.destroy();
-      return {
-        ...deletedRecord._rawJson,
-        deletedTime: Date.now(),
-      };
-    });
+    const res = await Promise.allSettled(
+      filteredRecords.map(async (record) => {
+        let deletedRecord = await record.destroy();
+        return {
+          ...deletedRecord._rawJson,
+          deletedTime: Date.now(),
+        };
+      })
+    );
     return res;
   } catch (e) {
     console.log(e);
@@ -230,6 +265,7 @@ const deleteRecordWhere = async (tableName, whereString) => {
 };
 
 export {
+  retrieveMetadata,
   retrieveData,
   mapResultToTableData,
   createNewRecord,

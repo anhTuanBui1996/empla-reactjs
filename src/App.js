@@ -21,6 +21,7 @@ import Department from "./components/main/Department";
 import WorkingPlace from "./components/main/WorkingPlace";
 import Collaboratory from "./components/main/Collaboratory";
 import Nomatch from "./components/main/Nomatch";
+import AirtableMetadata from "./hoc/AirtableMetadata";
 require("dotenv").config();
 
 function App() {
@@ -33,40 +34,38 @@ function App() {
         autoDismissTimeout={8000}
       >
         <Auth>
-          <AdminCheck>
-            <Routes>
-              <Route path="/login" element={<Login />} />
+          <AirtableMetadata>
+            <AdminCheck>
+              <Routes>
+                <Route path="/login" element={<Login />} />
 
-              {/**
-               * Condition routes (sensity content will be defined in components)
-               */}
-              <Route path="/projects" element={<Projects />} />
-              <Route path="/teams" element={<Teams />} />
-              <Route path="/department" element={<Department />} />
-              <Route path="/clients" element={<Clients />} />
-              <Route path="/staff" element={<Staff />} />
+                {/**
+                 * Condition routes (sensity content will be defined in components)
+                 */}
+                <Route path="/staff" element={<Staff />} />
 
-              {/**
-               * Private routes
-               */}
-              <Route path="/role" element={<Role />} />
-              <Route path="/workingplace" element={<WorkingPlace />} />
-              <Route path="/collaboratory" element={<Collaboratory />} />
+                {/**
+                 * Private routes
+                 */}
+                <Route path="/role" element={<Role />} />
+                <Route path="/workingplace" element={<WorkingPlace />} />
+                <Route path="/collaboratory" element={<Collaboratory />} />
 
-              {/**
-               * Public routes
-               */}
-              <Route path="/report" element={<Report />} />
-              <Route path="/checkin" element={<Checkin />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/notifications" element={<Notifications />} />
-              <Route path="/" element={<Home />} />
+                {/**
+                 * Public routes
+                 */}
+                <Route path="/tasks" element={<Report />} />
+                <Route path="/checkin" element={<Checkin />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/notifications" element={<Notifications />} />
+                <Route path="/" element={<Home />} />
 
-              {/* Nomatch route */}
-              <Route path="*" element={<Nomatch />} />
-            </Routes>
-          </AdminCheck>
+                {/* Nomatch route */}
+                <Route path="*" element={<Nomatch />} />
+              </Routes>
+            </AdminCheck>
+          </AirtableMetadata>
         </Auth>
       </ToastProvider>
     </WindowResizeHandler>

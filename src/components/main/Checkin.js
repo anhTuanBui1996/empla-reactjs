@@ -8,7 +8,7 @@ import Row from "../layout/Row";
 import Container from "../layout/Container";
 import Table from "../common/Table";
 import { mapResultToTableData } from "../../services/airtable.service";
-import { selectUserCredential } from "../../features/userSlice";
+import { selectUserInfo } from "../../features/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Loader from "../common/Loader";
 import {
@@ -24,15 +24,16 @@ import { MdArticle, MdSummarize, MdTableView } from "react-icons/md";
 import CheckInMap from "../specific/CheckInMap";
 import { companySpecific } from "../../constants";
 import { selectInnerWidth } from "../../features/windowSlice";
+import { selectMetadata } from "../../features/metadataSlice";
 
 function Checkin() {
   const dispatch = useDispatch();
   const { addToast } = useToasts();
   const fieldList = useMemo(() => {
-    return ["CheckinId", "CreatedDate", "Type", "Notes"];
+    return ["CreatedDate", "Type", "Notes"];
   }, []);
   const [recordList, setRecordList] = useState([]);
-  const userCredential = useSelector(selectUserCredential);
+  const userInfo = useSelector(selectUserInfo);
   const innerWidth = useSelector(selectInnerWidth);
 
   const loading = useSelector(selectLoading);
@@ -40,18 +41,23 @@ function Checkin() {
   const error = useSelector(selectError);
   const checkinList = useSelector(selectCheckinTableData);
 
+  const baseMetadata = useSelector(selectMetadata);
+  const tableMetadata = baseMetadata.tables.find(
+    (table) => table.name === "Checkin"
+  );
+
   // eslint-disable-next-line
   useEffect(
-    () =>
-      userCredential && dispatch(retrieveCheckinList(userCredential.StaffId)),
-    [dispatch, userCredential]
+    () => userInfo && dispatch(retrieveCheckinList(userInfo.fields.StaffId)),
+    [dispatch, userInfo]
   );
   useEffect(() => {
     if (checkinList) {
       const tableDataList = mapResultToTableData(
         checkinList,
         "Checkin",
-        fieldList
+        fieldList,
+        tableMetadata
       );
       setRecordList(
         tableDataList.sort((a, b) => {
@@ -72,7 +78,7 @@ function Checkin() {
       }
     }
     // eslint-disable-next-line
-  }, [userCredential, checkinList]);
+  }, [userInfo, checkinList, tableMetadata]);
 
   // sort the recordList by createdDate
   const sortedRecordList = useMemo(
@@ -295,7 +301,7 @@ function Checkin() {
                   <Table
                     tableName="Checkin"
                     fieldList={fieldList}
-                    recordList={recordList}
+                    tableMappedRecords={recordList}
                     isHasSettings
                   />,
                 ]}

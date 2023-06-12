@@ -8,7 +8,8 @@ import Row from "../layout/Row";
 import Table from "../common/Table";
 import Container from "../layout/Container";
 import Button from "../common/Button";
-import StaffModal from "../specific/StaffModal";
+// import LeftSideFormModal from "../editor/LeftSideFormModal";
+import LeftSideFormModal from "../editor/leftSideFormModal/LeftSideFormModal";
 import Loader from "../common/Loader";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -26,6 +27,9 @@ import newStaffImg from "./../../assets/images/welcome-new-staff.jpeg";
 import { useToasts } from "react-toast-notifications";
 import { selectInnerWidth } from "../../features/windowSlice";
 import { selectLoading } from "../../features/logsSlice";
+import InitialStaffForm, {
+  isRequiredFields,
+} from "../../assets/forms/staffForm";
 
 function Staff() {
   const innerWidth = useSelector(selectInnerWidth);
@@ -46,7 +50,6 @@ function Staff() {
   const [modalType, setModalType] = useState("create");
   const infoFieldList = useMemo(() => {
     return [
-      "StaffId",
       "FullName",
       "Portrait",
       "Gender",
@@ -90,17 +93,20 @@ function Staff() {
       const infoDataTableList = mapResultToTableData(
         _staff_retrieveResult,
         "Staff",
-        infoFieldList
+        infoFieldList,
+        tableMetadata
       );
       const statusDataTableList = mapResultToTableData(
         _staff_retrieveResult,
         "Staff",
-        statusFieldList
+        statusFieldList,
+        tableMetadata
       );
       const accountDataTableList = mapResultToTableData(
         _staff_retrieveResult,
         "Staff",
-        accountFieldList
+        accountFieldList,
+        tableMetadata
       );
       _info_setRecordList(infoDataTableList);
       _status_setRecordList(statusDataTableList);
@@ -128,12 +134,12 @@ function Staff() {
     _staff_retrieveError,
     dispatch,
     addToast,
+    tableMetadata,
   ]);
 
   const handleOpenModalForCreate = () => {
     setModalType("create");
     setModalDisplay(true);
-    dispatch(setSelectedStaffForEdit(null));
   };
   const handleOpenModalForEdit = () => {
     setModalType("edit");
@@ -208,36 +214,24 @@ function Staff() {
                 isHasHideCard
                 elementList={[
                   <Table
-                    tableName="Staff"
                     fieldList={infoFieldList}
-                    recordList={_info_recordList}
+                    tableMappedRecords={_info_recordList}
                     isHasSettings
-                    forEditing={{
-                      syncRecords: _staff_retrieveResult,
-                      syncReducer: setSelectedStaffForEdit,
-                    }}
+                    originalRecords={_staff_retrieveResult}
                     onRecordClick={handleOpenModalForEdit}
                   />,
                   <Table
-                    tableName="Staff"
                     fieldList={statusFieldList}
-                    recordList={_status_recordList}
+                    tableMappedRecords={_status_recordList}
                     isHasSettings
-                    forEditing={{
-                      syncRecords: _staff_retrieveResult,
-                      syncReducer: setSelectedStaffForEdit,
-                    }}
+                    originalRecords={_staff_retrieveResult}
                     onRecordClick={handleOpenModalForEdit}
                   />,
                   <Table
-                    tableName="Staff"
                     fieldList={accountFieldList}
-                    recordList={_account_recordList}
+                    tableMappedRecords={_account_recordList}
                     isHasSettings
-                    forEditing={{
-                      syncRecords: _staff_retrieveResult,
-                      syncReducer: setSelectedStaffForEdit,
-                    }}
+                    originalRecords={_staff_retrieveResult}
                     onRecordClick={handleOpenModalForEdit}
                   />,
                 ]}
@@ -248,11 +242,18 @@ function Staff() {
           </Row>
         </Container>
       </MainContent>
-      <StaffModal
+      <LeftSideFormModal
+        formName="Staff"
+        requiredFields={isRequiredFields}
+        isModalDisplay={isModalDisplay}
+        type={modalType}
+      />
+      {/* <LeftSideFormModal
         isModalDisplay={isModalDisplay}
         type={modalType}
         setModalHide={() => setModalDisplay(false)}
-      />
+      /> */}
+
       {(_staff_loading || _logLoading || _staff_retrieveResult === null) && (
         <Loader />
       )}

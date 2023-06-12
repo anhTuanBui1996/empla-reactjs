@@ -27,6 +27,7 @@ function Search({
       }`}
     >
       <input
+        id="search-menu"
         type="text"
         className={`form-control form-control-rounded form-control-prepended${
           noBorder ? ` border-0` : ""

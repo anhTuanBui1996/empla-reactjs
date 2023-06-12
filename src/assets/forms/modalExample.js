@@ -285,6 +285,7 @@ function RoleModal({ isModalDisplay, type, setModalHide }) {
       }
     }
     handleValidate();
+    handleCompareChanges(newRoleForm, newRoleFormForEdit);
   };
 
   // validate the newRoleForm
@@ -314,6 +315,14 @@ function RoleModal({ isModalDisplay, type, setModalHide }) {
       // ...
       return newErr;
     });
+  };
+
+  // compare changes of modal form
+  const handleCompareChanges = (oldForm, newForm) => {
+    const compareResult = compareTwoObject(oldForm, newForm);
+    // console.log(newForm, newFormForEdit);
+    // console.log(compareResult);
+    setStaffFormChangeStatus(!compareResult);
   };
 
   // handle retrieve tables after a create/update/delete
@@ -595,7 +604,10 @@ function RoleModal({ isModalDisplay, type, setModalHide }) {
             case "linkToAnotherRecord":
               break;
             default:
-              console.error("There is new field type that hasn't defined yet", `${tableKey}.${fieldKey}`);
+              console.error(
+                "There is new field type that hasn't defined yet",
+                `${tableKey}.${fieldKey}`
+              );
               break;
           }
         });

@@ -1,26 +1,29 @@
 import React, { useState } from "react";
-import { retrieveData } from "../../services/airtable.service";
 import { SpinnerCircular } from "spinners-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   selectError,
   selectLoading,
-  setUserCredential,
   setError,
-  setLoading,
+  selectUserInfo,
+  retrieveUserInfoWithPassword,
+  selectIsLoginValid,
+  selectIsTokenValid,
+  selectLastRoute,
 } from "../../features/userSlice";
-import {
-  getLocalUser,
-  setLocalUser,
-} from "../../services/localStorage.service";
-import { Navigate, useNavigate } from "react-router";
+import { Navigate } from "react-router";
 import { Link } from "react-router-dom";
+import Loader from "../common/Loader";
 
 function Login() {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const loading = useSelector(selectLoading);
   const error = useSelector(selectError);
+  const userInfo = useSelector(selectUserInfo);
+  const isLoginValid = useSelector(selectIsLoginValid);
+  const isTokenValid = useSelector(selectIsTokenValid);
+  const lastRoute = useSelector(selectLastRoute);
 
   const [loginForm, setLoginForm] = useState({
     username: "",
@@ -53,52 +56,14 @@ function Login() {
         })
       );
     } else {
-      dispatch(setLoading(true));
-      retrieveData("Staff", `{Account} = "${loginForm.username}"`)
-        .then((res) => {
-          if (res.length === 0) {
-            dispatch(
-              setError({
-                status: true,
-                type: "username",
-                message: "This user isn't existed!",
-              })
-            );
-          } else {
-            const actualPassword = res[0].fields.Password;
-            if (loginForm.password === actualPassword) {
-              setLocalUser({ ...res[0].fields, logInByPage: true });
-              dispatch(setUserCredential(res[0].fields));
-              dispatch(
-                setError({
-                  status: false,
-                  type: "",
-                  message: "",
-                })
-              );
-              navigate("/");
-            } else {
-              dispatch(
-                setError({
-                  status: true,
-                  type: "password",
-                  message: "Password is incorrect!",
-                })
-              );
-            }
-          }
-        })
-        .catch((error) => {
-          console.log("Error while login", error);
-        })
-        .finally(() => {
-          dispatch(setLoading(false));
-        });
+      dispatch(retrieveUserInfoWithPassword(loginForm));
     }
   };
 
-  return getLocalUser() ? (
-    <Navigate to="/" />
+  return userInfo && (isLoginValid || isTokenValid) ? (
+    <Navigate to={lastRoute ? lastRoute : "/"} />
+  ) : loading ? (
+    <Loader />
   ) : (
     <div className="container">
       <div className="row justify-content-center">

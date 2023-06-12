@@ -1,53 +1,43 @@
 import styled from "styled-components";
 
 const Button = styled.button.attrs((props) => ({
-  bgColor: props.bgColor ? props.bgColor : "",
-  bgHoverColor: props.bgHoverColor ? props.bgHoverColor : "",
-  borderRadius: props.borderRadius ? props.borderRadius : "",
+  bgColor: props.bgColor ? props.bgColor : "#0276ff",
+  bgHoverColor: props.bgHoverColor ? props.bgHoverColor : "#1c84ff",
+  borderRadius: props.borderRadius ? props.borderRadius : "8px",
+  padding: props.padding ? props.padding : "15px 21px",
 }))`
-  color: ${(props) => (props.color ? props.color : " #fff")};
-  border-radius: ${(props) =>
-    props.borderRadius ? props.borderRadius : " 5px"};
-  font-weight: 500;
-  background: transparent;
-  cursor: ${(props) => (props.disabled ? "" : "pointer")};
-  transition: all 0.3s ease;
-  position: relative;
-  display: inline-block;
-  box-shadow: ${(props) =>
-    props.disabled
-      ? ""
-      : `inset 2px 2px 2px 0px rgba(255, 255, 255, 0.5),
-    7px 7px 20px 0px rgba(0, 0, 0, 0.1), 4px 4px 5px 0px rgba(0, 0, 0, 0.1);`}
-  outline: none;
-  background: ${(props) =>
-    props.disabled ? "#e7e7e7" : props.bgColor ? props.bgColor : "#2c7be5"};
-  border: none;
-  z-index: 1;
-  &::after {
-    position: absolute;
-    content: "";
-    width: 0;
-    height: 100%;
-    top: 0;
-    left: 0;
-    z-index: -1;
-    background: ${(props) =>
-      props.bgHoverColor ? props.bgHoverColor : "#1a68d1"};
-    border-radius: ${(props) =>
-      props.borderRadius ? props.borderRadius : " 5px"};
-    box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, 0.5),
-      7px 7px 20px 0px rgba(0, 0, 0, 0.1), 4px 4px 5px 0px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    align-items: center;
+    appearance: button;
+    background-color: ${(props) => props.bgColor};
+    border-radius: ${(props) => props.borderRadius};
+    border-style: none;
+    box-shadow: rgba(255, 255, 255, 0.26) 0 1px 2px inset;
+    box-sizing: border-box;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+    font-size: 100%;
+    justify-content: center;
+    line-height: 1.5;
+    margin: 0;
+    padding: ${(props) => props.padding};
+    text-align: center;
+    text-transform: none;
+    transition: color 0.13s ease-in-out, background 0.13s ease-in-out,
+      opacity 0.13s ease-in-out, box-shadow 0.13s ease-in-out;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
   }
-  &:hover {
-    ${(props) => (props.disabled ? "" : "color: #fff;")}
-  }
-  &:hover::after {
-    ${(props) => (props.disabled ? "" : "width: 100%;")}
-  }
+
   &:active {
-    top: 2px;
+    background-color: #006ae8;
+  }
+
+  &:hover {
+    background-color: ${(props) => props.bgHoverColor};
   }
 `;
 

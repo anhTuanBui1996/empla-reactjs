@@ -5,8 +5,8 @@ import Row from "../layout/Row";
 import Col from "../layout/Col";
 import Select from "react-select";
 import Button from "../common/Button";
-import FileUploader from "./FileUploader";
-import DatePicker from "./DatePicker";
+import FileUploader from "../specific/FileUploader";
+import DatePicker from "../specific/DatePicker";
 import { VALIDATE_RULE } from "../../constants";
 import {
   initialStaffFormForCreate,
@@ -61,8 +61,8 @@ import { compareTwoObject } from "../../utils/objectUtils";
 // and name.
 
 /* eslint-disable */
-function StaffModal({ isModalDisplay, type, setModalHide }) {
-  let [componentAvailable, setComponentAvailable] = useState(true);
+function LeftSideFormModal({ isModalDisplay, type, setModalHide, formData }) {
+  const [componentAvailable, setComponentAvailable] = useState(true);
   const dispatch = useDispatch();
   const { addToast } = useToasts();
 
@@ -109,7 +109,7 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
 
   // define the select list use for dropdown form control,
   // empty select lists have to retrieve data from Airtable
-  // optionList is defined in features/staffModal.js
+  // optionList is defined in features/LeftSideFormModal.js
   const [selectList, setSelectList] = useState(optionList);
 
   // define the data object that used for display and upload to
@@ -428,8 +428,8 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   };
 
   // compare changes of modal form
-  const handleCompareChanges = (newForm, newFormForEdit) => {
-    const compareResult = compareTwoObject(newForm, newFormForEdit);
+  const handleCompareChanges = (oldForm, newForm) => {
+    const compareResult = compareTwoObject(oldForm, newForm);
     // console.log(newForm, newFormForEdit);
     // console.log(compareResult);
     setStaffFormChangeStatus(!compareResult);
@@ -1361,11 +1361,11 @@ function StaffModal({ isModalDisplay, type, setModalHide }) {
   );
 }
 
-StaffModal.propTypes = {
+LeftSideFormModal.propTypes = {
   isModalDisplay: PropTypes.bool,
   type: PropTypes.oneOf(["create", "edit"]).isRequired,
   setModalHide: PropTypes.func,
   setModalType: PropTypes.func,
 };
 
-export default StaffModal;
+export default LeftSideFormModal;

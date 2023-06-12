@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useToasts } from "react-toast-notifications";
+import { selectMetadata } from "../../features/metadataSlice";
 import {
   retrieveRoleList,
   selectError,
@@ -20,7 +21,6 @@ import Table from "../common/Table";
 import Container from "../layout/Container";
 import MainContent from "../layout/MainContent";
 import MainHeader from "../layout/MainHeader";
-import RoleModal from "../specific/RoleModal";
 
 function Role() {
   const dispatch = useDispatch();
@@ -52,10 +52,21 @@ function Role() {
   const userRoleType = userRole?.fields.RoleType;
   const userPermission = userRole?.fields.Description;
 
+  const baseMetadata = useSelector(selectMetadata);
+  const tableMetadata = baseMetadata.tables.find(
+    (table) => table.name === "Role"
+  );
+
   const roleTable = useMemo(
     () =>
-      roleList && mapResultToTableData(roleList, "Role", fieldListForRoleTable),
-    [roleList, fieldListForRoleTable]
+      roleList &&
+      mapResultToTableData(
+        roleList,
+        "Role",
+        fieldListForRoleTable,
+        tableMetadata
+      ),
+    [roleList, fieldListForRoleTable, tableMetadata]
   );
 
   // retrieve the data if redux store doesn't have value
@@ -125,11 +136,6 @@ function Role() {
           />
         </Container>
       </MainContent>
-      <RoleModal
-        type={modalType}
-        isModalDisplay={isModalDisplay}
-        setModalHide={() => setModalDisplay(false)}
-      />
     </>
   );
 }

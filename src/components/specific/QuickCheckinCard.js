@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useToasts } from "react-toast-notifications";
 import { MdNoteAdd } from "react-icons/md";
 import styled from "styled-components";
-import { selectUserCredential } from "../../features/userSlice";
+import { selectUserInfo } from "../../features/userSlice";
 import {
   selectLoading,
   selectError,
@@ -26,7 +26,10 @@ function QuickCheckinCard() {
   const [isCheckIn, setCheckIn] = useState(true);
   const [lastCheckTime, setLastCheckTime] = useState("");
   const [notes, setNotes] = useState("");
-  const userCredential = useSelector(selectUserCredential);
+  const userInfo = useSelector(selectUserInfo);
+  const userInfoFields = useMemo(() => {
+    return userInfo?.fields;
+  }, [userInfo]);
 
   const dispatch = useDispatch();
   const { addToast } = useToasts();
@@ -77,19 +80,19 @@ function QuickCheckinCard() {
         });
         setCheckStatus(false);
         dispatch(setNewCheckinData(null));
-        dispatch(retrieveCheckinList(userCredential.StaffId));
+        dispatch(retrieveCheckinList(userInfoFields?.StaffId));
       }
     } else {
       if (error) {
         console.log(error);
         addToast("An error occurs", { appearance: "error" });
       } else {
-        if (userCredential) {
-          dispatch(retrieveCheckinList(userCredential.StaffId));
+        if (userInfo) {
+          dispatch(retrieveCheckinList(userInfoFields?.StaffId));
         }
       }
     }
-  }, [userCredential, checkinList, error, newCheckin, now]);
+  }, [userInfoFields, checkinList, error, newCheckin, now]);
 
   const handleCheckIn = (e) => {
     e.preventDefault();
@@ -98,7 +101,7 @@ function QuickCheckinCard() {
       createNewCheckin({
         Type: "Checkin",
         Notes: notes,
-        Staff: userCredential.Staff,
+        Staff: userInfoFields?.Staff,
         CoordinatePosition: `${lat} ${lng}`,
       })
     );
@@ -111,7 +114,7 @@ function QuickCheckinCard() {
       createNewCheckin({
         Type: "Check-out",
         Notes: notes,
-        Staff: userCredential.Staff,
+        Staff: userInfoFields?.Staff,
         CoordinatePosition: `${lat} ${lng}`,
       })
     );

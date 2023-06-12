@@ -8,9 +8,9 @@ function BirthdayScheduler({ events }) {
     return events?.map((record) => {
       return {
         birthday: record.fields.BirthdayCelebration,
-        fullName: record.fields.FullName[0],
-        username: record.fields.Username[0],
-        staffId: record.fields.StaffId[0],
+        fullName: record.fields.FullName,
+        username: record.fields.Username,
+        staffId: record.fields.StaffId,
       };
     });
   }, [events]);
@@ -39,10 +39,26 @@ function BirthdayScheduler({ events }) {
     ];
   }, []);
   const [dateArr, setDateArr] = useState(fillDateForWeek(now));
-  const [showDetail, setShowDetail] = useState(false);
+  const [showDetail, setShowDetail] = useState([
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+  ]);
 
   /* eslint-disable */
   useEffect(() => {
+    setDateArr((state) => {
+      const newState = state;
+      newState.forEach((item) => {
+        item.event = [];
+        item.count = 0;
+      });
+      return newState;
+    });
     if (birthdayList) {
       birthdayList.forEach((itemBirthdate) => {
         const newBirthday = new Date(itemBirthdate.birthday);
@@ -68,7 +84,10 @@ function BirthdayScheduler({ events }) {
       <h3 className="month-title text-center font-weight-bold">
         {`${monthList[currentMonth]} ${currentDay}, ${currentYear}`}
       </h3>
-      <table className="calendar-scheduler w-100" style={{ marginTop: "23.5px" }}>
+      <table
+        className="calendar-scheduler w-100"
+        style={{ marginTop: "23.5px" }}
+      >
         <thead className="border border-0">
           <tr className="weekday-title border border-0">
             {weekday.map((item, index) => {
@@ -111,20 +130,33 @@ function BirthdayScheduler({ events }) {
                   {item.event.length > 0 && (
                     <div
                       className="dropdown"
-                      onMouseLeave={() => setShowDetail(false)}
+                      onMouseLeave={() =>
+                        setShowDetail((state) =>
+                          state.map((itemDetail) => (itemDetail = false))
+                        )
+                      }
                     >
                       <CellEvent
                         className="bg-secondary text-light rounded"
                         event={item.event}
-                        onMouseEnter={() => setShowDetail(true)}
+                        onMouseEnter={() =>
+                          setShowDetail((state) =>
+                            state.map((itemDetail, i) => {
+                              if (i === index) {
+                                itemDetail = true;
+                              }
+                              return itemDetail
+                            })
+                          )
+                        }
                       >
                         {item.count > 0 && item.count}
                       </CellEvent>
                       <div
                         className={`dropdown-menu px-3 bg-info dropdown-menu-${
                           index >= 3 ? "right" : "left"
-                        }${showDetail ? " d-block" : ""}`}
-                        style={{ width: "200px", color: "#fff" }}
+                        }${showDetail[index] ? " d-block" : ""}`}
+                        style={{ width: "250px", color: "#fff" }}
                       >
                         {item.event.map((staff) => (
                           <div
