@@ -47,7 +47,7 @@ function LeftSideFormModal({
 
       let fieldName = field[0];
       let fieldValue = field[1];
-      let fieldType = tableMetadata.find((table) => table.name)?.type;
+      let fieldType = tableMetadata?.type;
       let fieldLable = parseFieldName(fieldName);
       let isRequiredField = requiredFields.indexOf(fieldName) !== -1;
       switch (fieldType) {
@@ -140,7 +140,7 @@ function LeftSideFormModal({
 
 LeftSideFormModal.propTypes = {
   formName: PropTypes.string,
-  model: PropTypes.object,
+  model: PropTypes.func,
   requiredFields: PropTypes.arrayOf(PropTypes.string),
   type: PropTypes.oneOf(["create", "edit"]).isRequired,
   isModalDisplay: PropTypes.bool,
