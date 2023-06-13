@@ -175,6 +175,7 @@ export const {
   setProgressing,
   setError,
 } = staffSlice.actions;
+export const selectStateOfSlice = (state) => state.staff;
 export const selectLoading = (state) => state.staff.loading;
 export const selectIsSuccess = (state) => state.staff.isSuccess;
 export const selectProgressing = (state) => state.staff.progressing;

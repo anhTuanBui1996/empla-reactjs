@@ -30,6 +30,7 @@ import { selectLoading } from "../../features/logsSlice";
 import InitialStaffForm, {
   isRequiredFields,
 } from "../../assets/forms/staffForm";
+import { selectMetadata } from "../../features/metadataSlice";
 
 function Staff() {
   const innerWidth = useSelector(selectInnerWidth);
@@ -86,6 +87,10 @@ function Staff() {
       "AccountStatus",
     ];
   }, []);
+  const baseMetadata = useSelector(selectMetadata);
+  const tableMetadata = baseMetadata.tables.find(
+    (table) => table.name === "Staff"
+  );
 
   // Staff table retrieve progression
   useEffect(() => {
@@ -244,6 +249,7 @@ function Staff() {
       </MainContent>
       <LeftSideFormModal
         formName="Staff"
+        model={InitialStaffForm}
         requiredFields={isRequiredFields}
         isModalDisplay={isModalDisplay}
         type={modalType}

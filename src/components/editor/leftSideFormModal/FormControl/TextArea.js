@@ -1,21 +1,32 @@
+import PropTypes from "prop-types";
+import { useState } from "react";
+
 export default function FormGroupTextArea({
-  table,
-  label,
-  formGroupData,
   name,
+  label,
+  value,
+  formControlRef,
+  readOnly,
+  isRequired,
 }) {
+  const [error, setError] = useState({ hasError: false, errorMsg: "" });
+  const handleChange = (e) => {};
+  const handleValidate = (e) => {};
   return (
     <div className="form-group">
-      <label htmlFor="Notes">Notes</label>
+      <label htmlFor={name}>
+        {`${label} `}
+        {isRequired && <span className="text-danger">*</span>}
+      </label>
       <textarea
-        name="Notes"
-        data-table="Staff"
-        data-type={newStaffForm.Staff.Notes["data-type"]}
+        id={name}
+        name={name}
         className="form-control"
-        value={newStaffForm.Staff.Notes.value && newStaffForm.Staff.Notes.label}
-        onChange={handleStaffInput}
+        disabled={readOnly}
+        value={value}
+        onChange={handleChange}
         onBlur={handleValidate}
-        placeholder="Notes..."
+        placeholder={`Enter ${label}...`}
         style={{
           resize: "none",
         }}
@@ -25,8 +36,11 @@ export default function FormGroupTextArea({
 }
 
 FormGroupTextArea.propTypes = {
-  table: PropTypes.string,
-  label: PropTypes.string,
-  formGroupData: PropTypes.string,
   name: PropTypes.string,
+  label: PropTypes.string,
+  value: PropTypes.string,
+  formControlRef: PropTypes.any,
+  readOnly: PropTypes.bool,
+  isRequired: PropTypes.bool,
+  additionRegex: PropTypes.string,
 };

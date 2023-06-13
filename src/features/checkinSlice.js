@@ -76,6 +76,7 @@ export const checkinSlice = createSlice({
 
 export const { setLoading, setCheckinTableData, setNewCheckinData } =
   checkinSlice.actions;
+export const selectStateOfSlice = (state) => state.checkin;
 export const selectLoading = (state) => state.checkin.loading;
 export const selectIsSuccess = (state) => state.checkin.isSuccess;
 export const selectCheckinTableData = (state) => state.checkin.checkinTableData;

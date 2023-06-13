@@ -106,6 +106,7 @@ export const {
   setProgressing,
   setError,
 } = roleSlice.actions;
+export const selectStateOfSlice = (state) => state.role;
 export const selectLoading = (state) => state.role.loading;
 export const selectIsSuccess = (state) => state.role.isSuccess;
 export const selectProgressing = (state) => state.role.progressing;

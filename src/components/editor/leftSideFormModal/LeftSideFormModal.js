@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import Modal from "../../common/Modal";
 import Row from "../../layout/Row";
@@ -8,8 +8,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { useToasts } from "react-toast-notifications";
 import { SpinnerCircular } from "spinners-react";
 import { selectFormData } from "../../../features/editorSlice";
-import Text from "../leftSideFormModal/FormControl/Text";
 import { parseFieldName } from "../../../utils/stringUtils";
+import { selectMetadata } from "../../../features/metadataSlice";
+import Text from "../leftSideFormModal/FormControl/Text";
+import TextArea from "../leftSideFormModal/FormControl/TextArea";
 
 function LeftSideFormModal({
   formName,
@@ -24,10 +26,13 @@ function LeftSideFormModal({
   const editorFormData = useSelector(selectFormData);
   const fieldSet = useMemo(() => {
     if (editorFormData) {
-      return new InitialStaffForm(editorFormData.fields);
+      return new model(editorFormData.fields);
     }
-    return new InitialStaffForm();
+    return new model();
   }, [editorFormData]);
+
+  // Form State
+  const [isSfaffFormChanged, setIsSfaffFormChanged] = useState(false);
 
   // Get the metadata of base
   const baseMetadata = useSelector(selectMetadata);
@@ -75,16 +80,18 @@ function LeftSideFormModal({
     });
   };
 
-  const optionList = tables
-    ?.find((tableItem) => tableItem.name === table)
-    ?.fields.find((fieldItem) => fieldItem.name === name)
-    ?.options.map((opt) => ({
-      label: opt.name,
-      value: opt.name,
-      color: opt.color,
-    }));
+  // const optionList = tables
+  //   ?.find((tableItem) => tableItem.name === table)
+  //   ?.fields.find((fieldItem) => fieldItem.name === name)
+  //   ?.options.map((opt) => ({
+  //     label: opt.name,
+  //     value: opt.name,
+  //     color: opt.color,
+  //   }));
 
-  // for the Select component, define the className as "<tableName> <fieldName>"
+  const handleSubmit = () => {};
+  const handleDelete = () => {};
+
   return (
     <Modal onModalHide={onFormHide} isModalDisplay={isModalDisplay}>
       <Row className="py-4 justify-content-center">
@@ -104,9 +111,9 @@ function LeftSideFormModal({
               className="px-4 py-3 w-100"
               type="submit"
               onClick={isSfaffFormChanged ? handleSubmit : undefined}
-              disabled={usernameValidation || !isSfaffFormChanged}
+              disabled={!isSfaffFormChanged}
             >
-              {usernameValidation && <SpinnerCircular />}
+              <SpinnerCircular />
               {type === "create" ? "Add new" : "Submit changes"}
             </Button>
           </Col>
@@ -118,9 +125,9 @@ function LeftSideFormModal({
                 bgColor="#ff4949"
                 bgHoverColor="#ff0000"
                 className="px-4 py-3 w-100"
-                onClick={handleDeleteStaff}
+                onClick={handleDelete}
               >
-                {usernameValidation && <SpinnerCircular />}
+                <SpinnerCircular />
                 Commit delete
               </Button>
             </Col>
