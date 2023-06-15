@@ -5,10 +5,13 @@ const Button = styled.button.attrs((props) => ({
   bgHoverColor: props.bgHoverColor ? props.bgHoverColor : "#1c84ff",
   borderRadius: props.borderRadius ? props.borderRadius : "8px",
   padding: props.padding ? props.padding : "15px 21px",
+  disabled: props.disabled ? props.disabled : false,
 }))`
     align-items: center;
     appearance: button;
-    background-color: ${(props) => props.bgColor};
+    background-color: ${(props) =>
+      props.disabled ? "#b1c2d9" : props.bgColor};
+    }};
     border-radius: ${(props) => props.borderRadius};
     border-style: none;
     box-shadow: rgba(255, 255, 255, 0.26) 0 1px 2px inset;
@@ -37,7 +40,8 @@ const Button = styled.button.attrs((props) => ({
   }
 
   &:hover {
-    background-color: ${(props) => props.bgHoverColor};
+    background-color: ${(props) =>
+      props.disabled ? "#b1c2d9" : props.bgHoverColor};
   }
 `;
 

@@ -36,6 +36,7 @@ function Search({
         onChange={onChange}
         onKeyPress={onKeyPress}
         value={value}
+        autoComplete="off"
       />
       <div className="input-group-prepend">
         <div className={`input-group-text${noBorder ? ` border-0` : ""}`}>

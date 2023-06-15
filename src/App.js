@@ -3,7 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import { ToastProvider } from "react-toast-notifications";
 import Auth from "./hoc/Auth";
 import WindowResizeHandler from "./hoc/WindowResizeHandler";
-import Report from "./components/main/Report";
+import Tasks from "./components/main/Tasks";
 import Staff from "./components/main/Staff";
 import Home from "./components/main/Home";
 import Login from "./components/main/Login";
@@ -13,11 +13,7 @@ import Settings from "./components/main/Settings";
 import Notifications from "./components/main/Notifications";
 import AdminCheck from "./hoc/AdminCheck";
 import useGeolocation from "./components/hooks/useGeolocation";
-import Clients from "./components/main/Clients";
-import Projects from "./components/main/Projects";
-import Teams from "./components/main/Teams";
 import Role from "./components/main/Role";
-import Department from "./components/main/Department";
 import WorkingPlace from "./components/main/WorkingPlace";
 import Collaboratory from "./components/main/Collaboratory";
 import Nomatch from "./components/main/Nomatch";
@@ -54,7 +50,7 @@ function App() {
                 {/**
                  * Public routes
                  */}
-                <Route path="/tasks" element={<Report />} />
+                <Route path="/tasks" element={<Tasks />} />
                 <Route path="/checkin" element={<Checkin />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/settings" element={<Settings />} />

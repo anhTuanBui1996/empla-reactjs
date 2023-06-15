@@ -8,7 +8,7 @@ import Outclick from "../../hoc/Outclick";
 import Col from "../layout/Col";
 import Row from "../layout/Row";
 import Dropdown from "./Dropdown";
-import { setFormData } from "../../features/editorSlice";
+import { setSelectedRowData } from "../../features/editorSlice";
 
 function Table({
   fieldList,
@@ -48,7 +48,7 @@ function Table({
       const recordSelected = originalRecords.find(
         (record) => record.id === recordId
       );
-      dispatch(setFormData(recordSelected));
+      dispatch(setSelectedRowData(recordSelected));
       setTimeout(onRecordClick, 50);
     }
   };
@@ -304,7 +304,7 @@ function Table({
  */
 function injectDataToJSX(cell) {
   let displayData = null; // the cell data has been injected to an JSX to render
-  let { cellData, dataType, sourceType } = cell;
+  let { cellData, dataType } = cell;
   switch (dataType) {
     case "singleLineText":
       displayData = cellData;

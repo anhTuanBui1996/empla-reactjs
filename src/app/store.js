@@ -23,6 +23,15 @@ export const store = configureStore({
     role: roleSlice,
     logs: logsSlice,
     metadata: metadataSlice,
-    editor: editorSlice
+    editor: editorSlice,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        // Ignore these action types
+        ignoredActions: ["editor/setFormData"],
+        // Ignore these paths in the state
+        ignoredPaths: ["editor"],
+      },
+    }),
 });

@@ -9,7 +9,7 @@ export function getRandomColor() {
 
 const upperCaseLetter = "ABCDEFGHIJKLMNOPQRSTUVWYZ";
 export function parseFieldName(fieldName) {
-  let newString = "";
+  let newString = fieldName[0].toUpperCase();
   for (let i = 1; i < fieldName.length; i++) {
     let character = fieldName[i];
     if (upperCaseLetter.indexOf(character) !== -1) {

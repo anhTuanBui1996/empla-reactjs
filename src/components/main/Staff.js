@@ -8,8 +8,8 @@ import Row from "../layout/Row";
 import Table from "../common/Table";
 import Container from "../layout/Container";
 import Button from "../common/Button";
-// import LeftSideFormModal from "../editor/LeftSideFormModal";
-import LeftSideFormModal from "../editor/leftSideFormModal/LeftSideFormModal";
+// import RightSideFormModal from "../editor/RightSideFormModal";
+import RightSideFormModal from "../editor/rightSideFormModal/RightSideFormModal";
 import Loader from "../common/Loader";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -18,7 +18,6 @@ import {
   selectIsSuccess as staffIsSuccess,
   selectError as staffError,
   selectStaffTableData,
-  setSelectedStaffForEdit,
   setProgressing as staffProgressSet,
 } from "../../features/staffSlice";
 import BirthdayScheduler from "../specific/BirthdayScheduler";
@@ -142,13 +141,16 @@ function Staff() {
     tableMetadata,
   ]);
 
-  const handleOpenModalForCreate = () => {
+  const handleOpenRightSideModalForCreate = () => {
     setModalType("create");
     setModalDisplay(true);
   };
-  const handleOpenModalForEdit = () => {
+  const handleOpenRightSideModalForEdit = () => {
     setModalType("edit");
     setModalDisplay(true);
+  };
+  const handleCloseRightSideModal = () => {
+    setModalDisplay(false);
   };
 
   return (
@@ -182,7 +184,7 @@ function Staff() {
                       />
                       <Button
                         className="py-2 px-4"
-                        onClick={handleOpenModalForCreate}
+                        onClick={handleOpenRightSideModalForCreate}
                       >
                         Add staff
                       </Button>
@@ -223,21 +225,21 @@ function Staff() {
                     tableMappedRecords={_info_recordList}
                     isHasSettings
                     originalRecords={_staff_retrieveResult}
-                    onRecordClick={handleOpenModalForEdit}
+                    onRecordClick={handleOpenRightSideModalForEdit}
                   />,
                   <Table
                     fieldList={statusFieldList}
                     tableMappedRecords={_status_recordList}
                     isHasSettings
                     originalRecords={_staff_retrieveResult}
-                    onRecordClick={handleOpenModalForEdit}
+                    onRecordClick={handleOpenRightSideModalForEdit}
                   />,
                   <Table
                     fieldList={accountFieldList}
                     tableMappedRecords={_account_recordList}
                     isHasSettings
                     originalRecords={_staff_retrieveResult}
-                    onRecordClick={handleOpenModalForEdit}
+                    onRecordClick={handleOpenRightSideModalForEdit}
                   />,
                 ]}
                 isLoading={_staff_retrieveResult ? false : true}
@@ -247,19 +249,14 @@ function Staff() {
           </Row>
         </Container>
       </MainContent>
-      <LeftSideFormModal
+      <RightSideFormModal
         formName="Staff"
         model={InitialStaffForm}
         requiredFields={isRequiredFields}
         isModalDisplay={isModalDisplay}
         type={modalType}
+        onFormHide={handleCloseRightSideModal}
       />
-      {/* <LeftSideFormModal
-        isModalDisplay={isModalDisplay}
-        type={modalType}
-        setModalHide={() => setModalDisplay(false)}
-      /> */}
-
       {(_staff_loading || _logLoading || _staff_retrieveResult === null) && (
         <Loader />
       )}

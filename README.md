@@ -2,6 +2,8 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Prequisite
 
+### Using node.js version 16.16.0
+
 ### Change some infomation of the app arcording to your option
 
 The default Applicaton name is `empla`, you can change it in `package.json` and `package-lock.json` (search the text "name" and change the value) then change the folder name<br />

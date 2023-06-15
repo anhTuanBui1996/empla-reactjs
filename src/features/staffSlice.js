@@ -20,7 +20,7 @@ const initialState = {
 export const retrieveStaffList = createAsyncThunk(
   "staff/retrieve",
   async () => {
-    const res = await retrieveData("Staff");
+    const res = await retrieveData("Staff", "NOT({Account} = 'admin')");
     return res;
   }
 );

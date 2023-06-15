@@ -36,7 +36,6 @@ export const compareTwoObject = (obj1, obj2) => {
           }
         }
       } else if (typeof obj1 !== typeof obj2) {
-        console.log(`${obj1}: ${typeof obj1}, ${obj2}: ${typeof obj2}`);
         result = false;
         throw new Error("Two parameters must have a same type!");
       } else {
@@ -75,11 +74,6 @@ export const compareTwoObject = (obj1, obj2) => {
               }
             } else {
               result = false;
-              console.log(
-                `${obj1[obj1Keys[x]]}: ${typeof obj1[obj1Keys[x]]}, ${
-                  objComparator.value
-                }: ${typeof objComparator.value}`
-              );
               throw new Error("Unknown type to compare!");
             }
           }
@@ -87,7 +81,7 @@ export const compareTwoObject = (obj1, obj2) => {
       }
     }
   } catch (e) {
-    console.log(e, e.stack);
+    console.error(e, e.stack);
   }
   return result;
 };
