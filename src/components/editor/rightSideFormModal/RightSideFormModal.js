@@ -76,6 +76,7 @@ function RightSideFormModal({
           formControl = (
             <Text
               key={i}
+              tabIndex={i + 1}
               name={fieldName}
               label={fieldLable}
               isRequired={isRequiredField}
@@ -87,6 +88,7 @@ function RightSideFormModal({
           formControl = (
             <TextArea
               key={i}
+              tabIndex={i + 1}
               name={fieldName}
               label={fieldLable}
               isRequired={isRequiredField}
@@ -94,8 +96,21 @@ function RightSideFormModal({
             />
           );
           break;
+        case "formula":
+          formControl = (
+            <Text
+              key={i}
+              tabIndex={i + 1}
+              name={fieldName}
+              label={fieldLable}
+              isRequired={isRequiredField}
+              value={fieldValue}
+              readOnly
+            />
+          );
+          break;
         default:
-          // console.error(`New field type detected: ${fieldType}`);
+          console.error(`New field type detected: ${fieldType}`);
           break;
       }
 
@@ -105,12 +120,12 @@ function RightSideFormModal({
 
   // Check the form data changed form initialFormData
   useEffect(() => {
-    if (editorFormData && initialFormData) {
+    if (editorFormData && initialFormData && selectedRowFormData) {
       if (!compareTwoObject(editorFormData, initialFormData)) {
         setIsSfaffFormChanged(true);
       }
     }
-  }, [editorFormData, initialFormData]);
+  }, [editorFormData, initialFormData, selectedRowFormData]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
