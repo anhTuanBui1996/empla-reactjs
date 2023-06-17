@@ -28,6 +28,7 @@ import { selectInnerWidth } from "../../features/windowSlice";
 import { selectLoading } from "../../features/logsSlice";
 import InitialStaffForm, {
   isRequiredFields,
+  isReadOnlyFields,
 } from "../../assets/forms/staffForm";
 import { selectMetadata } from "../../features/metadataSlice";
 
@@ -253,6 +254,7 @@ function Staff() {
         formName="Staff"
         model={InitialStaffForm}
         requiredFields={isRequiredFields}
+        readOnlyFields={isReadOnlyFields}
         isModalDisplay={isModalDisplay}
         type={modalType}
         onFormHide={handleCloseRightSideModal}

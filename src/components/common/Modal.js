@@ -53,7 +53,7 @@ export const ModalContent = styled.div`
   position: absolute;
   display: flex;
   flex-direction: column;
-  width: 25%;
+  width: 28%;
   height: 100%;
   padding: 0 2em;
   background: #fff;

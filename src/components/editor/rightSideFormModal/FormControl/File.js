@@ -2,11 +2,16 @@ import FileUploader from "../../../specific/FileUploader";
 import PropTypes from "prop-types";
 
 export default function FormGroupFile({
+  tabIndex,
   table,
   name,
   label,
-  formGroupData,
-  type,
+  value,
+  readOnly,
+  isRequired,
+  additionRegex,
+  maxLength,
+  minLength,
 }) {
   return (
     <div className="form-group">

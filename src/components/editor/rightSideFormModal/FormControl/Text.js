@@ -8,14 +8,17 @@ import {
   setFormData,
 } from "../../../../features/editorSlice";
 
-export default function FormGroupText({
+export default function Text({
   tabIndex,
+  table,
   name,
   label,
   value,
   readOnly,
   isRequired,
   additionRegex,
+  maxLength,
+  minLength,
 }) {
   const dispatch = useDispatch();
   const currentInputFocused = useSelector(selectCurrentInputFocusing);
@@ -34,14 +37,14 @@ export default function FormGroupText({
     [value]
   );
 
-  const handleFocus = () => dispatch(setCurrentInputFocusing(`Text_${name}`));
+  const handleFocus = () => dispatch(setCurrentInputFocusing(`Text_${table}_${name}`));
   const handleChange = (e) =>
     dispatch(setFormData({ ...editorFormData, [name]: e.target.value }));
   const handleValidate = () => {
     dispatch(setCurrentInputFocusing(undefined));
     if (value === "") {
       setError({ hasError: true, errorMsg: `${label} must not be empty!` });
-      labelRef.scrollIntoView();
+      labelRef.current.scrollIntoView();
     } else if (additionRegex) {
       if (!value.match(additionRegex)) {
         setError({ hasError: true, errorMsg: `Incorrect ${label} format!` });
@@ -50,6 +53,14 @@ export default function FormGroupText({
           setError({ hasError: true, errorMsg: `Incorrect ${label} format!` });
         }
       }
+    } else if (maxLength) {
+      if (value.length > maxLength) {
+        setError({ hasError: true, errorMsg: `${label} has maximum ${maxLength} characters!` });
+      }
+    } else if (minLength) {
+      if (value.length < minLength) {
+        setError({ hasError: true, errorMsg: `${label}'s at least ${maxLength} characters!` });
+      }
     } else {
       setError({ hasError: false, errorMsg: "" });
     }
@@ -57,12 +68,12 @@ export default function FormGroupText({
 
   return (
     <div className="form-group">
-      <label htmlFor={`Text_${name}`} ref={labelRef}>
+      <label htmlFor={`Text_${table}_${name}`} ref={labelRef}>
         {`${label} `}
         {isRequired && <span className="text-danger">*</span>}
       </label>
       <input
-        id={`Text_${name}`}
+        id={`Text_${table}_${name}`}
         tabIndex={tabIndex}
         autoComplete="off"
         ref={inputRef}
@@ -83,12 +94,15 @@ export default function FormGroupText({
   );
 }
 
-FormGroupText.propTypes = {
+Text.propTypes = {
   tabIndex: PropTypes.number,
+  table: PropTypes.string,
   name: PropTypes.string,
   label: PropTypes.string,
   value: PropTypes.string,
   readOnly: PropTypes.bool,
   isRequired: PropTypes.bool,
-  additionRegex: PropTypes.string,
+  additionRegex: PropTypes.any,
+  maxLength: PropTypes.number,
+  minLength: PropTypes.number,
 };

@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import styled from "styled-components";
 import useAutoGenerate from "../hooks/useAutoGenerate";
 
-function CustomSwitch({ inputValue, onSwitchChange }) {
+function CustomSwitch({ tabIndex, inputValue, onSwitchChange }) {
   const [toggleId, setToggleId] = useState("");
   const generate = useAutoGenerate();
   /* eslint-disable */
@@ -13,6 +13,7 @@ function CustomSwitch({ inputValue, onSwitchChange }) {
   return (
     <CustomSwitchWrapper className="custom-control custom-switch">
       <input
+        tabIndex={tabIndex}
         type="checkbox"
         className="custom-control-input"
         id={`customSwitch_${toggleId}`}
@@ -41,6 +42,7 @@ const CustomLabel = styled.label`
 `;
 
 CustomSwitch.propTypes = {
+  tabIndex: PropTypes.number,
   inputValue: PropTypes.bool,
   onSwitchChange: PropTypes.func.isRequired,
 };

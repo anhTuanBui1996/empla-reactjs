@@ -67,7 +67,7 @@ export const VALIDATE_RULE = {
     maxLength: 30,
   },
   email: {
-    pattern: /^[0-9A-z.`~!#$%^&*]+@[a-z]+.[a-z]{3}$/g,
+    pattern: /^[0-9A-z.`~!#$%^&*]+@[a-z]+.[a-z]{2,}$/g,
     minLength: 11,
     maxLength: 30,
   },

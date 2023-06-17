@@ -7,7 +7,7 @@ export const isRequiredFields = [
   "RoleType",
   "Company",
 ];
-export const isReadOnly = ["Username"];
+export const isReadOnlyFields = ["Username", "Account"];
 export default class InitialStaffForm {
   // form for Staff table
   constructor(fieldData) {

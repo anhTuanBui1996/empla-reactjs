@@ -1,35 +1,63 @@
+import PropTypes from "prop-types";
 import ReactCalendar from "../../../specific/ReactCalendar";
+import { useState, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { selectFormData, setFormData } from "../../../../features/editorSlice";
 
-export default function FormGroupDatePicker({
+export default function DatePicker({
+  tabIndex,
   table,
-  label,
-  formGroupData,
   name,
+  label,
+  value,
+  readOnly,
+  isRequired,
 }) {
+  const dispatch = useDispatch();
+  const editorFormData = useSelector(selectFormData);
+  const [error, setError] = useState({ hasError: false, errorMsg: "" });
+  const labelRef = useRef(null);
+
+  const handleChange = (dateValue) =>
+    dispatch(setFormData({ ...editorFormData, [name]: dateValue }));
+  const handleValidate = () => {
+    if (value === "") {
+      setError({ hasError: true, errorMsg: `${label} must not be empty!` });
+      labelRef.current.scrollIntoView();
+    } else {
+      setError({ hasError: false, errorMsg: "" });
+    }
+  };
+
   return (
     <div className="form-group">
-      <label htmlFor="StartWorkingDay" ref={refList.StartWorkingDay}>
-        Start Working Day <span className="text-danger">*</span>
+      <label htmlFor={`DatePicker_${table}_${name}`} ref={labelRef}>
+        {`${label} `}
+        {isRequired && <span className="text-danger">*</span>}
       </label>
       <ReactCalendar
+        id={`DatePicker_${table}_${name}`}
+        tabIndex={tabIndex}
         className="form-control"
-        name="StartWorkingDay"
-        data-table="Staff"
-        data-type={newStaffForm.Staff.StartWorkingDay["data-type"]}
-        value={
-          newStaffForm.Staff.StartWorkingDay.value &&
-          newStaffForm.Staff.StartWorkingDay.label
-        }
-        onChange={handleStaffInput}
+        name={name}
+        value={value}
+        readOnly={readOnly}
+        onChange={handleChange}
         onBlur={handleValidate}
       />
-      {errorForm.errMsg.Staff.StartWorkingDay !== "" && errorForm.isShowMsg && (
-        <div className="err-text text-danger mt-1">
-          {errorForm.errMsg.Staff.StartWorkingDay}
-        </div>
+      {error.hasError && (
+        <div className="err-text text-danger mt-1">{error.errorMsg}</div>
       )}
     </div>
   );
 }
 
-FormGroupDatePicker.propTypes = {};
+DatePicker.propTypes = {
+  tabIndex: PropTypes.number,
+  table: PropTypes.string,
+  name: PropTypes.string,
+  label: PropTypes.string,
+  value: PropTypes.any,
+  readOnly: PropTypes.bool,
+  isRequired: PropTypes.bool,
+};

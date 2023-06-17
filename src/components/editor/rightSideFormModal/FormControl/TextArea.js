@@ -8,13 +8,15 @@ import {
   setFormData,
 } from "../../../../features/editorSlice";
 
-export default function FormGroupTextArea({
+export default function TextArea({
   tabIndex,
+  table,
   name,
   label,
   value,
   readOnly,
   isRequired,
+  additionRegex,
 }) {
   const dispatch = useDispatch();
   const currentInputFocused = useSelector(selectCurrentInputFocusing);
@@ -38,14 +40,22 @@ export default function FormGroupTextArea({
   );
 
   const handleFocus = () =>
-    dispatch(setCurrentInputFocusing(`TextArea_${name}`));
+    dispatch(setCurrentInputFocusing(`TextArea_${table}_${name}`));
   const handleChange = (e) =>
     dispatch(setFormData({ ...editorFormData, [name]: e.target.value }));
   const handleValidate = () => {
     dispatch(setCurrentInputFocusing(undefined));
     if (value === "") {
       setError({ hasError: true, errorMsg: `${label} must not be empty!` });
-      labelRef.scrollIntoView();
+      labelRef.current.scrollIntoView();
+    } else if (additionRegex) {
+      if (!value.match(additionRegex)) {
+        setError({ hasError: true, errorMsg: `Incorrect ${label} format!` });
+      } else {
+        if (value.match(additionRegex)[0] !== value) {
+          setError({ hasError: true, errorMsg: `Incorrect ${label} format!` });
+        }
+      }
     } else {
       setError({ hasError: false, errorMsg: "" });
     }
@@ -53,12 +63,12 @@ export default function FormGroupTextArea({
 
   return (
     <div className="form-group">
-      <label htmlFor={`TextArea_${name}`} ref={labelRef}>
+      <label htmlFor={`TextArea_${table}_${name}`} ref={labelRef}>
         {`${label} `}
         {isRequired && <span className="text-danger">*</span>}
       </label>
       <textarea
-        id={`TextArea_${name}`}
+        id={`TextArea_${table}_${name}`}
         tabIndex={tabIndex}
         autoComplete="off"
         ref={inputRef}
@@ -81,8 +91,9 @@ export default function FormGroupTextArea({
   );
 }
 
-FormGroupTextArea.propTypes = {
+TextArea.propTypes = {
   tabIndex: PropTypes.number,
+  table: PropTypes.string,
   name: PropTypes.string,
   label: PropTypes.string,
   value: PropTypes.string,

@@ -18,11 +18,14 @@ import { selectMetadata } from "../../../features/metadataSlice";
 import Text from "./FormControl/Text";
 import TextArea from "./FormControl/TextArea";
 import { compareTwoObject } from "../../../utils/objectUtils";
+import { VALIDATE_RULE } from "../../../constants";
+import DatePicker from "./FormControl/DatePicker";
 
 function RightSideFormModal({
   formName,
   model,
   requiredFields,
+  readOnlyFields,
   type,
   isModalDisplay,
   onFormHide,
@@ -71,6 +74,7 @@ function RightSideFormModal({
       )?.type;
       let fieldLable = parseFieldName(fieldName);
       let isRequiredField = requiredFields.indexOf(fieldName) !== -1;
+      let isReadOnlyField = readOnlyFields.indexOf(fieldName) !== -1;
       switch (fieldType) {
         case "singleLineText":
           formControl = (
@@ -81,6 +85,7 @@ function RightSideFormModal({
               label={fieldLable}
               isRequired={isRequiredField}
               value={fieldValue}
+              readOnly={isReadOnlyField}
             />
           );
           break;
@@ -93,6 +98,7 @@ function RightSideFormModal({
               label={fieldLable}
               isRequired={isRequiredField}
               value={fieldValue}
+              readOnly={isReadOnlyField}
             />
           );
           break;
@@ -109,8 +115,38 @@ function RightSideFormModal({
             />
           );
           break;
+        case "email":
+          formControl = (
+            <Text
+              key={i}
+              tabIndex={i + 1}
+              name={fieldName}
+              label={fieldLable}
+              isRequired={isRequiredField}
+              value={fieldValue}
+              readOnly={isReadOnlyField}
+              additionRegex={VALIDATE_RULE.email.pattern}
+              maxLength={VALIDATE_RULE.email.maxLength}
+              minLength={VALIDATE_RULE.email.minLength}
+            />
+          );
+          break;
+        case "date":
+          formControl = (
+            <DatePicker
+              key={i}
+              tabIndex={i + 1}
+              name={fieldName}
+              label={fieldLable}
+              isRequired={isRequiredField}
+              value={fieldValue}
+              readOnly={isReadOnlyField}
+            />
+          );
+          break;
+          break;
         default:
-          console.error(`New field type detected: ${fieldType}`);
+          // console.error(`New field type detected: ${fieldType}`);
           break;
       }
 
@@ -130,7 +166,9 @@ function RightSideFormModal({
   const handleSubmit = (e) => {
     e.preventDefault();
   };
-  const handleDelete = () => {};
+  const handleDelete = (e) => {
+    e.preventDefault();
+  };
 
   return (
     <Modal onModalHide={onFormHide} isModalDisplay={isModalDisplay}>
@@ -183,6 +221,7 @@ RightSideFormModal.propTypes = {
   formName: PropTypes.string,
   model: PropTypes.func,
   requiredFields: PropTypes.arrayOf(PropTypes.string),
+  readOnlyFields: PropTypes.arrayOf(PropTypes.string),
   type: PropTypes.oneOf(["create", "edit"]).isRequired,
   isModalDisplay: PropTypes.bool,
   onFormHide: PropTypes.func,

@@ -11,13 +11,13 @@ const Button = styled.button.attrs((props) => ({
     appearance: button;
     background-color: ${(props) =>
       props.disabled ? "#b1c2d9" : props.bgColor};
-    }};
     border-radius: ${(props) => props.borderRadius};
     border-style: none;
     box-shadow: rgba(255, 255, 255, 0.26) 0 1px 2px inset;
     box-sizing: border-box;
     color: #fff;
-    cursor: pointer;
+    cursor: ${(props) => (props.disabled ? "auto" : "pointer")};
+    }};
     display: flex;
     flex-direction: row;
     flex-shrink: 0;
