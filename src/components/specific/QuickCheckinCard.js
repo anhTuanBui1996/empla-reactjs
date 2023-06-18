@@ -141,6 +141,7 @@ function QuickCheckinCard() {
             }}
           >
             <TextAreaForNotes
+              id="quick-checkin-card-note"
               style={{ backgroundColor: "#D0FAF9" }}
               className="form-coltrol border border-0"
               placeholder="Addition notes"

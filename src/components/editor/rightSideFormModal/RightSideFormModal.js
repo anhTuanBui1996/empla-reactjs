@@ -31,7 +31,7 @@ function RightSideFormModal({
   onFormHide,
 }) {
   const dispatch = useDispatch();
-  const { addToast } = useToasts();
+  const { addToast, removeAllToasts } = useToasts();
 
   // Set form data
   const editorFormData = useSelector(selectFormData);
@@ -40,6 +40,7 @@ function RightSideFormModal({
   // Reset form data when type is "create"
   useEffect(() => {
     if (isModalDisplay) {
+      removeAllToasts();
       if (type === "create") {
         dispatch(resetFormData());
         dispatch(setFormData(new model()));
@@ -75,6 +76,7 @@ function RightSideFormModal({
       let fieldLable = parseFieldName(fieldName);
       let isRequiredField = requiredFields.indexOf(fieldName) !== -1;
       let isReadOnlyField = readOnlyFields.indexOf(fieldName) !== -1;
+      let isPassword = fieldName.toLowerCase() === "password";
       switch (fieldType) {
         case "singleLineText":
           formControl = (
@@ -86,6 +88,7 @@ function RightSideFormModal({
               isRequired={isRequiredField}
               value={fieldValue}
               readOnly={isReadOnlyField}
+              isPassword={isPassword}
             />
           );
           break;
@@ -144,6 +147,19 @@ function RightSideFormModal({
             />
           );
           break;
+        case "dateTime":
+          formControl = (
+            <DatePicker
+              key={i}
+              tabIndex={i + 1}
+              name={fieldName}
+              label={fieldLable}
+              isRequired={isRequiredField}
+              value={fieldValue}
+              isDisplayTime
+              readOnly={isReadOnlyField}
+            />
+          );
           break;
         default:
           // console.error(`New field type detected: ${fieldType}`);

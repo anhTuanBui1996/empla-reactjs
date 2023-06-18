@@ -14,6 +14,7 @@ import {
 import { Navigate } from "react-router";
 import { Link } from "react-router-dom";
 import Loader from "../common/Loader";
+import { MdRemoveRedEye } from "react-icons/md";
 
 function Login() {
   const dispatch = useDispatch();
@@ -29,6 +30,7 @@ function Login() {
     username: "",
     password: "",
   });
+  const [isShowPassword, setIsShowPassword] = useState(false);
 
   const handleInput = (e) => {
     setLoginForm({
@@ -99,7 +101,7 @@ function Login() {
               </div>
               <div className="input-group input-group-merge">
                 <input
-                  type="password"
+                  type={isShowPassword ? "text" : "password"}
                   autoComplete="current-password"
                   className="form-control form-control-appended"
                   placeholder="Enter your password"
@@ -112,7 +114,11 @@ function Login() {
                 />
                 <div className="input-group-append">
                   <span className="input-group-text">
-                    <i className="fe fe-eye"></i>
+                    <MdRemoveRedEye
+                      size={20}
+                      onClick={() => setIsShowPassword(!isShowPassword)}
+                      style={{ cursor: "pointer" }}
+                    />
                   </span>
                 </div>
               </div>

@@ -345,10 +345,18 @@ function injectDataToJSX(cell) {
       ));
       break;
     case "date":
-      displayData = new Date(cellData).toLocaleDateString();
+      displayData = new Date(cellData).toLocaleDateString("en-GB");
       break;
     case "dateTime":
-      displayData = new Date(cellData).toLocaleString();
+      displayData = new Date(cellData).toLocaleString("en-GB", {
+        timeZone: "Asia/Bangkok",
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
       break;
     case "createdTime":
       displayData = new Date(cellData).toLocaleString();

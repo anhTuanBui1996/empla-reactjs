@@ -9,9 +9,6 @@ export default function FormGroupFile({
   value,
   readOnly,
   isRequired,
-  additionRegex,
-  maxLength,
-  minLength,
 }) {
   return (
     <div className="form-group">
@@ -19,8 +16,7 @@ export default function FormGroupFile({
       <FileUploader
         name={name}
         data-table={table}
-        data-type={formGroupData[name]["data-type"]}
-        imgData={formGroupData[name].value}
+        imgData={value}
         mediaType="image"
         type={type}
         handleUploadSuccessfully={handleStaffInput}

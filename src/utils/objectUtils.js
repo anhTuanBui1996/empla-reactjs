@@ -37,7 +37,9 @@ export const compareTwoObject = (obj1, obj2) => {
         }
       } else if (typeof obj1 !== typeof obj2) {
         result = false;
-        throw new Error("Two parameters must have a same type!");
+        throw new Error(
+          `Two parameters must have a same type! ${typeof obj1}, ${typeof obj2}`
+        );
       } else {
         // 2 object are objects (not array)
         if (Object.keys(obj1).length === 0 || Object.keys(obj2).length === 0) {

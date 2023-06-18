@@ -58,7 +58,7 @@ function FileUploader({
                     className="hover-blur"
                     onMouseDownCapture={onPick}
                   >
-                    {`Change ${mediaType}`}
+                    {`Change file ${mediaType}`}
                   </ImageHover>
                 </ImageBg>
               </Col>
@@ -81,7 +81,7 @@ function FileUploader({
                 type="button"
                 onMouseDownCapture={onPick}
               >
-                {`Add an ${mediaType}`}
+                {`Add an ${mediaType} file`}
               </button>
             </div>
             {imgStored && (

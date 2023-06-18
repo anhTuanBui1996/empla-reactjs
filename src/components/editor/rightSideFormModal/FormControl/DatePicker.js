@@ -10,6 +10,7 @@ export default function DatePicker({
   name,
   label,
   value,
+  isDisplayTime,
   readOnly,
   isRequired,
 }) {
@@ -18,10 +19,11 @@ export default function DatePicker({
   const [error, setError] = useState({ hasError: false, errorMsg: "" });
   const labelRef = useRef(null);
 
-  const handleChange = (dateValue) =>
+  const handleChange = (dateValue) => {
     dispatch(setFormData({ ...editorFormData, [name]: dateValue }));
+  };
   const handleValidate = () => {
-    if (value === "") {
+    if (isRequired && value === "") {
       setError({ hasError: true, errorMsg: `${label} must not be empty!` });
       labelRef.current.scrollIntoView();
     } else {
@@ -41,7 +43,8 @@ export default function DatePicker({
         className="form-control"
         name={name}
         value={value}
-        readOnly={readOnly}
+        isDisplayTime={isDisplayTime}
+        isReadOnly={readOnly}
         onChange={handleChange}
         onBlur={handleValidate}
       />
@@ -58,6 +61,7 @@ DatePicker.propTypes = {
   name: PropTypes.string,
   label: PropTypes.string,
   value: PropTypes.any,
-  readOnly: PropTypes.bool,
+  isDisplayTime: PropTypes.bool,
+  isReadOnly: PropTypes.bool,
   isRequired: PropTypes.bool,
 };
