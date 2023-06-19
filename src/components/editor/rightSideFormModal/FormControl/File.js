@@ -14,8 +14,9 @@ export default function FormGroupFile({
     <div className="form-group">
       <label htmlFor={name}>{label}</label>
       <FileUploader
+        id={`File_${table}_${name}`}
+        tabIndex={tabIndex}
         name={name}
-        data-table={table}
         imgData={value}
         mediaType="image"
         type={type}
@@ -27,14 +28,13 @@ export default function FormGroupFile({
 }
 
 FormGroupFile.propTypes = {
+  tabIndex: PropTypes.number,
   table: PropTypes.string,
   name: PropTypes.string,
   label: PropTypes.string,
-  formGroupData: PropTypes.objectOf({
-    isRequired: PropTypes.bool,
+  value: PropTypes.objectOf({
     label: PropTypes.arrayOf(PropTypes.object),
     value: PropTypes.arrayOf(PropTypes.object),
-    "data-type": PropTypes.string,
   }),
   type: PropTypes
 };

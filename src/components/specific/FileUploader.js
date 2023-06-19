@@ -9,8 +9,9 @@ import { MdClose, MdRotateLeft } from "react-icons/md";
 const ReactFilestack = loadable(() => import("filestack-react"));
 
 function FileUploader({
+  id,
+  tabIndex,
   name,
-  "data-table": dataTable,
   imgData,
   mediaType,
   type,
@@ -21,16 +22,12 @@ function FileUploader({
     handleUploadSuccessfully({
       filesUploaded: [imgStored],
       filesFailed: [],
-      name,
-      "data-table": dataTable,
     });
   };
   const handleClearImg = () => {
     handleUploadSuccessfully({
       filesFailed: [],
       filesUploaded: [],
-      name,
-      "data-table": dataTable,
     });
   };
   useEffect(() => {
@@ -45,7 +42,10 @@ function FileUploader({
       apikey={FILESTACK.API_KEY}
       customRender={({ onPick }) =>
         imgData?.length ? (
-          <div className="dz-processing dz-image-preview position-relative">
+          <div
+            id={id}
+            className="dz-processing dz-image-preview position-relative"
+          >
             <Row className="row align-items-center thumbnail-preview-dropzone position-relative">
               <Col columnSize={["12"]}>
                 <ImageBg className="image-bg">
@@ -55,8 +55,10 @@ function FileUploader({
                     alt=""
                   />
                   <ImageHover
+                    tabIndex={tabIndex}
                     className="hover-blur"
                     onMouseDownCapture={onPick}
+                    ta
                   >
                     {`Change file ${mediaType}`}
                   </ImageHover>
@@ -74,9 +76,13 @@ function FileUploader({
             </ImageClearButton>
           </div>
         ) : (
-          <div className="dropzone dropzone-multiple dz-clickable position-relative">
+          <div
+            id={id}
+            className="dropzone dropzone-multiple dz-clickable position-relative"
+          >
             <div className="dz-default dz-message">
               <button
+                tabIndex={tabIndex}
                 className="dz-button"
                 type="button"
                 onMouseDownCapture={onPick}
@@ -99,7 +105,7 @@ function FileUploader({
         )
       }
       onSuccess={(res) =>
-        handleUploadSuccessfully({ ...res, name, "data-table": dataTable })
+        handleUploadSuccessfully({ ...res })
       }
     />
   );
@@ -169,21 +175,9 @@ const ImageRetriveButton = styled.button`
 `;
 
 FileUploader.propTypes = {
+  id: PropTypes.string,
+  tabIndex: PropTypes.number,
   name: PropTypes.string,
-  "data-table": PropTypes.string,
-  "data-type": PropTypes.oneOf([
-    "singleLineText",
-    "formula",
-    "checkbox",
-    "longText",
-    "attachment",
-    "singleSelect",
-    "multipleSelect",
-    "date",
-    "dateTime",
-    "lookup",
-    "linkToAnotherTable",
-  ]),
   imgData: PropTypes.arrayOf(PropTypes.object),
   mediaType: PropTypes.string,
   type: PropTypes.string,
