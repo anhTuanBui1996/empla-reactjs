@@ -43,7 +43,6 @@ function RightSideFormModal({
     if (isModalDisplay) {
       removeAllToasts();
       if (type === "create") {
-        dispatch(resetFormData());
         dispatch(setFormData(new model()));
         setInitialFormData(new model());
       } else {
@@ -170,6 +169,7 @@ function RightSideFormModal({
               name={fieldName}
               label={fieldLable}
               value={fieldValue}
+              type={type}
             />
           );
           break;

@@ -63,7 +63,7 @@ function Login() {
   };
 
   return userInfo && (isLoginValid || isTokenValid) ? (
-    <Navigate to={lastRoute ? lastRoute : "/"} />
+    <Navigate to={lastRoute && lastRoute !== "/login" ? lastRoute : "/"} />
   ) : loading ? (
     <Loader />
   ) : (
