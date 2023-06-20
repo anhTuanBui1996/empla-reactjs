@@ -1,15 +1,15 @@
+import { useState } from "react";
 import FileUploader from "../../../specific/FileUploader";
 import PropTypes from "prop-types";
 
-export default function FormGroupFile({
+export default function File({
   tabIndex,
   table,
   name,
   label,
   value,
-  readOnly,
-  isRequired,
 }) {
+  
   return (
     <div className="form-group">
       <label htmlFor={name}>{label}</label>
@@ -18,16 +18,14 @@ export default function FormGroupFile({
         tabIndex={tabIndex}
         name={name}
         imgData={value}
-        mediaType="image"
-        type={type}
-        handleUploadSuccessfully={handleStaffInput}
-        handleClearImg={handleStaffInput}
+        // handleUploadSuccessfully={handleStaffInput}
+        // handleClearImg={handleStaffInput}
       />
     </div>
   );
 }
 
-FormGroupFile.propTypes = {
+File.propTypes = {
   tabIndex: PropTypes.number,
   table: PropTypes.string,
   name: PropTypes.string,

@@ -96,12 +96,15 @@ function ReactCalendar(props) {
               borderBottomRightRadius: "0.375rem",
             }}
           >
-            <MdClose
-              size={20}
-              color="red"
-              onClick={handleClearDate}
-              style={{ cursor: "pointer" }}
-            />
+            {props.value && (
+              <DateClearButton>
+                <MdClose
+                  size={20}
+                  onClick={handleClearDate}
+                  style={{ cursor: "pointer" }}
+                />
+              </DateClearButton>
+            )}
           </div>
         </div>
       </div>
@@ -160,6 +163,22 @@ const DatePickerInput = styled.input.attrs((props) => ({
 `;
 const DatePickerPopper = styled.div`
   z-index: 3000;
+`;
+const DateClearButton = styled.button`
+  line-height: 1;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 5px;
+  padding: 0 !important;
+  color: #ff1919e7 !important;
+  border-radius: 4px;
+  border: none;
+  background: none;
+  :hover {
+    background-color: #ff1919e7 !important;
+    color: #fff !important;
+  }
 `;
 
 export default ReactCalendar;

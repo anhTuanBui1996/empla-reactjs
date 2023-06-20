@@ -54,6 +54,7 @@ export const ModalContent = styled.div`
   display: flex;
   flex-direction: column;
   width: 28%;
+  max-width: 350px;
   height: 100%;
   padding: 0 2em;
   background: #fff;

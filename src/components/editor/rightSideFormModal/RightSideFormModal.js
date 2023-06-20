@@ -20,6 +20,7 @@ import TextArea from "./FormControl/TextArea";
 import { compareTwoObject } from "../../../utils/objectUtils";
 import { VALIDATE_RULE } from "../../../constants";
 import DatePicker from "./FormControl/DatePicker";
+import File from "./FormControl/File";
 
 function RightSideFormModal({
   formName,
@@ -158,6 +159,17 @@ function RightSideFormModal({
               value={fieldValue}
               isDisplayTime
               readOnly={isReadOnlyField}
+            />
+          );
+          break;
+        case "multipleAttachments":
+          formControl = (
+            <File
+              key={i}
+              tabIndex={i + 1}
+              name={fieldName}
+              label={fieldLable}
+              value={fieldValue}
             />
           );
           break;

@@ -8,6 +8,7 @@ import {
   setFormData,
 } from "../../../../features/editorSlice";
 import { MdRemoveRedEye } from "react-icons/md";
+import Button from "../../../common/Button";
 
 export default function Text({
   tabIndex,
@@ -111,6 +112,7 @@ export default function Text({
                 size={20}
                 onClick={() => setIsShowPassword(!isShowPassword)}
                 style={{ cursor: "pointer" }}
+                color={!isShowPassword ? "#1e81b0" : ""}
               />
             </div>
           </div>

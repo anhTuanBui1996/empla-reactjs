@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import loadable from "@loadable/component";
 import { FILESTACK } from "../../constants";
 import Row from "../layout/Row";
@@ -13,11 +13,17 @@ function FileUploader({
   tabIndex,
   name,
   imgData,
-  mediaType,
   type,
   handleUploadSuccessfully,
 }) {
   const [imgStored, setImgStored] = useState(null);
+  const imagePreview = useMemo(() => {
+    if (imgData) {
+      let thumbnails = Object.values(imgData[0].thumbnails);
+      return thumbnails[thumbnails.length - 1].url;
+    }
+    return undefined;
+  });
   const handleRetrieveImg = () => {
     handleUploadSuccessfully({
       filesUploaded: [imgStored],
@@ -26,8 +32,8 @@ function FileUploader({
   };
   const handleClearImg = () => {
     handleUploadSuccessfully({
-      filesFailed: [],
       filesUploaded: [],
+      filesFailed: [],
     });
   };
   useEffect(() => {
@@ -51,16 +57,15 @@ function FileUploader({
                 <ImageBg className="image-bg">
                   <ImageViewer
                     className="image-previewer avatar-img rounded w-100"
-                    src={imgStored?.thumbnails.large.url}
-                    alt=""
+                    src={imagePreview}
+                    alt="previewer"
                   />
                   <ImageHover
                     tabIndex={tabIndex}
                     className="hover-blur"
                     onMouseDownCapture={onPick}
-                    ta
                   >
-                    {`Change file ${mediaType}`}
+                    Change attachment file
                   </ImageHover>
                 </ImageBg>
               </Col>
@@ -68,6 +73,7 @@ function FileUploader({
             <ImageClearButton
               className="btn btn-link image-clear-btn rounded"
               onMouseDownCapture={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 handleClearImg();
               }}
@@ -87,13 +93,14 @@ function FileUploader({
                 type="button"
                 onMouseDownCapture={onPick}
               >
-                {`Add an ${mediaType} file`}
+                Add attachment file
               </button>
             </div>
             {imgStored && (
               <ImageRetriveButton
                 className="btn btn-link image-clear-btn rounded"
                 onMouseDownCapture={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
                   handleRetrieveImg();
                 }}
@@ -104,9 +111,7 @@ function FileUploader({
           </div>
         )
       }
-      onSuccess={(res) =>
-        handleUploadSuccessfully({ ...res })
-      }
+      onSuccess={(res) => handleUploadSuccessfully({ ...res })}
     />
   );
 }
@@ -179,7 +184,6 @@ FileUploader.propTypes = {
   tabIndex: PropTypes.number,
   name: PropTypes.string,
   imgData: PropTypes.arrayOf(PropTypes.object),
-  mediaType: PropTypes.string,
   type: PropTypes.string,
   handleUploadSuccessfully: PropTypes.func,
 };
