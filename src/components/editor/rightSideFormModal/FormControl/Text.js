@@ -8,7 +8,6 @@ import {
   setFormData,
 } from "../../../../features/editorSlice";
 import { MdRemoveRedEye } from "react-icons/md";
-import Button from "../../../common/Button";
 
 export default function Text({
   tabIndex,

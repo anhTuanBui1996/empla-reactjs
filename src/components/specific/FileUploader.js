@@ -1,119 +1,61 @@
-import React, { useEffect, useMemo, useState } from "react";
-import loadable from "@loadable/component";
-import { FILESTACK } from "../../constants";
+import React, { useEffect, useMemo } from "react";
 import Row from "../layout/Row";
 import styled from "styled-components";
 import Col from "../layout/Col";
 import PropTypes from "prop-types";
-import { MdClose, MdRotateLeft } from "react-icons/md";
-const ReactFilestack = loadable(() => import("filestack-react"));
+import { useDropzone } from "react-dropzone";
+import { useDispatch, useSelector } from "react-redux";
+import { selectFormData } from "../../features/editorSlice";
 
-function FileUploader({
-  id,
-  tabIndex,
-  name,
-  imgData,
-  type,
-  handleUploadSuccessfully,
-}) {
-  const [imgStored, setImgStored] = useState(null);
+function FileUploader({ id, tabIndex, name, imgData }) {
+  const dispatch = useDispatch();
+  const editorFormData = useSelector(selectFormData);
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop: (acceptedFiles) => {
+      acceptedFiles.map((file) => {
+        let url = URL.createObjectURL(file);
+        Object.assign(file, {
+          thumbnails: { full: { url } },
+          url,
+        });
+      });
+    },
+  });
   const imagePreview = useMemo(() => {
     if (imgData) {
-      let thumbnails = Object.values(imgData[0].thumbnails);
-      return thumbnails[thumbnails.length - 1].url;
+      if (imgData[0].thumbnails) {
+        let thumbnails = Object.values(imgData[0].thumbnails);
+        return thumbnails[thumbnails.length - 1].url;
+      }
     }
     return undefined;
-  });
-  const handleRetrieveImg = () => {
-    handleUploadSuccessfully({
-      filesUploaded: [imgStored],
-      filesFailed: [],
-    });
-  };
-  const handleClearImg = () => {
-    handleUploadSuccessfully({
-      filesUploaded: [],
-      filesFailed: [],
-    });
-  };
+  }, [imgData]);
   useEffect(() => {
-    if (type === "edit") {
-      imgData?.length && setImgStored(imgData[0]);
-    } else {
-      setImgStored(null);
-    }
-  }, [imgData, type]);
+    // Make sure to revoke the data uris to avoid memory leaks, will run on unmount
+    return () => imgData.forEach((file) => URL.revokeObjectURL(file.url));
+  }, []);
   return (
-    <ReactFilestack
-      apikey={FILESTACK.API_KEY}
-      customRender={({ onPick }) =>
-        imgData?.length ? (
-          <div
-            id={id}
-            className="dz-processing dz-image-preview position-relative"
-          >
-            <Row className="row align-items-center thumbnail-preview-dropzone position-relative">
-              <Col columnSize={["12"]}>
-                <ImageBg className="image-bg">
-                  <ImageViewer
-                    className="image-previewer avatar-img rounded w-100"
-                    src={imagePreview}
-                    alt="previewer"
-                  />
-                  <ImageHover
-                    tabIndex={tabIndex}
-                    className="hover-blur"
-                    onMouseDownCapture={onPick}
-                  >
-                    Change attachment file
-                  </ImageHover>
-                </ImageBg>
-              </Col>
-            </Row>
-            <ImageClearButton
-              className="btn btn-link image-clear-btn rounded"
-              onMouseDownCapture={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleClearImg();
-              }}
-            >
-              <MdClose />
-            </ImageClearButton>
-          </div>
-        ) : (
-          <div
-            id={id}
-            className="dropzone dropzone-multiple dz-clickable position-relative"
-          >
-            <div className="dz-default dz-message">
-              <button
-                tabIndex={tabIndex}
-                className="dz-button"
-                type="button"
-                onMouseDownCapture={onPick}
-              >
-                Add attachment file
-              </button>
-            </div>
-            {imgStored && (
-              <ImageRetriveButton
-                className="btn btn-link image-clear-btn rounded"
-                onMouseDownCapture={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleRetrieveImg();
-                }}
-              >
-                <MdRotateLeft />
-              </ImageRetriveButton>
-            )}
-          </div>
-        )
-      }
-      onSuccess={(res) => handleUploadSuccessfully({ ...res })}
-    />
+    <div {...getRootProps({ className: "dropzone" })}>
+      <input {...getInputProps({ name, id })} />
+      <div className="dz-processing dz-image-preview position-relative mt-1">
+        <Row className="row align-items-center thumbnail-preview-dropzone position-relative">
+          <Col columnSize={["12"]}>
+            <ImageBg className="image-bg">
+              <ImageViewer
+                className="image-previewer avatar-img rounded w-100"
+                src={imagePreview}
+                alt="previewer"
+              />
+              <ImageHover tabIndex={tabIndex} className="hover-blur">
+                Change attachment file
+              </ImageHover>
+            </ImageBg>
+          </Col>
+        </Row>
+      </div>
+    </div>
   );
+  return;
 }
 
 const ImageBg = styled.div`
@@ -146,37 +88,6 @@ const ImageHover = styled.div`
   border-radius: 5px;
   cursor: pointer;
   transition: 0.3s all;
-`;
-const ImageClearButton = styled.button`
-  line-height: 1;
-  position: absolute;
-  top: 0;
-  right: 0;
-  font-size: 20px;
-  width: 25px;
-  height: 25px;
-  padding: 0 !important;
-  color: #ff1919e7 !important;
-  :hover {
-    background-color: #ff1919e7 !important;
-    color: #fff !important;
-  }
-`;
-const ImageRetriveButton = styled.button`
-  line-height: 1;
-  position: absolute;
-  top: 0;
-  right: 0;
-  font-size: 18px;
-  width: 25px;
-  height: 25px;
-  padding: 0 !important;
-  color: #0051ff !important;
-  z-index: 1000;
-  :hover {
-    background-color: #0051ff !important;
-    color: #fff !important;
-  }
 `;
 
 FileUploader.propTypes = {

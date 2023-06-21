@@ -38,10 +38,23 @@ function RightSideFormModal({
   const editorFormData = useSelector(selectFormData);
   const selectedRowFormData = useSelector(selectSelectedRowData);
 
+  // Form State
+  const [initialFormData, setInitialFormData] = useState(null);
+  const [changedFormData, setChangedFormData] = useState(null);
+
+  // Get the metadata of base
+  const baseMetadata = useSelector(selectMetadata);
+  const tableMetadata = baseMetadata.tables.find(
+    (table) => table.name === formName
+  );
+
   // Reset form data when type is "create"
   useEffect(() => {
     if (isModalDisplay) {
       removeAllToasts();
+      let cf = new model();
+      Object.keys(cf).forEach((k) => (cf[k] = false));
+      setChangedFormData(cf);
       if (type === "create") {
         dispatch(setFormData(new model()));
         setInitialFormData(new model());
@@ -53,15 +66,21 @@ function RightSideFormModal({
     // eslint-disable-next-line
   }, [type, isModalDisplay]);
 
-  // Form State
-  const [initialFormData, setInitialFormData] = useState(null);
-  const [isSfaffFormChanged, setIsSfaffFormChanged] = useState(false);
+  // Check the form data changed form initialFormData
+  useEffect(() => {
+    if (editorFormData && initialFormData && selectedRowFormData) {
+      if (!compareTwoObject(editorFormData, initialFormData)) {
+        setIsSfaffFormChanged(true);
+      }
+    }
+  }, [editorFormData, initialFormData, selectedRowFormData]);
 
-  // Get the metadata of base
-  const baseMetadata = useSelector(selectMetadata);
-  const tableMetadata = baseMetadata.tables.find(
-    (table) => table.name === formName
-  );
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  };
+  const handleDelete = (e) => {
+    e.preventDefault();
+  };
 
   // Fill to the form content
   const FormContent = () => {
@@ -83,6 +102,7 @@ function RightSideFormModal({
             <Text
               key={i}
               tabIndex={i + 1}
+              table={formName}
               name={fieldName}
               label={fieldLable}
               isRequired={isRequiredField}
@@ -97,6 +117,7 @@ function RightSideFormModal({
             <TextArea
               key={i}
               tabIndex={i + 1}
+              table={formName}
               name={fieldName}
               label={fieldLable}
               isRequired={isRequiredField}
@@ -110,6 +131,7 @@ function RightSideFormModal({
             <Text
               key={i}
               tabIndex={i + 1}
+              table={formName}
               name={fieldName}
               label={fieldLable}
               isRequired={isRequiredField}
@@ -124,6 +146,7 @@ function RightSideFormModal({
               key={i}
               tabIndex={i + 1}
               name={fieldName}
+              table={formName}
               label={fieldLable}
               isRequired={isRequiredField}
               value={fieldValue}
@@ -140,6 +163,7 @@ function RightSideFormModal({
               key={i}
               tabIndex={i + 1}
               name={fieldName}
+              table={formName}
               label={fieldLable}
               isRequired={isRequiredField}
               value={fieldValue}
@@ -153,6 +177,7 @@ function RightSideFormModal({
               key={i}
               tabIndex={i + 1}
               name={fieldName}
+              table={formName}
               label={fieldLable}
               isRequired={isRequiredField}
               value={fieldValue}
@@ -166,6 +191,7 @@ function RightSideFormModal({
             <File
               key={i}
               tabIndex={i + 1}
+              table={formName}
               name={fieldName}
               label={fieldLable}
               value={fieldValue}
@@ -180,22 +206,6 @@ function RightSideFormModal({
 
       return formControl;
     });
-  };
-
-  // Check the form data changed form initialFormData
-  useEffect(() => {
-    if (editorFormData && initialFormData && selectedRowFormData) {
-      if (!compareTwoObject(editorFormData, initialFormData)) {
-        setIsSfaffFormChanged(true);
-      }
-    }
-  }, [editorFormData, initialFormData, selectedRowFormData]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-  };
-  const handleDelete = (e) => {
-    e.preventDefault();
   };
 
   return (
