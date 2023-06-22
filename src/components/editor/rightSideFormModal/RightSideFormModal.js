@@ -9,8 +9,10 @@ import { useToasts } from "react-toast-notifications";
 import { SpinnerCircular } from "spinners-react";
 import {
   resetFormData,
+  selectFormChange,
   selectFormData,
   selectSelectedRowData,
+  setFormChange,
   setFormData,
 } from "../../../features/editorSlice";
 import { parseFieldName } from "../../../utils/stringUtils";
@@ -40,7 +42,8 @@ function RightSideFormModal({
 
   // Form State
   const [initialFormData, setInitialFormData] = useState(null);
-  const [changedFormData, setChangedFormData] = useState(null);
+  const changedFormData = useSelector(selectFormChange);
+  const [isFormChanged, setIsFormChanged] = useState(false);
 
   // Get the metadata of base
   const baseMetadata = useSelector(selectMetadata);
@@ -54,7 +57,7 @@ function RightSideFormModal({
       removeAllToasts();
       let cf = new model();
       Object.keys(cf).forEach((k) => (cf[k] = false));
-      setChangedFormData(cf);
+      dispatch(setFormChange(cf));
       if (type === "create") {
         dispatch(setFormData(new model()));
         setInitialFormData(new model());
@@ -68,12 +71,14 @@ function RightSideFormModal({
 
   // Check the form data changed form initialFormData
   useEffect(() => {
-    if (editorFormData && initialFormData && selectedRowFormData) {
-      if (!compareTwoObject(editorFormData, initialFormData)) {
-        setIsSfaffFormChanged(true);
-      }
+    if (changedFormData) {
+      Object.values(changedFormData).forEach(
+        (v) => v && setIsFormChanged(true)
+      );
+    } else {
+      setIsFormChanged(false);
     }
-  }, [editorFormData, initialFormData, selectedRowFormData]);
+  }, [changedFormData]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -195,7 +200,6 @@ function RightSideFormModal({
               name={fieldName}
               label={fieldLable}
               value={fieldValue}
-              type={type}
             />
           );
           break;
@@ -227,8 +231,8 @@ function RightSideFormModal({
               bgHoverColor="#0049c7"
               className="px-4 py-3 w-100"
               type="submit"
-              onClick={isSfaffFormChanged ? handleSubmit : undefined}
-              disabled={!isSfaffFormChanged}
+              onClick={isFormChanged ? handleSubmit : undefined}
+              disabled={!isFormChanged}
             >
               {type === "create" ? `Add new ` : `Submit changes `}
               <SpinnerCircular size={14} className="ml-2" color="white" />

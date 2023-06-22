@@ -5,20 +5,25 @@ import Col from "../layout/Col";
 import PropTypes from "prop-types";
 import { useDropzone } from "react-dropzone";
 import { useDispatch, useSelector } from "react-redux";
-import { selectFormData } from "../../features/editorSlice";
+import { selectFormData, setFormData } from "../../features/editorSlice";
 
 function FileUploader({ id, tabIndex, name, imgData }) {
   const dispatch = useDispatch();
   const editorFormData = useSelector(selectFormData);
+  console.log(editorFormData);
   const { getRootProps, getInputProps } = useDropzone({
+    multiple: false,
+    maxFiles: 1,
     onDrop: (acceptedFiles) => {
-      acceptedFiles.map((file) => {
+      let resultFiles = acceptedFiles.map((file) => {
         let url = URL.createObjectURL(file);
         Object.assign(file, {
           thumbnails: { full: { url } },
           url,
         });
+        return file;
       });
+      dispatch(setFormData({ ...editorFormData, [name]: resultFiles }));
     },
   });
   const imagePreview = useMemo(() => {
@@ -33,7 +38,7 @@ function FileUploader({ id, tabIndex, name, imgData }) {
   useEffect(() => {
     // Make sure to revoke the data uris to avoid memory leaks, will run on unmount
     return () => imgData.forEach((file) => URL.revokeObjectURL(file.url));
-  }, []);
+  }, [imgData]);
   return (
     <div {...getRootProps({ className: "dropzone" })}>
       <input {...getInputProps({ name, id })} />
@@ -55,7 +60,6 @@ function FileUploader({ id, tabIndex, name, imgData }) {
       </div>
     </div>
   );
-  return;
 }
 
 const ImageBg = styled.div`
