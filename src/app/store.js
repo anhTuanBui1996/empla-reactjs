@@ -29,7 +29,7 @@ export const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: {
         // Ignore these action types
-        ignoredActions: ["editor/setFormData"],
+        ignoredActions: ["editor/setFormData", "editor/setFormChange"],
         // Ignore these paths in the state
         ignoredPaths: ["editor"],
       },

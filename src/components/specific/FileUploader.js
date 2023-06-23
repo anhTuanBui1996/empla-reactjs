@@ -10,34 +10,31 @@ import { selectFormData, setFormData } from "../../features/editorSlice";
 function FileUploader({ id, tabIndex, name, imgData }) {
   const dispatch = useDispatch();
   const editorFormData = useSelector(selectFormData);
-  console.log(editorFormData);
   const { getRootProps, getInputProps } = useDropzone({
     multiple: false,
     maxFiles: 1,
+    accept: { "image/*": [] },
     onDrop: (acceptedFiles) => {
       let resultFiles = acceptedFiles.map((file) => {
         let url = URL.createObjectURL(file);
-        Object.assign(file, {
+        return Object.assign(file, {
           thumbnails: { full: { url } },
           url,
         });
-        return file;
       });
       dispatch(setFormData({ ...editorFormData, [name]: resultFiles }));
     },
   });
   const imagePreview = useMemo(() => {
     if (imgData) {
-      if (imgData[0].thumbnails) {
-        let thumbnails = Object.values(imgData[0].thumbnails);
-        return thumbnails[thumbnails.length - 1].url;
+      if (imgData.length) {
+        if (imgData[0].thumbnails) {
+          let thumbnails = Object.values(imgData[0].thumbnails);
+          return thumbnails[thumbnails.length - 1].url;
+        }
       }
     }
     return undefined;
-  }, [imgData]);
-  useEffect(() => {
-    // Make sure to revoke the data uris to avoid memory leaks, will run on unmount
-    return () => imgData.forEach((file) => URL.revokeObjectURL(file.url));
   }, [imgData]);
   return (
     <div {...getRootProps({ className: "dropzone" })}>
@@ -46,14 +43,33 @@ function FileUploader({ id, tabIndex, name, imgData }) {
         <Row className="row align-items-center thumbnail-preview-dropzone position-relative">
           <Col columnSize={["12"]}>
             <ImageBg className="image-bg">
-              <ImageViewer
-                className="image-previewer avatar-img rounded w-100"
-                src={imagePreview}
-                alt="previewer"
-              />
-              <ImageHover tabIndex={tabIndex} className="hover-blur">
-                Change attachment file
-              </ImageHover>
+              {imagePreview ? (
+                <>
+                  <ImageViewer
+                    className="image-previewer avatar-img rounded w-100"
+                    src={imagePreview}
+                    alt="previewer"
+                  />
+                  <ImageHover tabIndex={tabIndex} className="hover-blur">
+                    Change attachment file
+                  </ImageHover>
+                </>
+              ) : (
+                <div
+                  id={id}
+                  className="dropzone dropzone-multiple dz-clickable position-relative"
+                >
+                  <div className="dz-default dz-message">
+                    <button
+                      tabIndex={tabIndex}
+                      className="dz-button"
+                      type="button"
+                    >
+                      Add attachment file
+                    </button>
+                  </div>
+                </div>
+              )}
             </ImageBg>
           </Col>
         </Row>
@@ -99,8 +115,6 @@ FileUploader.propTypes = {
   tabIndex: PropTypes.number,
   name: PropTypes.string,
   imgData: PropTypes.arrayOf(PropTypes.object),
-  type: PropTypes.string,
-  handleUploadSuccessfully: PropTypes.func,
 };
 
 export default FileUploader;

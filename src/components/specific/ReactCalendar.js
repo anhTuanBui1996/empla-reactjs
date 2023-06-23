@@ -120,7 +120,6 @@ function ReactCalendar(props) {
             onChange={(v) => {
               const newDateValue = new Date(v);
               if (timeValue) {
-                console.log(timeValue);
                 let { hour, minute, second } = timeValue;
                 newDateValue.setHours(hour);
                 newDateValue.setMinutes(minute);
