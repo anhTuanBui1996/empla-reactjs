@@ -46,7 +46,7 @@ export default function Text({
     dispatch(setFormData({ ...editorFormData, [name]: e.target.value }));
   const handleValidate = () => {
     dispatch(setCurrentInputFocusing(undefined));
-    if (value === "") {
+    if (value === "" || value === null || value === undefined) {
       setError({ hasError: true, errorMsg: `${label} must not be empty!` });
       labelRef.current.scrollIntoView();
     } else if (additionRegex) {

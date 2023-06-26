@@ -49,7 +49,7 @@ function Table({
         (record) => record.id === recordId
       );
       dispatch(setSelectedRowData(recordSelected));
-      setTimeout(onRecordClick, 50);
+      onRecordClick();
     }
   };
 

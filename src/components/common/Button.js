@@ -3,6 +3,7 @@ import styled from "styled-components";
 const Button = styled.button.attrs((props) => ({
   bgColor: props.bgColor ? props.bgColor : "#0276ff",
   bgHoverColor: props.bgHoverColor ? props.bgHoverColor : "#1c84ff",
+  bgActiveColor: props.bgActiveColor ? props.bgActiveColor : "#005bc7",
   borderRadius: props.borderRadius ? props.borderRadius : "8px",
   padding: props.padding ? props.padding : "15px 21px",
   disabled: props.disabled ? props.disabled : false,
@@ -36,7 +37,12 @@ const Button = styled.button.attrs((props) => ({
   }
 
   &:active {
-    background-color: #006ae8;
+    background-color: ${(props) =>
+      props.disabled ? "#b1c2d9" : props.bgActiveColor};
+  }
+
+  &:focus {
+    outline: none;
   }
 
   &:hover {

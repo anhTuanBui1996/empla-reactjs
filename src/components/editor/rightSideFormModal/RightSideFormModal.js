@@ -23,6 +23,7 @@ import { compareTwoObject } from "../../../utils/objectUtils";
 import { VALIDATE_RULE } from "../../../constants";
 import DatePicker from "./FormControl/DatePicker";
 import File from "./FormControl/File";
+import { MdUndo } from "react-icons/md";
 
 function RightSideFormModal({
   formName,
@@ -65,9 +66,14 @@ function RightSideFormModal({
         dispatch(setFormData(new model(selectedRowFormData.fields)));
         setInitialFormData(new model(selectedRowFormData.fields));
       }
+    } else {
+      setTimeout(() => {
+        removeAllToasts();
+        dispatch(resetFormData());
+        setInitialFormData(null);
+      }, 500);
     }
-    // eslint-disable-next-line
-  }, [type, isModalDisplay]);
+  }, [type, model, isModalDisplay]);
 
   // Check the form data changed form initialFormData
   useEffect(() => {
@@ -80,6 +86,18 @@ function RightSideFormModal({
     }
   }, [changedFormData]);
 
+  const handleUndoOriginal = (e) => {
+    e.preventDefault();
+    Object.keys(changedFormData).forEach((k) => (changedFormData[k] = false));
+    dispatch(setFormChange(changedFormData));
+    if (type === "create") {
+      dispatch(setFormData(new model()));
+      setInitialFormData(new model());
+    } else {
+      dispatch(setFormData(initialFormData));
+      setInitialFormData(initialFormData);
+    }
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
   };
@@ -214,6 +232,24 @@ function RightSideFormModal({
 
   return (
     <Modal onModalHide={onFormHide} isModalDisplay={isModalDisplay}>
+      <Button
+        bgColor="#00a200"
+        bgHoverColor="#008d00"
+        style={{
+          width: "30px",
+          height: "30px",
+          padding: "2px",
+          position: "absolute",
+          top: 0,
+          right: 0,
+          borderTopRightRadius: 0,
+          borderTopLeftRadius: 0,
+          borderBottomRightRadius: 0,
+        }}
+        onClick={handleUndoOriginal}
+      >
+        <MdUndo />
+      </Button>
       <Row className="py-4 justify-content-center">
         <Col columnSize={["auto"]}>
           <h1 className="font-weight-bold">

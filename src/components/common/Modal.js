@@ -22,8 +22,17 @@ function Modal({ children, onModalHide, isModalDisplay }) {
         <ModalContent isDisplay={isDisplay} ref={modalRef}>
           <ModalBody>
             <Button
-              padding={"15px 5px"}
-              style={{ position: "absolute", left: "-5px", top: "0" }}
+              padding="2px"
+              style={{
+                width: "30px",
+                height: "30px",
+                position: "absolute",
+                left: 0,
+                top: 0,
+                borderTopLeftRadius: 0,
+                borderTopRightRadius: 0,
+                borderBottomLeftRadius: 0,
+              }}
               className="py-1"
               onClick={handleHideModal}
             >

@@ -7,14 +7,23 @@ import { useDropzone } from "react-dropzone";
 import { useDispatch, useSelector } from "react-redux";
 import { selectFormData, setFormData } from "../../features/editorSlice";
 
-function FileUploader({ id, tabIndex, name, imgData }) {
+function FileUploader({ id, tabIndex, name, fileData }) {
   const dispatch = useDispatch();
   const editorFormData = useSelector(selectFormData);
-  const { getRootProps, getInputProps } = useDropzone({
-    multiple: false,
-    maxFiles: 1,
-    accept: { "image/*": [] },
-    onDrop: (acceptedFiles) => {
+  const { acceptedFiles, getRootProps, getInputProps } = useDropzone();
+  const imagePreview = useMemo(() => {
+    if (fileData) {
+      if (fileData.length) {
+        if (fileData[0].thumbnails) {
+          let thumbnails = Object.values(fileData[0].thumbnails);
+          return thumbnails[thumbnails.length - 1].url;
+        }
+      }
+    }
+    return undefined;
+  }, [fileData]);
+  useEffect(() => {
+    if (acceptedFiles.length) {
       let resultFiles = acceptedFiles.map((file) => {
         let url = URL.createObjectURL(file);
         return Object.assign(file, {
@@ -23,19 +32,9 @@ function FileUploader({ id, tabIndex, name, imgData }) {
         });
       });
       dispatch(setFormData({ ...editorFormData, [name]: resultFiles }));
-    },
-  });
-  const imagePreview = useMemo(() => {
-    if (imgData) {
-      if (imgData.length) {
-        if (imgData[0].thumbnails) {
-          let thumbnails = Object.values(imgData[0].thumbnails);
-          return thumbnails[thumbnails.length - 1].url;
-        }
-      }
     }
-    return undefined;
-  }, [imgData]);
+    return () => imagePreview && URL.revokeObjectURL(imagePreview);
+  }, [acceptedFiles, dispatch, editorFormData, imagePreview, name]);
   return (
     <div {...getRootProps({ className: "dropzone" })}>
       <input {...getInputProps({ name, id })} />
@@ -114,7 +113,7 @@ FileUploader.propTypes = {
   id: PropTypes.string,
   tabIndex: PropTypes.number,
   name: PropTypes.string,
-  imgData: PropTypes.arrayOf(PropTypes.object),
+  fileData: PropTypes.arrayOf(PropTypes.object),
 };
 
 export default FileUploader;

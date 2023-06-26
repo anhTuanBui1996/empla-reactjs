@@ -9,7 +9,7 @@ export default function File({ tabIndex, table, name, label, value }) {
         id={`File_${table}_${name}`}
         tabIndex={tabIndex}
         name={name}
-        imgData={value}
+        fileData={value}
       />
     </div>
   );
