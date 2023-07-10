@@ -29,7 +29,7 @@ import { selectLoading } from "../../features/logsSlice";
 import InitialStaffForm, {
   isRequiredFields,
   isReadOnlyFields,
-} from "../../assets/forms/staffForm";
+} from "../../assets/models/staffForm";
 import { selectMetadata } from "../../features/metadataSlice";
 
 function Staff() {

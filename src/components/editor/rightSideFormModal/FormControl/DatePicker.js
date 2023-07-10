@@ -1,8 +1,11 @@
 import PropTypes from "prop-types";
 import ReactCalendar from "../../../specific/ReactCalendar";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { selectFormData, setFormData } from "../../../../features/editorSlice";
+import {
+  selectFormSubmit,
+  setFormSubmit,
+} from "../../../../features/editorSlice";
 
 export default function DatePicker({
   tabIndex,
@@ -10,17 +13,34 @@ export default function DatePicker({
   name,
   label,
   value,
+  onValueChange,
   isDisplayTime,
   readOnly,
   isRequired,
 }) {
   const dispatch = useDispatch();
-  const editorFormData = useSelector(selectFormData);
+  const formSubmit = useSelector(selectFormSubmit);
+  const [displayValue, setDisplayValue] = useState(value);
   const [error, setError] = useState({ hasError: false, errorMsg: "" });
   const labelRef = useRef(null);
 
+  useEffect(() => setDisplayValue(value), [value]);
+
   const handleChange = (dateValue) => {
-    dispatch(setFormData({ ...editorFormData, [name]: dateValue }));
+    let currentValue = dateValue;
+    setDisplayValue(currentValue);
+    dispatch(setFormSubmit({ ...formSubmit, [name]: currentValue }));
+    if (onValueChange) {
+      if (currentValue !== value) {
+        onValueChange({ name, value: true });
+      } else {
+        onValueChange({ name, value: false });
+        let newObj = {};
+        Object.assign(newObj, formSubmit);
+        delete newObj[name];
+        dispatch(setFormSubmit({ ...newObj }));
+      }
+    }
   };
   const handleValidate = () => {
     if (isRequired && value === "") {
@@ -42,7 +62,7 @@ export default function DatePicker({
         tabIndex={tabIndex}
         className="form-control"
         name={name}
-        value={value}
+        value={displayValue}
         isDisplayTime={isDisplayTime}
         isReadOnly={readOnly}
         onChange={handleChange}
@@ -61,6 +81,7 @@ DatePicker.propTypes = {
   name: PropTypes.string,
   label: PropTypes.string,
   value: PropTypes.any,
+  onValueChange: PropTypes.func,
   isDisplayTime: PropTypes.bool,
   isReadOnly: PropTypes.bool,
   isRequired: PropTypes.bool,

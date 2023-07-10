@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import Modal from "../../common/Modal";
 import Row from "../../layout/Row";
@@ -9,24 +9,24 @@ import { useToasts } from "react-toast-notifications";
 import { SpinnerCircular } from "spinners-react";
 import {
   resetFormData,
-  selectFormChange,
   selectFormData,
+  selectFormSubmit,
   selectSelectedRowData,
-  setFormChange,
   setFormData,
+  setFormSubmit,
 } from "../../../features/editorSlice";
 import { parseFieldName } from "../../../utils/stringUtils";
 import { selectMetadata } from "../../../features/metadataSlice";
 import Text from "./FormControl/Text";
 import TextArea from "./FormControl/TextArea";
-import { compareTwoObject } from "../../../utils/objectUtils";
 import { VALIDATE_RULE } from "../../../constants";
 import DatePicker from "./FormControl/DatePicker";
-import File from "./FormControl/File";
+import FilePicker from "./FormControl/FilePicker";
 import { MdUndo } from "react-icons/md";
+import { useMemo } from "react";
 
 function RightSideFormModal({
-  formName,
+  formName, // table name of Airtable
   model,
   requiredFields,
   readOnlyFields,
@@ -35,16 +35,18 @@ function RightSideFormModal({
   onFormHide,
 }) {
   const dispatch = useDispatch();
-  const { addToast, removeAllToasts } = useToasts();
+  const { removeAllToasts } = useToasts();
 
-  // Set form data
   const editorFormData = useSelector(selectFormData);
   const selectedRowFormData = useSelector(selectSelectedRowData);
 
   // Form State
-  const [initialFormData, setInitialFormData] = useState(null);
-  const changedFormData = useSelector(selectFormChange);
-  const [isFormChanged, setIsFormChanged] = useState(false);
+  const [formChanged, setFormChanged] = useState({});
+  const isFormChanged = useMemo(() => {
+    let isChanged = false;
+    Object.values(formChanged).forEach((v) => v && (isChanged = true));
+    return isChanged;
+  }, [formChanged]);
 
   // Get the metadata of base
   const baseMetadata = useSelector(selectMetadata);
@@ -56,46 +58,33 @@ function RightSideFormModal({
   useEffect(() => {
     if (isModalDisplay) {
       removeAllToasts();
-      let cf = new model();
-      Object.keys(cf).forEach((k) => (cf[k] = false));
-      dispatch(setFormChange(cf));
+      dispatch(setFormSubmit({}));
       if (type === "create") {
         dispatch(setFormData(new model()));
-        setInitialFormData(new model());
       } else {
         dispatch(setFormData(new model(selectedRowFormData.fields)));
-        setInitialFormData(new model(selectedRowFormData.fields));
       }
     } else {
       setTimeout(() => {
         removeAllToasts();
         dispatch(resetFormData());
-        setInitialFormData(null);
       }, 500);
     }
+    // eslint-disable-next-line
   }, [type, model, isModalDisplay]);
 
-  // Check the form data changed form initialFormData
-  useEffect(() => {
-    if (changedFormData) {
-      Object.values(changedFormData).forEach(
-        (v) => v && setIsFormChanged(true)
-      );
-    } else {
-      setIsFormChanged(false);
-    }
-  }, [changedFormData]);
-
+  // Handlers
+  const handleFormControlValueChanged = (v) => {
+    setFormChanged({ ...formChanged, [v.name]: v.value });
+  };
   const handleUndoOriginal = (e) => {
     e.preventDefault();
-    Object.keys(changedFormData).forEach((k) => (changedFormData[k] = false));
-    dispatch(setFormChange(changedFormData));
+    setFormChanged({});
+    dispatch(setFormSubmit({}));
     if (type === "create") {
       dispatch(setFormData(new model()));
-      setInitialFormData(new model());
     } else {
-      dispatch(setFormData(initialFormData));
-      setInitialFormData(initialFormData);
+      dispatch(setFormData(new model(selectedRowFormData.fields)));
     }
   };
   const handleSubmit = (e) => {
@@ -103,131 +92,6 @@ function RightSideFormModal({
   };
   const handleDelete = (e) => {
     e.preventDefault();
-  };
-
-  // Fill to the form content
-  const FormContent = () => {
-    if (!editorFormData) return null;
-    return Object.entries(editorFormData).map((field, i) => {
-      let formControl = null;
-      let fieldName = field[0];
-      let fieldValue = field[1];
-      let fieldType = tableMetadata?.fields.find(
-        (fieldMetadata) => fieldName === fieldMetadata.name
-      )?.type;
-      let fieldLable = parseFieldName(fieldName);
-      let isRequiredField = requiredFields.indexOf(fieldName) !== -1;
-      let isReadOnlyField = readOnlyFields.indexOf(fieldName) !== -1;
-      let isPassword = fieldName.toLowerCase() === "password";
-      switch (fieldType) {
-        case "singleLineText":
-          formControl = (
-            <Text
-              key={i}
-              tabIndex={i + 1}
-              table={formName}
-              name={fieldName}
-              label={fieldLable}
-              isRequired={isRequiredField}
-              value={fieldValue}
-              readOnly={isReadOnlyField}
-              isPassword={isPassword}
-            />
-          );
-          break;
-        case "multilineText":
-          formControl = (
-            <TextArea
-              key={i}
-              tabIndex={i + 1}
-              table={formName}
-              name={fieldName}
-              label={fieldLable}
-              isRequired={isRequiredField}
-              value={fieldValue}
-              readOnly={isReadOnlyField}
-            />
-          );
-          break;
-        case "formula":
-          formControl = (
-            <Text
-              key={i}
-              tabIndex={i + 1}
-              table={formName}
-              name={fieldName}
-              label={fieldLable}
-              isRequired={isRequiredField}
-              value={fieldValue}
-              readOnly
-            />
-          );
-          break;
-        case "email":
-          formControl = (
-            <Text
-              key={i}
-              tabIndex={i + 1}
-              name={fieldName}
-              table={formName}
-              label={fieldLable}
-              isRequired={isRequiredField}
-              value={fieldValue}
-              readOnly={isReadOnlyField}
-              additionRegex={VALIDATE_RULE.email.pattern}
-              maxLength={VALIDATE_RULE.email.maxLength}
-              minLength={VALIDATE_RULE.email.minLength}
-            />
-          );
-          break;
-        case "date":
-          formControl = (
-            <DatePicker
-              key={i}
-              tabIndex={i + 1}
-              name={fieldName}
-              table={formName}
-              label={fieldLable}
-              isRequired={isRequiredField}
-              value={fieldValue}
-              readOnly={isReadOnlyField}
-            />
-          );
-          break;
-        case "dateTime":
-          formControl = (
-            <DatePicker
-              key={i}
-              tabIndex={i + 1}
-              name={fieldName}
-              table={formName}
-              label={fieldLable}
-              isRequired={isRequiredField}
-              value={fieldValue}
-              isDisplayTime
-              readOnly={isReadOnlyField}
-            />
-          );
-          break;
-        case "multipleAttachments":
-          formControl = (
-            <File
-              key={i}
-              tabIndex={i + 1}
-              table={formName}
-              name={fieldName}
-              label={fieldLable}
-              value={fieldValue}
-            />
-          );
-          break;
-        default:
-          // console.error(`New field type detected: ${fieldType}`);
-          break;
-      }
-
-      return formControl;
-    });
   };
 
   return (
@@ -258,8 +122,21 @@ function RightSideFormModal({
         </Col>
       </Row>
       <hr className="navbar-divider"></hr>
-      <form className="form" autoComplete="off">
-        <FormContent />
+      <form
+        className="form"
+        autoComplete="off"
+        onSubmit={(e) => {
+          e.preventDefault();
+        }}
+      >
+        <FormContent
+          editorFormData={editorFormData}
+          formName={formName}
+          readOnlyFields={readOnlyFields}
+          requiredFields={requiredFields}
+          tableMetadata={tableMetadata}
+          setFormControlValueChanged={handleFormControlValueChanged}
+        />
         <hr className="navbar-divider"></hr>
         <Row className="justify-content-center mt-5">
           <Col columnSize={["12"]}>
@@ -294,6 +171,145 @@ function RightSideFormModal({
     </Modal>
   );
 }
+
+// Fill to the form content
+const FormContent = ({
+  formName,
+  tableMetadata,
+  requiredFields,
+  readOnlyFields,
+  editorFormData,
+  setFormControlValueChanged,
+}) => {
+  if (!editorFormData) return null;
+  return Object.entries(editorFormData).map((field, i) => {
+    let formControl = null;
+    let fieldName = field[0];
+    let fieldValue = field[1];
+    let fieldType = tableMetadata?.fields.find(
+      (fieldMetadata) => fieldName === fieldMetadata.name
+    )?.type;
+    let fieldLable = parseFieldName(fieldName);
+    let isRequiredField = requiredFields.indexOf(fieldName) !== -1;
+    let isReadOnlyField = readOnlyFields.indexOf(fieldName) !== -1;
+    let isPassword = fieldName.toLowerCase() === "password";
+    switch (fieldType) {
+      case "singleLineText":
+        formControl = (
+          <Text
+            key={i}
+            tabIndex={i + 1}
+            table={formName}
+            name={fieldName}
+            label={fieldLable}
+            isRequired={isRequiredField}
+            value={fieldValue}
+            onValueChange={setFormControlValueChanged}
+            readOnly={isReadOnlyField}
+            isPassword={isPassword}
+          />
+        );
+        break;
+      case "multilineText":
+        formControl = (
+          <TextArea
+            key={i}
+            tabIndex={i + 1}
+            table={formName}
+            name={fieldName}
+            label={fieldLable}
+            isRequired={isRequiredField}
+            value={fieldValue}
+            onValueChange={setFormControlValueChanged}
+            readOnly={isReadOnlyField}
+          />
+        );
+        break;
+      case "formula":
+        formControl = (
+          <Text
+            key={i}
+            tabIndex={i + 1}
+            table={formName}
+            name={fieldName}
+            label={fieldLable}
+            isRequired={isRequiredField}
+            value={fieldValue}
+            onValueChange={setFormControlValueChanged}
+            readOnly
+          />
+        );
+        break;
+      case "email":
+        formControl = (
+          <Text
+            key={i}
+            tabIndex={i + 1}
+            name={fieldName}
+            table={formName}
+            label={fieldLable}
+            isRequired={isRequiredField}
+            value={fieldValue}
+            onValueChange={setFormControlValueChanged}
+            readOnly={isReadOnlyField}
+            additionRegex={VALIDATE_RULE.email.pattern}
+            maxLength={VALIDATE_RULE.email.maxLength}
+            minLength={VALIDATE_RULE.email.minLength}
+          />
+        );
+        break;
+      case "date":
+        formControl = (
+          <DatePicker
+            key={i}
+            tabIndex={i + 1}
+            name={fieldName}
+            table={formName}
+            label={fieldLable}
+            isRequired={isRequiredField}
+            value={fieldValue}
+            onValueChange={setFormControlValueChanged}
+            readOnly={isReadOnlyField}
+          />
+        );
+        break;
+      case "dateTime":
+        formControl = (
+          <DatePicker
+            key={i}
+            tabIndex={i + 1}
+            name={fieldName}
+            table={formName}
+            label={fieldLable}
+            isRequired={isRequiredField}
+            value={fieldValue}
+            onValueChange={setFormControlValueChanged}
+            isDisplayTime
+            readOnly={isReadOnlyField}
+          />
+        );
+        break;
+      case "multipleAttachments":
+        formControl = (
+          <FilePicker
+            key={i}
+            tabIndex={i + 1}
+            table={formName}
+            name={fieldName}
+            label={fieldLable}
+            value={fieldValue}
+            onValueChange={setFormControlValueChanged}
+          />
+        );
+        break;
+      default:
+        // console.error(`New field type detected: ${fieldType}`);
+        break;
+    }
+
+    return formControl;
+  });
+};
 
 RightSideFormModal.propTypes = {
   formName: PropTypes.string,

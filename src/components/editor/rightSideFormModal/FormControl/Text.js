@@ -1,13 +1,11 @@
 import PropTypes from "prop-types";
 import { useEffect, useRef, useState } from "react";
+import { MdRemoveRedEye } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  selectCurrentInputFocusing,
-  selectFormData,
-  setCurrentInputFocusing,
-  setFormData,
+  selectFormSubmit,
+  setFormSubmit,
 } from "../../../../features/editorSlice";
-import { MdRemoveRedEye } from "react-icons/md";
 
 export default function Text({
   tabIndex,
@@ -15,6 +13,7 @@ export default function Text({
   name,
   label,
   value,
+  onValueChange,
   readOnly,
   isRequired,
   additionRegex,
@@ -23,49 +22,56 @@ export default function Text({
   isPassword,
 }) {
   const dispatch = useDispatch();
-  const currentInputFocused = useSelector(selectCurrentInputFocusing);
-  const editorFormData = useSelector(selectFormData);
+  const formSubmit = useSelector(selectFormSubmit);
+  const [displayValue, setDisplayValue] = useState(value);
   const [error, setError] = useState({ hasError: false, errorMsg: "" });
   const [isShowPassword, setIsShowPassword] = useState(true);
   const labelRef = useRef(null);
   const inputRef = useRef(null);
 
-  useEffect(
-    () => {
-      if (inputRef.current.id === currentInputFocused) {
-        inputRef.current.focus();
-      }
-    },
-    // eslint-disable-next-line
-    [value]
-  );
+  useEffect(() => setDisplayValue(value), [value]);
 
-  const handleFocus = () =>
-    dispatch(setCurrentInputFocusing(`Text_${table}_${name}`));
-  const handleChange = (e) =>
-    dispatch(setFormData({ ...editorFormData, [name]: e.target.value }));
+  const handleChange = (e) => {
+    let currentValue = e.target.value;
+    setDisplayValue(currentValue);
+    dispatch(setFormSubmit({ ...formSubmit, [name]: currentValue }));
+    if (onValueChange) {
+      if (currentValue !== value) {
+        onValueChange({ name, value: true });
+      } else {
+        onValueChange({ name, value: false });
+        let newObj = {}; 
+        Object.assign(newObj, formSubmit);
+        delete newObj[name];
+        dispatch(setFormSubmit({ ...newObj }));
+      }
+    }
+  };
   const handleValidate = () => {
-    dispatch(setCurrentInputFocusing(undefined));
-    if (value === "" || value === null || value === undefined) {
+    if (
+      displayValue === "" ||
+      displayValue === null ||
+      displayValue === undefined
+    ) {
       setError({ hasError: true, errorMsg: `${label} must not be empty!` });
       labelRef.current.scrollIntoView();
     } else if (additionRegex) {
-      if (!value.match(additionRegex)) {
+      if (!displayValue.match(additionRegex)) {
         setError({ hasError: true, errorMsg: `Incorrect ${label} format!` });
       } else {
-        if (value.match(additionRegex)[0] !== value) {
+        if (displayValue.match(additionRegex)[0] !== displayValue) {
           setError({ hasError: true, errorMsg: `Incorrect ${label} format!` });
         }
       }
     } else if (maxLength) {
-      if (value.length > maxLength) {
+      if (displayValue.length > maxLength) {
         setError({
           hasError: true,
           errorMsg: `${label} has maximum ${maxLength} characters!`,
         });
       }
     } else if (minLength) {
-      if (value.length < minLength) {
+      if (displayValue.length < minLength) {
         setError({
           hasError: true,
           errorMsg: `${label}'s at least ${maxLength} characters!`,
@@ -93,8 +99,7 @@ export default function Text({
             className="form-control form-control-appended"
             disabled={readOnly}
             type={isShowPassword ? "password" : "text"}
-            value={value}
-            onFocus={handleFocus}
+            value={displayValue}
             onChange={handleChange}
             onBlur={handleValidate}
             placeholder={`Enter ${label}...`}
@@ -126,8 +131,7 @@ export default function Text({
           className="form-control"
           disabled={readOnly}
           type="text"
-          value={value}
-          onFocus={handleFocus}
+          value={displayValue}
           onChange={handleChange}
           onBlur={handleValidate}
           placeholder={`Enter ${label}...`}
@@ -147,6 +151,7 @@ Text.propTypes = {
   name: PropTypes.string,
   label: PropTypes.string,
   value: PropTypes.string,
+  onValueChange: PropTypes.func,
   readOnly: PropTypes.bool,
   isRequired: PropTypes.bool,
   additionRegex: PropTypes.any,

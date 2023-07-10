@@ -17,7 +17,7 @@ function CustomSwitch({ tabIndex, inputValue, onSwitchChange }) {
         type="checkbox"
         className="custom-control-input"
         id={`customSwitch_${toggleId}`}
-        checked={inputValue}
+        checked={inputValue ? true : false}
         onChange={(e) => {
           onSwitchChange(e.target.checked);
         }}

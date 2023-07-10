@@ -2,10 +2,8 @@ import PropTypes from "prop-types";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  selectCurrentInputFocusing,
-  selectFormData,
-  setCurrentInputFocusing,
-  setFormData,
+  selectFormSubmit,
+  setFormSubmit,
 } from "../../../../features/editorSlice";
 
 export default function TextArea({
@@ -14,45 +12,45 @@ export default function TextArea({
   name,
   label,
   value,
+  onValueChange,
   readOnly,
   isRequired,
   additionRegex,
 }) {
   const dispatch = useDispatch();
-  const currentInputFocused = useSelector(selectCurrentInputFocusing);
-  const editorFormData = useSelector(selectFormData);
+  const formSubmit = useSelector(selectFormSubmit);
+  const [displayValue, setDisplayValue] = useState(value);
   const [error, setError] = useState({ hasError: false, errorMsg: "" });
   const labelRef = useRef(null);
   const inputRef = useRef(null);
 
-  useEffect(
-    () => {
-      if (inputRef.current.id === currentInputFocused) {
-        inputRef.current.setSelectionRange(
-          inputRef.current.value.length,
-          inputRef.current.value.length
-        );
-        inputRef.current.focus();
-      }
-    },
-    // eslint-disable-next-line
-    [value]
-  );
+  useEffect(() => setDisplayValue(value), [value]);
 
-  const handleFocus = () =>
-    dispatch(setCurrentInputFocusing(`TextArea_${table}_${name}`));
-  const handleChange = (e) =>
-    dispatch(setFormData({ ...editorFormData, [name]: e.target.value }));
+  const handleChange = (e) => {
+    let currentValue = e.target.value;
+    setDisplayValue(currentValue);
+    dispatch(setFormSubmit({ ...formSubmit, [name]: currentValue }));
+    if (onValueChange) {
+      if (currentValue !== value) {
+        onValueChange({ name, value: true });
+      } else {
+        onValueChange({ name, value: false });
+        let newObj = {};
+        Object.assign(newObj, formSubmit);
+        delete newObj[name];
+        dispatch(setFormSubmit({ ...newObj }));
+      }
+    }
+  };
   const handleValidate = () => {
-    dispatch(setCurrentInputFocusing(undefined));
-    if (value === "") {
+    if (displayValue === "") {
       setError({ hasError: true, errorMsg: `${label} must not be empty!` });
       labelRef.current.scrollIntoView();
     } else if (additionRegex) {
-      if (!value.match(additionRegex)) {
+      if (!displayValue.match(additionRegex)) {
         setError({ hasError: true, errorMsg: `Incorrect ${label} format!` });
       } else {
-        if (value.match(additionRegex)[0] !== value) {
+        if (displayValue.match(additionRegex)[0] !== displayValue) {
           setError({ hasError: true, errorMsg: `Incorrect ${label} format!` });
         }
       }
@@ -75,8 +73,7 @@ export default function TextArea({
         name={name}
         className="form-control"
         disabled={readOnly}
-        value={value}
-        onFocus={handleFocus}
+        value={displayValue}
         onChange={handleChange}
         onBlur={handleValidate}
         placeholder={`Enter ${label}...`}
@@ -97,6 +94,7 @@ TextArea.propTypes = {
   name: PropTypes.string,
   label: PropTypes.string,
   value: PropTypes.string,
+  onValueChange: PropTypes.func,
   readOnly: PropTypes.bool,
   isRequired: PropTypes.bool,
   additionRegex: PropTypes.string,

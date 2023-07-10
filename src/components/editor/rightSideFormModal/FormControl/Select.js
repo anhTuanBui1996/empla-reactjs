@@ -7,6 +7,7 @@ export default function FormGroupSelect({
   name,
   label,
   value,
+  onValueChange,
   options,
   isMulti,
   isRequired,
@@ -50,6 +51,7 @@ FormGroupSelect.propTypes = {
     // isMulti === false
     PropTypes.string,
   ]),
+  onValueChange: PropTypes.func,
   options: PropTypes.arrayOf(
     PropTypes.shape({ label: PropTypes.string, value: PropTypes.string })
   ),

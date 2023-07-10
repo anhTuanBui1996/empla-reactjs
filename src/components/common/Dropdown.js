@@ -47,7 +47,7 @@ function Dropdown({
       </ToggleButton>
       <Outclick onOutClick={handleClose}>
         <div
-          className={`dropdown-menu dropdown-menu-${position}${
+          className={`shadow dropdown-menu dropdown-menu-${position}${
             isOpened ? " d-flex" : ""
           }`}
           style={boxStyle ? boxStyle : null}

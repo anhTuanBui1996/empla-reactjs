@@ -133,7 +133,7 @@ function Table({
               </button>
               <Outclick onOutClick={() => setShowSettings(false)}>
                 <div
-                  className={`dropdown-menu px-3 dropdown-menu-right${
+                  className={`shadow dropdown-menu px-3 dropdown-menu-right${
                     showSettings ? " d-block" : ""
                   }`}
                   style={{ width: "248px" }}

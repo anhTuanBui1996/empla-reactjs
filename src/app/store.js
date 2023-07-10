@@ -2,7 +2,6 @@ import { configureStore } from "@reduxjs/toolkit";
 import userReducer from "./../features/userSlice";
 import windowReducer from "./../features/windowSlice";
 import timeReducer from "../features/timeSlice";
-import selectListReducer from "../features/selectListSlice";
 import staffReducer from "../features/staffSlice";
 import checkinReducer from "../features/checkinSlice";
 import geolocationSlice from "../features/geolocationSlice";
@@ -16,7 +15,6 @@ export const store = configureStore({
     user: userReducer,
     window: windowReducer,
     time: timeReducer,
-    selectList: selectListReducer,
     staff: staffReducer,
     checkin: checkinReducer,
     geolocation: geolocationSlice,

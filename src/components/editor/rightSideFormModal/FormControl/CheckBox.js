@@ -1,27 +1,44 @@
 import { useDispatch, useSelector } from "react-redux";
 import CustomSwitch from "../../../common/CustomSwitch";
 import PropTypes from "prop-types";
-import { selectFormData, setFormData } from "../../../../features/editorSlice";
-import { useMemo } from "react";
+import {
+  selectFormSubmit,
+  setFormSubmit,
+} from "../../../../features/editorSlice";
 
-export default function CheckBox({ tabIndex, table, name, label, value }) {
-  const inputValue = useMemo(() => {
-    if (value) {
-      return true;
-    }
-    return false;
-  }, [value]);
+export default function CheckBox({
+  tabIndex,
+  table,
+  name,
+  label,
+  value,
+  onValueChange,
+}) {
   const dispatch = useDispatch();
-  const editorFormData = useSelector(selectFormData);
+  const formSubmit = useSelector(selectFormSubmit);
+  const [displayValue, setDisplayValue] = useState(value);
   const onSwitchChange = () => {
-    dispatch(setFormData({ ...editorFormData, [name]: inputValue }));
+    let newValue = !displayValue;
+    setDisplayValue(newValue);
+    if (onValueChange) {
+      if (displayValue !== value) {
+        onValueChange({ name, value: true });
+        dispatch(setFormSubmit({ ...formSubmit, [name]: newValue }));
+      } else {
+        onValueChange({ name, value: false });
+        let newObj = {}; 
+        Object.assign(newObj, formSubmit);
+        delete newObj[name];
+        dispatch(setFormSubmit({ ...newObj }));
+      }
+    }
   };
   return (
     <div id={`CheckBox_${table}_${name}`} className="form-control">
       {label}
       <CustomSwitch
         tabIndex={tabIndex}
-        inputValue={inputValue}
+        inputValue={displayValue}
         onSwitchChange={onSwitchChange}
       />
     </div>
@@ -34,4 +51,5 @@ Text.propTypes = {
   name: PropTypes.string,
   label: PropTypes.string,
   value: PropTypes.string,
+  onValueChange: PropTypes.func,
 };

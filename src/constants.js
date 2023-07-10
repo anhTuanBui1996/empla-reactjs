@@ -11,18 +11,15 @@ import {
 export const AIRTABLE = {
   BASE_ID: process.env.REACT_APP_AIRTABLE_BASE_ID,
   API_KEY: process.env.REACT_APP_AIRTABLE_API_KEY,
-  NOT_SUPPORT_DATA_TYPE: {
-    FOR_SORTING: ["attachment", "checkbox", "lookup", "linkToAnotherTable"],
-    FOR_SEARCHING: ["attachment", "checkbox", "lookup", "linkToAnotherTable"],
-  }
 };
 
 export const GOOGLE = {
   MAP_JAVASCRIPT_KEY: process.env.REACT_APP_GOOGLE_MAP_API_KEY,
 };
 
-export const FILESTACK = {
-  API_KEY: process.env.REACT_APP_FILESTACK_API_KEY,
+export const FILEPREVIEWS = {
+  API_KEY: process.env.REACT_APP_FILEPREVIEWS_API_KEY,
+  API_SECRET: process.env.REACT_APP_FILEPREVIEWS_API_SECRET,
 };
 
 export const SIDENAV = [

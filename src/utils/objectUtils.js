@@ -68,15 +68,17 @@ export const compareTwoObject = (obj1, obj2) => {
                 result = false;
                 break;
               }
-            } else if (typeof obj1[obj1Keys[x]] === "object") {
-              // object type
+            } else if (
+              typeof obj1[obj1Keys[x]] === "object" ||
+              typeof obj1[obj1Keys[x]] === "function"
+            ) {
+              // object, function or class type
               if (!compareTwoObject(objComparator.value, obj1[obj1Keys[x]])) {
                 result = false;
                 break;
               }
             } else {
               result = false;
-              throw new Error("Unknown type to compare!");
             }
           }
         }
