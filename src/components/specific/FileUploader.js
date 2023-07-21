@@ -7,6 +7,8 @@ import { useDropzone } from "react-dropzone";
 import { compareTwoArrayOfObject } from "../../utils/arrayUtils";
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { thumbnailForType } from "../../assets/options/FileUploaderOptions";
+import { useDispatch, useSelector } from "react-redux";
+import { selectFormSubmit, setFormSubmit } from "../../features/editorSlice";
 
 function FileUploader({
   id,
@@ -14,36 +16,78 @@ function FileUploader({
   name,
   fileData,
   acceptedTypes,
+  maxFiles,
   onFileChange,
   onDrop,
 }) {
-  const originalFiles = useMemo(() => {
-    if (fileData) {
-      if (fileData[0]) {
-        return fileData.map(({ id, url, thumbnails, type, fileName }) => ({
-          id,
-          url,
-          thumbnails,
-          type,
-          fileName,
-        }));
+  const [componentAvailable, setComponentAvailable] = useState(true);
+  const [isImagePreviewLoaded, setIsImagePreviewLoaded] = useState(false);
+  const dispatch = useDispatch();
+  const formSubmit = useSelector(selectFormSubmit);
+
+  const handleChangeFiles = () => {
+    if (!compareTwoArrayOfObject(displayFiles, originalFiles)) {
+      if (onDrop) {
+        onDrop(displayFiles);
+      }
+      if (onFileChange) {
+        onFileChange({ name, value: true });
+      }
+    } else {
+      if (onFileChange) {
+        onFileChange({ name, value: false });
+      }
+      if (onDrop) {
+        let newObj = {};
+        Object.assign(newObj, formSubmit);
+        if (newObj[name]) {
+          delete newObj[name];
+        }
+        dispatch(setFormSubmit({ ...newObj }));
       }
     }
-    return undefined;
-  }, [fileData]);
-  const [componentAvailable, setComponentAvailable] = useState(true);
-
+  };
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone(
-    acceptedTypes && componentAvailable ? { accept: acceptedTypes } : undefined
+    componentAvailable
+      ? { accept: acceptedTypes, maxFiles, onDrop: handleChangeFiles }
+      : undefined
   );
+
+  const originalFiles = useMemo(() => {
+    if (fileData) {
+      return fileData.map(({ id, url, thumbnails, type, fileName }) => ({
+        id,
+        url,
+        thumbnails,
+        type,
+        fileName,
+      }));
+    } else return [];
+  }, [fileData]);
+
+  const addedFiles = useMemo(() => {
+    if (acceptedFiles) {
+      return acceptedFiles.map((file) => {
+        let localFileURL = URL.createObjectURL(file);
+        return {
+          url: localFileURL,
+          thumbnails: { full: { url: localFileURL } },
+          type: file.type,
+          name: file.name,
+        };
+      });
+    }
+  }, [acceptedFiles]);
+
   const [displayFiles, setDisplayFiles] = useState([]);
-  const [localFiles, setLocalFiles] = useState([]);
-  const [existedFiles, setExistedFiles] = useState([]);
+  const [existedFiles, setExistedFiles] = useState(originalFiles);
+  const [localFiles, setLocalFiles] = useState(addedFiles);
   const [currentFileDisplayIndex, setCurrentFileDisplayIndex] = useState(0);
 
   useEffect(() => {
-    if (!compareTwoArrayOfObject(localFiles, acceptedFiles)) {
-      setLocalFiles(acceptedFiles);
+    setCurrentFileDisplayIndex(0);
+    if (!compareTwoArrayOfObject(localFiles, addedFiles)) {
+      setLocalFiles(addedFiles);
     }
     if (!compareTwoArrayOfObject(existedFiles, originalFiles)) {
       setExistedFiles(originalFiles);
@@ -52,35 +96,17 @@ function FileUploader({
   }, [acceptedFiles, originalFiles]);
   useEffect(() => {
     let newFiles = [];
-    newFiles = newFiles.concat(existedFiles).concat(
-      localFiles.map((file) => {
-        let localFileURL = URL.createObjectURL(file);
-        return {
-          url: localFileURL,
-          thumbnails: { full: { url: localFileURL } },
-          type: file.type,
-          name: file.name,
-        };
-      })
-    );
+    newFiles = newFiles.concat(existedFiles).concat(localFiles);
     if (!compareTwoArrayOfObject(newFiles, displayFiles)) {
+      while (newFiles.length > maxFiles) {
+        newFiles.shift();
+      }
       setDisplayFiles(newFiles);
-      if (onDrop) {
-        onDrop(newFiles);
-      }
-      if (onFileChange) {
-        if (newFiles && originalFiles) {
-          if (!compareTwoArrayOfObject(newFiles, originalFiles)) {
-            onFileChange({ name, value: true });
-          } else {
-            onFileChange({ name, value: false });
-          }
-        }
-      }
     }
     // eslint-disable-next-line
   }, [existedFiles, localFiles]);
 
+  // Generate url src for img tag preview
   const imagePreviews = useMemo(() => {
     if (displayFiles) {
       if (displayFiles.length && displayFiles[0]) {
@@ -104,6 +130,7 @@ function FileUploader({
     return undefined;
   }, [displayFiles]);
 
+  // Unmount component
   useEffect(() => {
     return () => {
       imagePreviews && URL.revokeObjectURL(imagePreviews);
@@ -112,11 +139,11 @@ function FileUploader({
     // eslint-disable-next-line
   }, []);
 
+  // Handler
   const handleDisplayNextFile = (e) => {
     e.stopPropagation();
     setCurrentFileDisplayIndex(currentFileDisplayIndex + 1);
   };
-
   const handleDisplayPreviousFile = (e) => {
     e.stopPropagation();
     setCurrentFileDisplayIndex(currentFileDisplayIndex - 1);
@@ -136,6 +163,7 @@ function FileUploader({
                       className="image-previewer avatar-img rounded w-100"
                       src={imagePreviews[currentFileDisplayIndex]}
                       alt="previewer"
+                      onLoadCapture={() => setIsImagePreviewLoaded(true)}
                     />
                     <ImageHover tabIndex={tabIndex} className="hover-blur">
                       Change attachment file
@@ -260,6 +288,7 @@ FileUploader.propTypes = {
    * * example: { "image/*": [".jpg", ".png", ".jpeg"], "application/pdf": [".pdf"] },
    */
   acceptedTypes: PropTypes.object,
+  maxFiles: PropTypes.number,
   onFileChange: PropTypes.func,
   onDrop: PropTypes.func,
 };

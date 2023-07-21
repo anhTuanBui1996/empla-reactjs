@@ -296,7 +296,6 @@ function Checkin() {
                     </>
                   ),
                 }}
-                isHasHideCard
                 elementList={[
                   <Table
                     tableName="Checkin"

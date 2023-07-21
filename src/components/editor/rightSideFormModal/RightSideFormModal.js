@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import PropTypes from "prop-types";
 import Modal from "../../common/Modal";
 import Row from "../../layout/Row";
@@ -6,7 +6,6 @@ import Col from "../../layout/Col";
 import Button from "../../common/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { useToasts } from "react-toast-notifications";
-import { SpinnerCircular } from "spinners-react";
 import {
   resetFormData,
   selectFormData,
@@ -17,13 +16,12 @@ import {
 } from "../../../features/editorSlice";
 import { parseFieldName } from "../../../utils/stringUtils";
 import { selectMetadata } from "../../../features/metadataSlice";
-import Text from "./FormControl/Text";
-import TextArea from "./FormControl/TextArea";
 import { VALIDATE_RULE } from "../../../constants";
+import LineText from "./FormControl/LineText";
+import TextArea from "./FormControl/TextArea";
 import DatePicker from "./FormControl/DatePicker";
 import FilePicker from "./FormControl/FilePicker";
-import { MdUndo } from "react-icons/md";
-import { useMemo } from "react";
+import FormSelect from "./FormControl/FormSelect";
 
 function RightSideFormModal({
   formName, // table name of Airtable
@@ -32,13 +30,17 @@ function RightSideFormModal({
   readOnlyFields,
   type,
   isModalDisplay,
-  onFormHide,
+  handleCloseForm,
+  onFormSubmitted,
+  createAndModifySlice,
+  deleteSlice,
 }) {
   const dispatch = useDispatch();
   const { removeAllToasts } = useToasts();
 
   const editorFormData = useSelector(selectFormData);
   const selectedRowFormData = useSelector(selectSelectedRowData);
+  const formSubmit = useSelector(selectFormSubmit);
 
   // Form State
   const [formChanged, setFormChanged] = useState({});
@@ -77,43 +79,24 @@ function RightSideFormModal({
   const handleFormControlValueChanged = (v) => {
     setFormChanged({ ...formChanged, [v.name]: v.value });
   };
-  const handleUndoOriginal = (e) => {
-    e.preventDefault();
-    setFormChanged({});
-    dispatch(setFormSubmit({}));
-    if (type === "create") {
-      dispatch(setFormData(new model()));
-    } else {
-      dispatch(setFormData(new model(selectedRowFormData.fields)));
-    }
+  const handleValidate = () => {
+    return false;
   };
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log(formChanged, formSubmit);
+    if (handleValidate()) {
+      if (onFormSubmitted) {
+        onFormSubmitted();
+      }
+    }
   };
   const handleDelete = (e) => {
     e.preventDefault();
   };
 
   return (
-    <Modal onModalHide={onFormHide} isModalDisplay={isModalDisplay}>
-      <Button
-        bgColor="#00a200"
-        bgHoverColor="#008d00"
-        style={{
-          width: "30px",
-          height: "30px",
-          padding: "2px",
-          position: "absolute",
-          top: 0,
-          right: 0,
-          borderTopRightRadius: 0,
-          borderTopLeftRadius: 0,
-          borderBottomRightRadius: 0,
-        }}
-        onClick={handleUndoOriginal}
-      >
-        <MdUndo />
-      </Button>
+    <Modal onModalHide={handleCloseForm} isModalDisplay={isModalDisplay}>
       <Row className="py-4 justify-content-center">
         <Col columnSize={["auto"]}>
           <h1 className="font-weight-bold">
@@ -121,7 +104,7 @@ function RightSideFormModal({
           </h1>
         </Col>
       </Row>
-      <hr className="navbar-divider"></hr>
+      <hr className="navbar-divider" />
       <form
         className="form"
         autoComplete="off"
@@ -137,7 +120,7 @@ function RightSideFormModal({
           tableMetadata={tableMetadata}
           setFormControlValueChanged={handleFormControlValueChanged}
         />
-        <hr className="navbar-divider"></hr>
+        <hr className="navbar-divider" />
         <Row className="justify-content-center mt-5">
           <Col columnSize={["12"]}>
             <Button
@@ -147,13 +130,12 @@ function RightSideFormModal({
               onClick={isFormChanged ? handleSubmit : undefined}
               disabled={!isFormChanged}
             >
-              {type === "create" ? `Add new ` : `Submit changes `}
-              <SpinnerCircular size={14} className="ml-2" color="white" />
+              {type === "create" ? `Add new` : `Submit changes`}
             </Button>
           </Col>
         </Row>
         {type === "edit" && (
-          <Row className="justify-content-center mt-5">
+          <Row className="justify-content-center">
             <Col columnSize={["12"]}>
               <Button
                 bgColor="#ff4949"
@@ -161,8 +143,7 @@ function RightSideFormModal({
                 className="px-4 py-3 w-100"
                 onClick={handleDelete}
               >
-                {`Commit delete `}
-                <SpinnerCircular size={14} className="ml-2" color="white" />
+                {`Commit delete`}
               </Button>
             </Col>
           </Row>
@@ -186,9 +167,10 @@ const FormContent = ({
     let formControl = null;
     let fieldName = field[0];
     let fieldValue = field[1];
-    let fieldType = tableMetadata?.fields.find(
-      (fieldMetadata) => fieldName === fieldMetadata.name
-    )?.type;
+    let fieldMetadata = tableMetadata?.fields.find(
+      (metadata) => fieldName === metadata.name
+    );
+    let fieldType = fieldMetadata?.type;
     let fieldLable = parseFieldName(fieldName);
     let isRequiredField = requiredFields.indexOf(fieldName) !== -1;
     let isReadOnlyField = readOnlyFields.indexOf(fieldName) !== -1;
@@ -196,7 +178,7 @@ const FormContent = ({
     switch (fieldType) {
       case "singleLineText":
         formControl = (
-          <Text
+          <LineText
             key={i}
             tabIndex={i + 1}
             table={formName}
@@ -227,7 +209,7 @@ const FormContent = ({
         break;
       case "formula":
         formControl = (
-          <Text
+          <LineText
             key={i}
             tabIndex={i + 1}
             table={formName}
@@ -242,7 +224,7 @@ const FormContent = ({
         break;
       case "email":
         formControl = (
-          <Text
+          <LineText
             key={i}
             tabIndex={i + 1}
             name={fieldName}
@@ -302,6 +284,35 @@ const FormContent = ({
           />
         );
         break;
+      case "singleSelect":
+        formControl = (
+          <FormSelect
+            key={i}
+            tabIndex={i + 1}
+            table={formName}
+            name={fieldName}
+            label={fieldLable}
+            value={fieldValue}
+            fieldMetadata={fieldMetadata}
+            onValueChange={setFormControlValueChanged}
+          />
+        );
+        break;
+      case "multipleSelects":
+        formControl = (
+          <FormSelect
+            key={i}
+            tabIndex={i + 1}
+            table={formName}
+            name={fieldName}
+            label={fieldLable}
+            value={fieldValue}
+            fieldMetadata={fieldMetadata}
+            isMulti
+            onValueChange={setFormControlValueChanged}
+          />
+        );
+        break;
       default:
         // console.error(`New field type detected: ${fieldType}`);
         break;
@@ -312,13 +323,19 @@ const FormContent = ({
 };
 
 RightSideFormModal.propTypes = {
+  /**
+   * Name of table in Airtable
+   */
   formName: PropTypes.string,
   model: PropTypes.func,
   requiredFields: PropTypes.arrayOf(PropTypes.string),
   readOnlyFields: PropTypes.arrayOf(PropTypes.string),
   type: PropTypes.oneOf(["create", "edit"]).isRequired,
   isModalDisplay: PropTypes.bool,
-  onFormHide: PropTypes.func,
+  handleCloseForm: PropTypes.func,
+  onFormSubmitted: PropTypes.func,
+  createAndModifySlice: PropTypes.func,
+  deleteSlice: PropTypes.func,
 };
 
 export default RightSideFormModal;

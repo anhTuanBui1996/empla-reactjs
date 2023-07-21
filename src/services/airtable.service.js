@@ -20,7 +20,7 @@ const retrieveMetadata = async () => {
     );
     return res.data;
   } catch (e) {
-    console.log(e);
+    console.error("Error while getting base metadata...");
   }
 };
 
@@ -36,7 +36,7 @@ const retrieveMetadata = async () => {
  * {@link https://support.airtable.com//docs/formula-field-reference| Airtable Filter Formula}
  * @returns an array that hase the result data from airtable
  */
-const retrieveData = async (tableName, whereString) => {
+const retrieveAllData = async (tableName, whereString) => {
   try {
     const res = await base(tableName)
       .select({
@@ -52,14 +52,14 @@ const retrieveData = async (tableName, whereString) => {
           Date.parse(secondRecord.createdTime)
       );
   } catch (e) {
-    console.log(e);
+    console.error("Error while getting table records...");
   }
 };
 
 /**
- * Mapping from retrieveData res into new array,
+ * Mapping from retrieveAllData res into new array,
  * use for insert the Table component
- * @param {Object[]} res result Array from retrieveData function
+ * @param {Object[]} res result Array from retrieveAllData function
  * @param {String} tableName table name that get data from
  * @param {Array} fieldList field name list to map from res
  * @param {Object} tableMetadata metadata Object get from airtable
@@ -115,7 +115,7 @@ const createNewRecord = async (tableName, data) => {
     ]);
     return res[0]._rawJson;
   } catch (e) {
-    console.log(e);
+    console.error("Error while creating table record...");
     return null;
   }
 };
@@ -137,7 +137,7 @@ const createNewRecords = async (tableName, data) => {
     const res = await base(tableName).create(data);
     return res;
   } catch (e) {
-    console.log(e);
+    console.error("Error while creating table records...");
     return null;
   }
 };
@@ -165,7 +165,7 @@ const updateRecord = async (tableName, recordId, data) => {
     ]);
     return res;
   } catch (e) {
-    console.log(e);
+    console.error("Error while updating table record...");
     return null;
   }
 };
@@ -205,7 +205,7 @@ const updateRecordWhere = async (tableName, whereString, data) => {
     });
     return res;
   } catch (e) {
-    console.log(e);
+    console.error("Error while updating table records...");
     return null;
   }
 };
@@ -224,7 +224,7 @@ const deleteRecord = async (tableName, recordId) => {
     const res = await base(tableName).destroy(recordId);
     return res;
   } catch (e) {
-    console.log(e);
+    console.error("Error while deleting table record...");
     return null;
   }
 };
@@ -259,14 +259,14 @@ const deleteRecordWhere = async (tableName, whereString) => {
     );
     return res;
   } catch (e) {
-    console.log(e);
+    console.error("Error while deleting table records...");
     return null;
   }
 };
 
 export {
   retrieveMetadata,
-  retrieveData,
+  retrieveAllData,
   mapResultToTableData,
   createNewRecord,
   createNewRecords,

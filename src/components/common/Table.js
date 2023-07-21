@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { MdSettings } from "react-icons/md";
+import { MdLibraryAdd, MdRefresh, MdSettings } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import { selectInnerWidth } from "../../features/windowSlice";
@@ -11,11 +11,14 @@ import Dropdown from "./Dropdown";
 import { setSelectedRowData } from "../../features/editorSlice";
 
 function Table({
+  metadata,
   fieldList,
   tableMappedRecords,
   originalRecords,
   isHasSettings,
   onRecordClick,
+  onCreateNewBtnClick,
+  onRefreshDataBtnClick,
   recordPerPage,
   maxPageDisplay,
   tableStyle,
@@ -117,7 +120,20 @@ function Table({
             columnSize={["10", "md-auto"]}
             className="d-flex align-items-center py-2"
           >
-            {" "}
+            <button
+              className="btn btn-success px-0 py-0 mr-2"
+              style={{ width: "30px", height: "30px" }}
+              onClick={onCreateNewBtnClick}
+            >
+              <MdLibraryAdd size={20} />
+            </button>
+            <button
+              className="btn btn-primary px-0 py-0 mr-2"
+              style={{ width: "30px", height: "30px" }}
+              onClick={onRefreshDataBtnClick}
+            >
+              <MdRefresh size={20} />
+            </button>
           </Col>
           <Col
             columnSize={["auto"]}
@@ -140,7 +156,7 @@ function Table({
                 >
                   <Row>
                     <Col columnSize={["12"]}>
-                      <div className="form-group d-flex flex-nowrap justify-content-between align-items-center">
+                      <div className="form-group d-flex flex-nowrap justify-content-between align-items-center mb-0">
                         <label className="mb-0" htmlFor="max-record-per-page">
                           Records/page
                         </label>
@@ -203,31 +219,45 @@ function Table({
         ref={tableRef}
         style={tableStyle}
       >
-        <table className="table table-sm table-nowrap card-table">
-          <thead>
-            <tr>
-              {fieldList.map((fieldItem, i) => (
-                <th style={{ minWidth: 160 }} key={i}>
-                  <span className="text-muted">{fieldItem}</span>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="list">
-            {recordTableList.map((recordData) => (
-              <RowHover
-                key={recordData.rowId}
-                onClick={(e) => handleEditRecord(e, recordData)}
-              >
-                {recordData.data.map((value, cellRowIndex) => (
-                  <td style={{ minWidth: 160 }} key={cellRowIndex}>
-                    {injectDataToJSX(value)}
-                  </td>
+        {recordTableList.length ? (
+          <table className="table table-sm table-nowrap card-table">
+            <thead>
+              <tr>
+                {fieldList.map((fieldItem, i) => (
+                  <th style={{ minWidth: 160 }} key={i}>
+                    <span className="text-muted">{fieldItem}</span>
+                  </th>
                 ))}
-              </RowHover>
-            ))}
-          </tbody>
-        </table>
+              </tr>
+            </thead>
+            <tbody className="list">
+              {recordTableList.map((recordData) => (
+                <RowHover
+                  key={recordData.rowId}
+                  onClick={(e) => handleEditRecord(e, recordData)}
+                >
+                  {recordData.data.map((value, cellRowIndex) => (
+                    <td style={{ minWidth: 160 }} key={cellRowIndex}>
+                      {injectDataToJSX(value)}
+                    </td>
+                  ))}
+                </RowHover>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <span
+            style={{
+              textAlign: "center",
+              width: "100%",
+              display: "block",
+              paddingTop: "12px",
+              paddingBottom: "12px",
+            }}
+          >
+            There is no data here...
+          </span>
+        )}
       </div>
       <nav
         className={`d-flex align-items-center flex-wrap px-3 py-1 ${
@@ -235,59 +265,63 @@ function Table({
             ? "justify-content-center"
             : "justify-content-between"
         }`}
-        style={{ gap: "5px" }}
+        style={{ gap: "5px", marginTop: "5px" }}
       >
         <span
           className={`badge badge-success${innerWidth < 330 ? " my-3" : ""}`}
+          style={{ lineHeight: "1.5" }}
         >
-          {tableMappedRecords.length}{" "}
-          {tableMappedRecords.length > 1 ? "records" : "record"} in total
+          {`${tableMappedRecords.length} ${
+            tableMappedRecords.length > 1 ? "records" : "record"
+          } in total`}
         </span>
-        <ul className="pagination mb-0">
-          <li
-            className="rounded page-item"
-            onClick={() => {
-              activePageIndex > 1 && setActivePageIndex(activePageIndex - 1);
-            }}
-            style={{ cursor: "pointer" }}
-          >
-            <button className="rounded page-link border-0">Previous</button>
-          </li>
-          {isPageListExceed.pageStart && (
-            <li className="page-item start-exceed d-flex align-items-center">
-              ...
-            </li>
-          )}
-          {pageList.map((indexPagination) => (
+        {tableMappedRecords.length > 0 && (
+          <ul className="pagination mb-0">
             <li
-              key={indexPagination}
-              className={`page-item${
-                indexPagination === activePageIndex ? " active" : ""
-              }`}
-              onClick={() => setActivePageIndex(indexPagination)}
+              className="rounded page-item"
+              onClick={() => {
+                activePageIndex > 1 && setActivePageIndex(activePageIndex - 1);
+              }}
               style={{ cursor: "pointer" }}
             >
-              <button className="rounded page-link border-0">
-                {indexPagination}
-              </button>
+              <button className="rounded page-link border-0">Previous</button>
             </li>
-          ))}
-          {isPageListExceed.pageEnd && (
-            <li className="page-item end-exceed d-flex align-items-center">
-              ...
+            {isPageListExceed.pageStart && (
+              <li className="page-item start-exceed d-flex align-items-center">
+                ...
+              </li>
+            )}
+            {pageList.map((indexPagination) => (
+              <li
+                key={indexPagination}
+                className={`page-item${
+                  indexPagination === activePageIndex ? " active" : ""
+                }`}
+                onClick={() => setActivePageIndex(indexPagination)}
+                style={{ cursor: "pointer" }}
+              >
+                <button className="rounded page-link border-0">
+                  {indexPagination}
+                </button>
+              </li>
+            ))}
+            {isPageListExceed.pageEnd && (
+              <li className="page-item end-exceed d-flex align-items-center">
+                ...
+              </li>
+            )}
+            <li
+              className="rounded page-item"
+              onClick={() => {
+                activePageIndex < pageAmount &&
+                  setActivePageIndex(activePageIndex + 1);
+              }}
+              style={{ cursor: "pointer" }}
+            >
+              <button className="rounded page-link border-0">Next</button>
             </li>
-          )}
-          <li
-            className="rounded page-item"
-            onClick={() => {
-              activePageIndex < pageAmount &&
-                setActivePageIndex(activePageIndex + 1);
-            }}
-            style={{ cursor: "pointer" }}
-          >
-            <button className="rounded page-link border-0">Next</button>
-          </li>
-        </ul>
+          </ul>
+        )}
       </nav>
     </>
   );
@@ -448,7 +482,7 @@ Table.defaultProps = {
   maxPageDisplay: 4,
 };
 Table.propTypes = {
-  tableName: PropTypes.string,
+  metadata: PropTypes.object,
   /**
    * If you use the ***forFormEditor*** props, the ***syncField*** of forFormEditor
    * must is the first field of fieldList. The ***syncField*** is the field
@@ -478,6 +512,8 @@ Table.propTypes = {
   ),
   isHasSettings: PropTypes.bool,
   onRecordClick: PropTypes.func,
+  onCreateNewBtnClick: PropTypes.func,
+  onRefreshDataBtnClick: PropTypes.func,
   recordPerPage: PropTypes.number,
   maxPageDisplay: PropTypes.number,
   tableStyle: PropTypes.object,

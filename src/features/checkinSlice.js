@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { createNewRecord, retrieveData } from "../services/airtable.service";
+import { createNewRecord, retrieveAllData } from "../services/airtable.service";
 
 const initialState = {
   loading: false,
@@ -12,7 +12,7 @@ const initialState = {
 export const retrieveCheckinList = createAsyncThunk(
   "checkin/fetch",
   async (userStaffId) => {
-    const res = await retrieveData("Checkin", `StaffId = "${userStaffId}"`);
+    const res = await retrieveAllData("Checkin", `StaffId = "${userStaffId}"`);
     return res;
   }
 );

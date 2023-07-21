@@ -1,9 +1,10 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { useMemo } from "react";
 
 function Row({ children, className, style }) {
-  let classString = "row";
-  className && (classString += " " + className);
+  const classString = useMemo(() => `row ${className}`, [className]);
+  
   return (
     <div className={classString} style={style}>
       {children}

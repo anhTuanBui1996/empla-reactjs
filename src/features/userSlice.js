@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
   createNewRecord,
   deleteRecordWhere,
-  retrieveData,
+  retrieveAllData,
 } from "../services/airtable.service";
 import { getLocalUser } from "../services/localStorage.service";
 
@@ -25,7 +25,7 @@ const initialState = {
 export const retrieveUserInfoWithPassword = createAsyncThunk(
   "user/retrieveWithPassword",
   async ({ username, password }) => {
-    const res = await retrieveData(
+    const res = await retrieveAllData(
       "Staff",
       `AND({Account} = "${username}", {Password} = "${password}")`
     );
@@ -36,7 +36,7 @@ export const retrieveUserInfoWithPassword = createAsyncThunk(
 export const retrieveUserInfoWithToken = createAsyncThunk(
   "user/retrieveWithToken",
   async ({ account, token }) => {
-    const res = await retrieveData(
+    const res = await retrieveAllData(
       "Tokens",
       `AND({Account} = "${account}", {Token} = "${token}")`
     );
@@ -47,7 +47,7 @@ export const retrieveUserInfoWithToken = createAsyncThunk(
 export const retrieveUserInfo = createAsyncThunk(
   "user/retrieve",
   async (account) => {
-    const res = await retrieveData("Staff", `{Account} = "${account}"`);
+    const res = await retrieveAllData("Staff", `{Account} = "${account}"`);
     return res;
   }
 );
@@ -63,7 +63,7 @@ export const createNewLoginToken = createAsyncThunk(
 export const retrieveUserRole = createAsyncThunk(
   "user/retrieveUserRole",
   async () => {
-    const res = await retrieveData("Role");
+    const res = await retrieveAllData("Role");
     return res;
   }
 );
@@ -104,7 +104,7 @@ export const userSlice = createSlice({
     setError: (state, action) => {
       state.error = action.payload;
     },
-    resetUserSlice: (state, action) => {
+    resetUserSlice: (state) => {
       state.loading = false;
       state.userCredential = getLocalUser();
       state.newToken = null;

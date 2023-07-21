@@ -7,9 +7,11 @@ export const isRequiredFields = [
   "RoleType",
   "Company",
 ];
-export const isReadOnlyFields = ["Username", "Account"];
-export default class InitialStaffForm {
-  // form for Staff table
+export const isReadOnlyFields = ["Username"];
+// auto generate field on client
+export const clientFormulaMappedFields = [];
+export class InitialRoleDto {
+  // form for Role table
   constructor(fieldData) {
     this.FullName = fieldData?.FullName;
     this.Portrait = fieldData?.Portrait;
@@ -37,3 +39,10 @@ export default class InitialStaffForm {
     this.Avatar = fieldData?.Avatar;
   }
 }
+
+export default {
+  isReadOnlyFields,
+  isRequiredFields,
+  clientFormulaMappedFields,
+  model: InitialRoleDto,
+};

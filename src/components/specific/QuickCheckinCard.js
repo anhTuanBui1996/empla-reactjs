@@ -150,9 +150,7 @@ function QuickCheckinCard() {
             />
           </Dropdown>
         ),
-        extension: true,
       }}
-      isHasHideCard
       elementList={[
         <Col columnSize={["auto"]}>
           <Row>

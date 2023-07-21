@@ -19,7 +19,7 @@ import { useToasts } from "react-toast-notifications";
 import { browserDetect } from "../utils/userAgentUtils";
 import Loader from "../components/common/Loader";
 import { setLocalUser } from "../services/localStorage.service";
-import { retrieveData } from "../services/airtable.service";
+import { retrieveAllData } from "../services/airtable.service";
 
 function Auth({ children }) {
   const location = useLocation();
@@ -94,7 +94,7 @@ function Auth({ children }) {
             // The token retrieved from userCredential is valid
             // Retrieving the user info by account
             dispatch(retrieveUserInfo(userCredential.Account));
-            retrieveData("Staff", `{Account} = "${userCredential.Account}"`)
+            retrieveAllData("Staff", `{Account} = "${userCredential.Account}"`)
               .then((res) => {
                 const currentUserInfo = res[0];
                 dispatch(

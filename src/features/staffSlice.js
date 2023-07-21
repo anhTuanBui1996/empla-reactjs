@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
   createNewRecord,
   deleteRecord,
-  retrieveData,
+  retrieveAllData,
   updateRecord,
 } from "../services/airtable.service";
 
@@ -20,7 +20,7 @@ const initialState = {
 export const retrieveStaffList = createAsyncThunk(
   "staff/retrieve",
   async () => {
-    const res = await retrieveData("Staff", "NOT({Account} = 'admin')");
+    const res = await retrieveAllData("Staff", "NOT({Account} = 'admin')");
     return res;
   }
 );
@@ -184,5 +184,26 @@ export const selectNewStaffData = (state) => state.staff.newStaffData;
 export const selectUpdatedStaffData = (state) => state.staff.updatedStaffData;
 export const selectDeletedStaffData = (state) => state.staff.deletedStaffData;
 export const selectError = (state) => state.staff.error;
+
+export const staffSliceForTableEditor = {
+  actions: staffSlice.actions,
+  selections: {
+    selectStateOfSlice,
+    selectLoading,
+    selectIsSuccess,
+    selectProgressing,
+    selectStaffTableData,
+    selectNewStaffData,
+    selectUpdatedStaffData,
+    selectDeletedStaffData,
+    selectError,
+  },
+  cruds: {
+    retrieve: retrieveStaffList,
+    create: createNewStaff,
+    update: updateExistingStaff,
+    delete: deleteExistingStaff,
+  },
+};
 
 export default staffSlice.reducer;

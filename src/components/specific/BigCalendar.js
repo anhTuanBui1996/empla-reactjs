@@ -14,9 +14,7 @@ function BigCalendar({ title, events }) {
       noBodyPadding
       cardHeader={{
         title: title,
-        extension: true,
       }}
-      isHasHideCard
       elementList={[
         <Calendar
           defaultView={"week"}

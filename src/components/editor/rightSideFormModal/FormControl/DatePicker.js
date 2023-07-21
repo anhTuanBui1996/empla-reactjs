@@ -37,7 +37,9 @@ export default function DatePicker({
         onValueChange({ name, value: false });
         let newObj = {};
         Object.assign(newObj, formSubmit);
-        delete newObj[name];
+        if (newObj[name]) {
+          delete newObj[name];
+        }
         dispatch(setFormSubmit({ ...newObj }));
       }
     }

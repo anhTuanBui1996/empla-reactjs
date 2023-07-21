@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
   createNewRecord,
-  retrieveData,
+  retrieveAllData,
   updateRecord,
   deleteRecord,
 } from "../services/airtable.service";
@@ -21,7 +21,7 @@ const initialState = {
 };
 
 export const retrieveRoleList = createAsyncThunk("role/retrieve", async () => {
-  const res = await retrieveData("Role");
+  const res = await retrieveAllData("Role");
   return res;
 });
 

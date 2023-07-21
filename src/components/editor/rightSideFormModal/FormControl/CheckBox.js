@@ -26,9 +26,11 @@ export default function CheckBox({
         dispatch(setFormSubmit({ ...formSubmit, [name]: newValue }));
       } else {
         onValueChange({ name, value: false });
-        let newObj = {}; 
+        let newObj = {};
         Object.assign(newObj, formSubmit);
-        delete newObj[name];
+        if (newObj[name] !== undefined) {
+          delete newObj[name];
+        }
         dispatch(setFormSubmit({ ...newObj }));
       }
     }

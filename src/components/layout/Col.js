@@ -1,15 +1,21 @@
-import React from "react";
+import React, { useMemo } from "react";
 import PropTypes from "prop-types";
 
 function Col({ columnSize, children, className, style }) {
-  let colString = "";
-  columnSize?.forEach((colItem) => {
-    colString += "col-" + colItem + " ";
-  });
-  className && (colString += className);
-  colString = colString.trim();
+  const classString = useMemo(() => {
+    let returnString = "";
+    columnSize?.forEach((colItem) => {
+      returnString += "col-" + colItem + " ";
+    });
+    className && (returnString += className);
+    return returnString.trim();
+  }, [columnSize, className]);
+
   return (
-    <div className={colString} style={style}>
+    <div
+      className={classString}
+      style={{ ...style, paddingTop: "12px", paddingBottom: "12px" }}
+    >
       {children}
     </div>
   );

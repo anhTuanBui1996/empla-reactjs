@@ -33,6 +33,7 @@ export default function FilePicker({
           "image/*": [".jpg", ".png", ".jpeg"],
           "application/pdf": [".pdf"],
         }}
+        maxFiles={1}
         onFileChange={onValueChange}
         onDrop={handleDropFiles}
       />

@@ -1,6 +1,8 @@
 import PropTypes from "prop-types";
 
 export default function LinkRecordPicker({
+  tabIndex,
+  table,
   name,
   label,
   value,
@@ -10,8 +12,15 @@ export default function LinkRecordPicker({
   isRequired,
 }) {
   return (
-    <div className="reference-picker-bg">
-      <article>Test</article>
+    <div className="form-group">
+      <label htmlFor={`LineText_${table}_${name}`} ref={labelRef}>
+        {`${label} `}
+        {isRequired && <span className="text-danger">*</span>}
+      </label>
+
+      {error.hasError && (
+        <div className="err-text text-danger mt-1">{error.errorMsg}</div>
+      )}
     </div>
   );
 }

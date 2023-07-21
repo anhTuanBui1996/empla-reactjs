@@ -120,10 +120,8 @@ function GoogleMapCard({ title, styleContainer, zoom, dataList }) {
     <Card
       cardHeader={{
         title: title,
-        extension: true,
       }}
       isLoading={!isLoaded || !currentPosition}
-      isHasHideCard
       noBodyPadding
       elementList={[
         isLoaded && currentPosition && (

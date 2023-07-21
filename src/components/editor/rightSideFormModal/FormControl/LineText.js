@@ -7,7 +7,7 @@ import {
   setFormSubmit,
 } from "../../../../features/editorSlice";
 
-export default function Text({
+export default function LineText({
   tabIndex,
   table,
   name,
@@ -23,13 +23,13 @@ export default function Text({
 }) {
   const dispatch = useDispatch();
   const formSubmit = useSelector(selectFormSubmit);
-  const [displayValue, setDisplayValue] = useState(value);
+  const [displayValue, setDisplayValue] = useState("");
   const [error, setError] = useState({ hasError: false, errorMsg: "" });
   const [isShowPassword, setIsShowPassword] = useState(true);
   const labelRef = useRef(null);
   const inputRef = useRef(null);
 
-  useEffect(() => setDisplayValue(value), [value]);
+  useEffect(() => setDisplayValue(value ? value : ""), [value]);
 
   const handleChange = (e) => {
     let currentValue = e.target.value;
@@ -40,9 +40,11 @@ export default function Text({
         onValueChange({ name, value: true });
       } else {
         onValueChange({ name, value: false });
-        let newObj = {}; 
+        let newObj = {};
         Object.assign(newObj, formSubmit);
-        delete newObj[name];
+        if (newObj[name]) {
+          delete newObj[name];
+        }
         dispatch(setFormSubmit({ ...newObj }));
       }
     }
@@ -84,14 +86,14 @@ export default function Text({
 
   return (
     <div className="form-group">
-      <label htmlFor={`Text_${table}_${name}`} ref={labelRef}>
+      <label htmlFor={`LineText_${table}_${name}`} ref={labelRef}>
         {`${label} `}
         {isRequired && <span className="text-danger">*</span>}
       </label>
       {isPassword ? (
         <div className="input-group input-group-merge">
           <input
-            id={`Text_${table}_${name}`}
+            id={`LineText_${table}_${name}`}
             tabIndex={tabIndex}
             autoComplete="off"
             ref={inputRef}
@@ -123,7 +125,7 @@ export default function Text({
         </div>
       ) : (
         <input
-          id={`Text_${table}_${name}`}
+          id={`LineText_${table}_${name}`}
           tabIndex={tabIndex}
           autoComplete="off"
           ref={inputRef}
@@ -145,7 +147,7 @@ export default function Text({
   );
 }
 
-Text.propTypes = {
+LineText.propTypes = {
   tabIndex: PropTypes.number,
   table: PropTypes.string,
   name: PropTypes.string,

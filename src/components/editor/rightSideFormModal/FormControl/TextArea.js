@@ -37,7 +37,9 @@ export default function TextArea({
         onValueChange({ name, value: false });
         let newObj = {};
         Object.assign(newObj, formSubmit);
-        delete newObj[name];
+        if (newObj[name]) {
+          delete newObj[name];
+        }
         dispatch(setFormSubmit({ ...newObj }));
       }
     }
@@ -79,6 +81,7 @@ export default function TextArea({
         placeholder={`Enter ${label}...`}
         style={{
           resize: "none",
+          height: "200px"
         }}
       />
       {error.hasError && (
