@@ -36,11 +36,11 @@ function Staff() {
             </Col>
             <Col columnSize={["12"]}>
               <TableEditorCard
-                cardLabel="Employee/Staff Information"
+                cardLabel="Staff Information"
                 tableInfoArr={[
                   {
                     tableName: "Staff",
-                    tableLabel: "Staff/Employee",
+                    tableLabel: "Staff",
                     fieldList: [
                       "FullName",
                       "Portrait",

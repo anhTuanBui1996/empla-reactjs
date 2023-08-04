@@ -84,7 +84,7 @@ function QuickCheckinCard() {
       }
     } else {
       if (error) {
-        console.log(error);
+        console.error(error);
         addToast("An error occurs", { appearance: "error" });
       } else {
         if (userInfo) {

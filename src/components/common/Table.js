@@ -10,12 +10,11 @@ import Row from "../layout/Row";
 import Dropdown from "./Dropdown";
 import { setSelectedRowData } from "../../features/editorSlice";
 import Search from "./Search";
-import Container from "../layout/Container";
 
 function Table({
   metadata,
   fieldList,
-  tableMappedRecords,
+  mappedRecords,
   originalRecords,
   hasSettings,
   hasSearching,
@@ -30,6 +29,12 @@ function Table({
   const tableRef = useRef(null);
   const innerWidth = useSelector(selectInnerWidth);
 
+  // Mapped record list / Display records in current page
+  const [tableMappedRecords, setTableMappedRecords] = useState(mappedRecords);
+  const [recordTableInCurrentPage, setRecordTableInCurrentPage] =
+    useState(tableMappedRecords);
+
+  // Searching and pagigation
   const [searchValue, setSearchValue] = useState("");
   const [activePageIndex, setActivePageIndex] = useState(1);
   const [recordsPerPage, setRecordPerPage] = useState(recordPerPage);
@@ -43,11 +48,12 @@ function Table({
     pageStart: false,
     pageEnd: false,
   });
-  const [recordTableList, setRecordTableList] = useState(tableMappedRecords);
 
+  // Table settings state
   const [showSettings, setShowSettings] = useState(false);
   const [isPaginationCenter, setIsPaginationCenter] = useState(false);
 
+  // Handlers
   const handleEditRecord = (e, recordSelectedForEdit) => {
     e.preventDefault();
     if (originalRecords && onRecordClick) {
@@ -56,13 +62,32 @@ function Table({
         (record) => record.id === recordId
       );
       dispatch(setSelectedRowData(recordSelected));
-      onRecordClick();
+      onRecordClick(recordSelectedForEdit);
+    }
+  };
+  const handleSearchSubmit = (val) => {
+    if (val) {
+      let filteredRecords = tableMappedRecords.filter((record) => {
+        let dataArr = record.data;
+        for (const dataItem of dataArr) {
+          let { cellData } = dataItem;
+          console.log(cellData);
+          // if (typeof cellData === "string") {
+          //   if (cellData.contains(val)) {
+          //     return true;
+          //   }
+          // }
+        }
+        return false;
+      });
+      setTableMappedRecords(filteredRecords);
     }
   };
 
-  const handleSearchSubmit = () => {};
-
-  // Effects when trigger page index, page record amount feature
+  // Add feature tracking method here
+  // Effects when trigger feature
+  // - page index
+  // - page record amount
   useEffect(() => {
     let currentRecordsOfPage = [];
     tableMappedRecords.forEach((recordData, recordIndex) => {
@@ -72,7 +97,7 @@ function Table({
         currentRecordsOfPage.push(recordData);
       }
     });
-    setRecordTableList(currentRecordsOfPage);
+    setRecordTableInCurrentPage(currentRecordsOfPage);
     setPageList(() => {
       const newState = [];
       let pageStart = 1;
@@ -111,6 +136,12 @@ function Table({
     });
     // eslint-disable-next-line
   }, [tableMappedRecords, recordsPerPage, activePageIndex]);
+
+  // Changes original mapped record handler
+  useEffect(() => {
+    setTableMappedRecords(mappedRecords);
+  }, [mappedRecords]);
+
   // Get cardWidth when windowWidth change and set pagination alignment
   useEffect(() => {
     tableRef.current && tableRef.current.clientWidth < 435
@@ -120,126 +151,122 @@ function Table({
 
   return (
     <>
-      <div className="px-4">
-        <Row className="justify-content-between flex-nowrap">
-          <Col
-            columnSize={["10", "md-auto"]}
-            className="d-flex align-items-center py-2"
+      <div
+        className="card-header justify-content-between align-items-center flex-nowrap py-1"
+        style={{ gap: "5px", paddingRight: "5px", height: "auto" }}
+      >
+        {onCreateNewBtnClick && (
+          <button
+            className="btn btn-success d-flex px-1 py-1 mr-2"
+            style={{ width: "30px", height: "30px" }}
+            onClick={onCreateNewBtnClick}
           >
-            {onCreateNewBtnClick && (
+            <MdLibraryAdd size={20} style={{ margin: "auto" }} />
+          </button>
+        )}
+        {onRefreshDataBtnClick && (
+          <button
+            className="btn btn-primary d-flex px-1 py-1 mr-2"
+            style={{ width: "30px", height: "30px" }}
+            onClick={onRefreshDataBtnClick}
+          >
+            <MdRefresh size={20} />
+          </button>
+        )}
+        {hasSearching && (
+          <Search
+            placeholder="Search..."
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            onSubmit={handleSearchSubmit}
+          />
+        )}
+        {hasSettings && (
+          <Col
+            columnSize={["auto"]}
+            className="d-flex align-items-center"
+            style={{ height: "52px" }}
+          >
+            <div className="dropdown">
               <button
-                className="btn btn-success d-flex px-1 py-1 mr-2"
-                style={{ width: "30px", height: "30px" }}
-                onClick={onCreateNewBtnClick}
+                className="btn btn-link rounded px-0 py-0"
+                onClick={() => setShowSettings(true)}
               >
-                <MdLibraryAdd size={20} style={{ margin: "auto" }} />
+                <MdSettings size={20} />
               </button>
-            )}
-            {onRefreshDataBtnClick && (
-              <button
-                className="btn btn-primary d-flex px-1 py-1 mr-2"
-                style={{ width: "30px", height: "30px" }}
-                onClick={onRefreshDataBtnClick}
-              >
-                <MdRefresh size={20} />
-              </button>
-            )}
-            {hasSearching && (
-              <Search
-                placeholder="Search..."
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                onSubmit={handleSearchSubmit}
-              />
-            )}
-          </Col>
-          {hasSettings && (
-            <Col
-              columnSize={["auto"]}
-              className="d-flex align-items-center"
-              style={{ height: "52px" }}
-            >
-              <div className="dropdown">
-                <button
-                  className="btn btn-link rounded px-0 py-0"
-                  onClick={() => setShowSettings(true)}
+              <Outclick onOutClick={() => setShowSettings(false)}>
+                <div
+                  className={`shadow dropdown-menu px-3 dropdown-menu-right${
+                    showSettings ? " d-block" : ""
+                  }`}
+                  style={{ width: "248px" }}
                 >
-                  <MdSettings size={20} />
-                </button>
-                <Outclick onOutClick={() => setShowSettings(false)}>
-                  <div
-                    className={`shadow dropdown-menu px-3 dropdown-menu-right${
-                      showSettings ? " d-block" : ""
-                    }`}
-                    style={{ width: "248px" }}
-                  >
-                    <Row>
-                      <Col columnSize={["12"]}>
-                        <div className="form-group d-flex flex-nowrap justify-content-between align-items-center mb-0">
-                          <label className="mb-0" htmlFor="max-record-per-page">
-                            Records/page
-                          </label>
-                          <input
-                            id="max-record-per-page"
-                            className="form-control ml-4"
-                            type="number"
-                            value={recordsPerPage}
-                            onChange={(e) => {
-                              setActivePageIndex(1);
-                              e.target.value > 0 && e.target.value !== ""
-                                ? setRecordPerPage(e.target.value)
-                                : setRecordPerPage(1);
-                            }}
-                          />
-                        </div>
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col columnSize={["12"]}>
-                        <div className="form-group d-flex flex-nowrap justify-content-between align-items-center mb-0">
-                          <label
-                            className="mb-0"
-                            htmlFor="go-to-page"
-                            style={{ whiteSpace: "nowrap" }}
-                          >
-                            Go to page
-                          </label>
-                          <input
-                            id="go-to-page"
-                            className="form-control ml-4"
-                            type="number"
-                            placeholder={activePageIndex}
-                            onChange={(e) => {
-                              const { value } = e.target;
-                              if (value) {
-                                if (parseInt(value) < 1) {
-                                  setActivePageIndex(1);
-                                } else if (parseInt(value) > pageAmount) {
-                                  setActivePageIndex(pageAmount);
-                                } else {
-                                  setActivePageIndex(parseInt(value));
-                                }
-                              } else {
+                  <Row>
+                    <Col columnSize={["12"]}>
+                      <div className="form-group d-flex flex-nowrap justify-content-between align-items-center mb-0">
+                        <label className="mb-0" htmlFor="max-record-per-page">
+                          Records/page
+                        </label>
+                        <input
+                          id="max-record-per-page"
+                          className="form-control ml-4"
+                          type="number"
+                          value={recordsPerPage}
+                          onChange={(e) => {
+                            setActivePageIndex(1);
+                            e.target.value > 0 && e.target.value !== ""
+                              ? setRecordPerPage(e.target.value)
+                              : setRecordPerPage(1);
+                          }}
+                        />
+                      </div>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col columnSize={["12"]}>
+                      <div className="form-group d-flex flex-nowrap justify-content-between align-items-center mb-0">
+                        <label
+                          className="mb-0"
+                          htmlFor="go-to-page"
+                          style={{ whiteSpace: "nowrap" }}
+                        >
+                          Go to page
+                        </label>
+                        <input
+                          id="go-to-page"
+                          className="form-control ml-4"
+                          type="number"
+                          placeholder={activePageIndex}
+                          onChange={(e) => {
+                            const { value } = e.target;
+                            if (value) {
+                              if (parseInt(value) < 1) {
                                 setActivePageIndex(1);
+                              } else if (parseInt(value) > pageAmount) {
+                                setActivePageIndex(pageAmount);
+                              } else {
+                                setActivePageIndex(parseInt(value));
                               }
-                            }}
-                          />
-                        </div>
-                      </Col>
-                    </Row>
-                  </div>
-                </Outclick>
-              </div>
-            </Col>
-          )}
-        </Row>
+                            } else {
+                              setActivePageIndex(1);
+                            }
+                          }}
+                        />
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+              </Outclick>
+            </div>
+          </Col>
+        )}
       </div>
       <div
         className="table-responsive mb-0 border-bottom"
         ref={tableRef}
         style={tableStyle}
       >
-        {recordTableList.length ? (
+        {recordTableInCurrentPage.length ? (
           <table className="table table-sm table-nowrap card-table">
             <thead>
               <tr>
@@ -251,7 +278,7 @@ function Table({
               </tr>
             </thead>
             <tbody className="list">
-              {recordTableList.map((recordData) => (
+              {recordTableInCurrentPage.map((recordData) => (
                 <RowHover
                   key={recordData.rowId}
                   onClick={(e) => handleEditRecord(e, recordData)}
@@ -514,7 +541,7 @@ Table.propTypes = {
    * per element of array must is in order and suitable with fieldList,
    * using ***mapResultToTableData*** of airtable.service.js
    */
-  tableMappedRecords: PropTypes.arrayOf(PropTypes.any).isRequired,
+  mappedRecords: PropTypes.arrayOf(PropTypes.any).isRequired,
   /**
    * Used for editing table that reflect the Airtable database
    * Original records array get from Airtable that haven't mapped

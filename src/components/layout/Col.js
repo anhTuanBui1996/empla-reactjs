@@ -14,7 +14,7 @@ function Col({ columnSize, children, className, style }) {
   return (
     <div
       className={classString}
-      style={{ ...style, paddingTop: "12px", paddingBottom: "12px" }}
+      style={{ paddingTop: "12px", paddingBottom: "12px", ...style }}
     >
       {children}
     </div>

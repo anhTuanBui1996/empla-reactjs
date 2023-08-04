@@ -150,7 +150,7 @@ export const userSlice = createSlice({
           state.error.type = "username";
         }
       })
-      .addCase(retrieveUserInfoWithPassword.rejected, (state, action) => {
+      .addCase(retrieveUserInfoWithPassword.rejected, (state) => {
         state.userInfo = null;
         state.loading = false;
         state.error.message = "Login failed, please try again!";
@@ -185,7 +185,7 @@ export const userSlice = createSlice({
           state.error.type = "request";
         }
       })
-      .addCase(retrieveUserInfoWithToken.rejected, (state, action) => {
+      .addCase(retrieveUserInfoWithToken.rejected, (state) => {
         state.userInfo = null;
         state.loading = false;
         state.isTokenValid = false;
@@ -193,7 +193,7 @@ export const userSlice = createSlice({
         state.error.status = true;
         state.error.type = "request";
       })
-      .addCase(retrieveUserInfo.pending, (state, action) => {
+      .addCase(retrieveUserInfo.pending, (state) => {
         state.userInfo = null;
         state.loading = true;
         state.error.message = "";
@@ -207,14 +207,14 @@ export const userSlice = createSlice({
         state.error.status = false;
         state.error.type = "";
       })
-      .addCase(retrieveUserInfo.rejected, (state, action) => {
+      .addCase(retrieveUserInfo.rejected, (state) => {
         state.userInfo = null;
         state.loading = true;
         state.error.message = "";
         state.error.status = false;
         state.error.type = "Retrieve user information failed!";
       })
-      .addCase(createNewLoginToken.pending, (state, action) => {
+      .addCase(createNewLoginToken.pending, (state) => {
         state.newToken = null;
         state.loading = true;
         state.error.message = "";
@@ -228,20 +228,20 @@ export const userSlice = createSlice({
         state.error.status = false;
         state.error.type = "";
       })
-      .addCase(createNewLoginToken.rejected, (state, action) => {
+      .addCase(createNewLoginToken.rejected, (state) => {
         state.newToken = null;
         state.loading = false;
         state.error.message = "The new login token creation failed!";
         state.error.status = true;
         state.error.type = "token";
       })
-      .addCase(removeToken.pending, (state, action) => {
+      .addCase(removeToken.pending, (state) => {
         state.loading = true;
         state.error.message = "";
         state.error.status = false;
         state.error.type = "";
       })
-      .addCase(removeToken.fulfilled, (state, action) => {
+      .addCase(removeToken.fulfilled, (state) => {
         state.loading = false;
         state.newToken = null;
         state.isTokenValid = false;
@@ -249,7 +249,7 @@ export const userSlice = createSlice({
         state.error.status = false;
         state.error.type = "";
       })
-      .addCase(removeToken.rejected, (state, action) => {
+      .addCase(removeToken.rejected, (state) => {
         state.loading = false;
         state.error.message = "Remove existing token failed!";
         state.error.status = true;

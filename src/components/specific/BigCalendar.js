@@ -3,12 +3,11 @@ import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import PropTypes from "prop-types";
 import Card from "../common/Card";
-import { useSelector } from "react-redux";
-import { selectTimeNow } from "../../features/timeSlice";
 
 const localizer = momentLocalizer(moment);
-function BigCalendar({ title, events }) {
-  const now = useSelector(selectTimeNow);
+function BigCalendar({ title, events, dateSelected }) {
+  const handleNavigate = () => {};
+
   return (
     <Card
       noBodyPadding
@@ -17,9 +16,11 @@ function BigCalendar({ title, events }) {
       }}
       elementList={[
         <Calendar
+          date={dateSelected}
+          onNavigate={handleNavigate}
           defaultView={"week"}
-          views={["month", "week"]}
-          getNow={() => new Date(now)}
+          views={["month", "week", "day"]}
+          getNow={() => new Date()}
           localizer={localizer}
           events={events}
           eventPropGetter={(event) =>
@@ -30,7 +31,7 @@ function BigCalendar({ title, events }) {
           startAccessor="start"
           endAccessor="end"
           style={{
-            height: "697.5px",
+            height: "742.5px",
             width: "100%",
             borderBottom: "1px solid #ddd",
             borderLeft: "1px solid #ddd",

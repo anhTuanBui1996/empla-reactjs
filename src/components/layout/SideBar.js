@@ -188,62 +188,78 @@ function SideBarContent({
                   <>
                     <hr className="dropdown-divider my-3" />
                     <h6 className="navbar-heading px-2">Account</h6>
-                    <NavLink
-                      style={({ isActive }) => {
-                        return {
-                          backgroundColor: isActive ? "#e7e7e7" : "",
-                        };
-                      }}
-                      to="/profile"
-                      className="nav-link d-flex"
-                      onClick={forceCollapse}
-                    >
-                      <IconWrapper>
-                        <MdSupervisorAccount size="25px" />
-                      </IconWrapper>{" "}
-                      Profile
-                    </NavLink>
-                    <NavLink
-                      style={({ isActive }) => {
-                        return {
-                          backgroundColor: isActive ? "#e7e7e7" : "",
-                        };
-                      }}
-                      to="/settings"
-                      className="nav-link d-flex"
-                      onClick={forceCollapse}
-                    >
-                      <IconWrapper>
-                        <MdSettings size="25px" />
-                      </IconWrapper>{" "}
-                      Settings
-                    </NavLink>
-                    <NavLink
-                      style={({ isActive }) => {
-                        return {
-                          backgroundColor: isActive ? "#e7e7e7" : "",
-                        };
-                      }}
-                      to="/notification"
-                      className="nav-link d-flex"
-                      onClick={forceCollapse}
-                    >
-                      <IconWrapper>
-                        <MdNotifications size="25px" />
-                      </IconWrapper>{" "}
-                      Notification
-                    </NavLink>
+                    <li className="nav-item">
+                      <NavLink
+                        style={({ isActive }) => {
+                          return {
+                            backgroundColor: isActive ? "#e7e7e7" : "",
+                          };
+                        }}
+                        to="/profile"
+                        className={`nav-link ${
+                          isPositionFixedAtTop ? "px-3" : "px-4"
+                        }`}
+                        onClick={forceCollapse}
+                      >
+                        <IconWrapper>
+                          <MdSupervisorAccount size="25px" />
+                        </IconWrapper>{" "}
+                        Profile
+                      </NavLink>
+                    </li>
+                    <li className="nav-item">
+                      <NavLink
+                        style={({ isActive }) => {
+                          return {
+                            backgroundColor: isActive ? "#e7e7e7" : "",
+                          };
+                        }}
+                        to="/settings"
+                        className={`nav-link ${
+                          isPositionFixedAtTop ? "px-3" : "px-4"
+                        }`}
+                        onClick={forceCollapse}
+                      >
+                        <IconWrapper>
+                          <MdSettings size="25px" />
+                        </IconWrapper>{" "}
+                        Settings
+                      </NavLink>
+                    </li>
+                    <li className="nav-item">
+                      <NavLink
+                        style={({ isActive }) => {
+                          return {
+                            backgroundColor: isActive ? "#e7e7e7" : "",
+                          };
+                        }}
+                        to="/notification"
+                        className={`nav-link ${
+                          isPositionFixedAtTop ? "px-3" : "px-4"
+                        }`}
+                        onClick={forceCollapse}
+                      >
+                        <IconWrapper>
+                          <MdNotifications size="25px" />
+                        </IconWrapper>{" "}
+                        Notification
+                      </NavLink>
+                    </li>
                     <hr className="dropdown-divider mx-3" />
-                    <Link
-                      to="/login"
-                      className="nav-link d-flex"
-                      onClick={handleLogout}
-                    >
-                      <IconWrapper>
-                        <MdLogout size="25px" />
-                      </IconWrapper>{" "}
-                      Logout
-                    </Link>
+                    <li className="nav-item">
+                      <Link
+                        to="/login"
+                        className={`nav-link ${
+                          isPositionFixedAtTop ? "px-3" : "px-4"
+                        }`}
+                        onClick={handleLogout}
+                      >
+                        <IconWrapper>
+                          <MdLogout size="25px" />
+                        </IconWrapper>{" "}
+                        Logout
+                      </Link>
+                    </li>
                   </>
                 )}
               </IconContext.Provider>

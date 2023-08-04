@@ -15,7 +15,13 @@ import { MdGpsFixed, MdReorder } from "react-icons/md";
 import { GOOGLE } from "../../constants";
 import Dropdown from "../common/Dropdown";
 
-function GoogleMapCard({ title, styleContainer, zoom, dataList }) {
+function GoogleMapCard({
+  title,
+  styleContainer,
+  zoom,
+  dataList,
+  onSelectData,
+}) {
   // hooks
   const { isLoaded, loadError } = useJsApiLoader({
     id: "google-map-script",
@@ -46,6 +52,7 @@ function GoogleMapCard({ title, styleContainer, zoom, dataList }) {
       let notes = item.fields.Notes;
       let createdDate = new Date(item.fields.CreatedDate);
       return {
+        id: item.id,
         location: { lat, lng },
         header,
         title: createdDate.toUTCString(),
@@ -85,6 +92,11 @@ function GoogleMapCard({ title, styleContainer, zoom, dataList }) {
     setLocationList(mappedDataList);
   };
   const handleSelectCheckInItemOnMap = (index) => {
+    let recordData = locationList[index];
+    if (onSelectData) {
+      onSelectData(recordData);
+    }
+
     let { lat, lng } = locationList[index].location;
     handleCloseAllInfoWindow();
     setLocationList((state) => [
@@ -107,6 +119,7 @@ function GoogleMapCard({ title, styleContainer, zoom, dataList }) {
     e.stopPropagation();
     setCloseLocationList(true);
     handleSelectCheckInItemOnMap(index);
+    console.log(locationList[index]);
     setTimeout(() => setCloseLocationList(false), 100);
   };
 
@@ -300,6 +313,7 @@ GoogleMapCard.propTypes = {
       content: PropTypes.string,
     })
   ),
+  onSelectData: PropTypes.func,
 };
 
 export default GoogleMapCard;

@@ -15,7 +15,7 @@ function Search({
   const onKeyPress = (e) => {
     if (e.key === "Enter") {
       if (onSubmit) {
-        onSubmit();
+        onSubmit(value);
         if (value !== "" || value === null || value === undefined) {
           setIsSearching(true);
         } else {
@@ -30,7 +30,7 @@ function Search({
   const onButtonSearchClicked = (e) => {
     e.preventDefault();
     if (onSubmit) {
-      onSubmit();
+      onSubmit(value);
       if (value !== "" || value === null || value === undefined) {
         setIsSearching(true);
       } else {

@@ -51,7 +51,7 @@ function TableEditorCard({ cardLabel, tableInfoArr }) {
         let deleteExisting = slice[tableName].cruds.deleteExistingStaff;
 
         let tableRecords = selectors[tableName].records;
-        let tableMappedRecords = tableRecords
+        let mappedRecords = tableRecords
           ? mapResultToTableData(
               tableRecords,
               tableName,
@@ -74,7 +74,7 @@ function TableEditorCard({ cardLabel, tableInfoArr }) {
           fieldList,
           tableModel,
           tableRecords,
-          tableMappedRecords,
+          mappedRecords,
           isRequiredFields,
           isReadOnlyFields,
           createNew,
@@ -125,12 +125,12 @@ function TableEditorCard({ cardLabel, tableInfoArr }) {
           navList: tableArr.map(({ tableLabel }) => tableLabel),
         }}
         elementList={tableArr.map(
-          ({ tableMetadata, tableRecords, tableMappedRecords, fieldList }) => (
+          ({ tableMetadata, tableRecords, mappedRecords, fieldList }) => (
             <Table
               metadata={tableMetadata}
               fieldList={fieldList}
               originalRecords={tableRecords}
-              tableMappedRecords={tableMappedRecords}
+              mappedRecords={mappedRecords}
               hasSettings
               hasSearching
               onRecordClick={handleOpenRightSideModalForEdit}

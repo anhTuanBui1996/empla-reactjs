@@ -1,9 +1,10 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
 import { selectCheckinTableData } from "../../features/checkinSlice";
 import GoogleMapCard from "./GoogleMapCard";
 
-function CheckInMap() {
+function CheckInMap({ onDataSelected }) {
   const checkinList = useSelector(selectCheckinTableData);
 
   return (
@@ -15,8 +16,13 @@ function CheckInMap() {
       }}
       zoom={20}
       dataList={checkinList}
+      onSelectData={onDataSelected}
     />
   );
 }
+
+CheckInMap.propTypes = {
+  onDataSelected: PropTypes.func,
+};
 
 export default CheckInMap;

@@ -33,6 +33,8 @@ function Checkin() {
     return ["CreatedDate", "Type", "Notes"];
   }, []);
   const [recordList, setRecordList] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(undefined);
+
   const userInfo = useSelector(selectUserInfo);
   const innerWidth = useSelector(selectInnerWidth);
 
@@ -95,14 +97,14 @@ function Checkin() {
   // in the useMemo hook of eventList below
   const eventList = useMemo(() => {
     let newRecordList = [];
-    for (let i = 0; i < sortedRecordList.length; i = i + 2) {
+    for (let i = 0; i < sortedRecordList.length; i += 2) {
       const record = recordList[i];
       const nextRecord = recordList[i + 1];
       if (!nextRecord) break;
-      const createdTimeStart = new Date(record.data[1]);
-      const createdTimeEnd = new Date(nextRecord.data[1]);
-      const checkTypeStart = nextRecord.data[2];
-      const checkTypeEnd = record.data[2];
+      const createdTimeStart = new Date(record.data[0].cellData);
+      const createdTimeEnd = new Date(nextRecord.data[0].cellData);
+      const checkTypeStart = nextRecord.data[1].cellData;
+      const checkTypeEnd = record.data[1].cellData;
       const isWeekendWorking =
         createdTimeStart.getDay() < companySpecific.workingWeekDay.WEEKSTART ||
         createdTimeStart.getDay() > companySpecific.workingWeekDay.WEEKEND
@@ -238,6 +240,17 @@ function Checkin() {
     // eslint-disable-next-line
   }, [sortedRecordList]);
 
+  // Handler
+  const handleRefreshCheckinList = () => {
+    userInfo && dispatch(retrieveCheckinList(userInfo.fields.StaffId));
+  };
+  const handleSelectCheckinDateOnTable = (selectedData) => {
+    setSelectedDate(new Date(selectedData.data[0].cellData));
+  };
+  const handleSelectCheckinDateOnMap = (selectedData) => {
+    setSelectedDate(new Date(selectedData.title));
+  };
+
   return (
     <>
       {loading && <Loader />}
@@ -253,7 +266,11 @@ function Checkin() {
           >
             <Col
               columnSize={["12", "lg-6"]}
-              style={{ display: "flex", flexDirection: "column", gap: "20px" }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "20px",
+              }}
             >
               <Row>
                 <Col columnSize={["12"]}>
@@ -262,11 +279,14 @@ function Checkin() {
               </Row>
               <Row>
                 <Col columnSize={["12"]}>
-                  <CheckInMap />
+                  <CheckInMap onDataSelected={handleSelectCheckinDateOnMap} />
                 </Col>
               </Row>
             </Col>
-            <Col columnSize={["12", "lg-6"]}>
+            <Col
+              columnSize={["12", "lg-6"]}
+              style={{ paddingTop: "24px", paddingBottom: "24px" }}
+            >
               <BigCalendar
                 title={
                   <span className="working-day-summary">
@@ -274,6 +294,7 @@ function Checkin() {
                   </span>
                 }
                 events={eventList}
+                dateSelected={selectedDate}
               />
             </Col>
           </Row>
@@ -300,7 +321,11 @@ function Checkin() {
                   <Table
                     tableName="Checkin"
                     fieldList={fieldList}
-                    tableMappedRecords={recordList}
+                    mappedRecords={recordList}
+                    originalRecords={checkinList}
+                    onRefreshDataBtnClick={handleRefreshCheckinList}
+                    onRecordClick={handleSelectCheckinDateOnTable}
+                    hasSearching
                     hasSettings
                   />,
                 ]}
