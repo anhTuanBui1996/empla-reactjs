@@ -48,9 +48,11 @@ export class InitialStaffDto {
   }
 }
 
-export default {
+const tableEditorData = {
   isReadOnlyFields,
   isRequiredFields,
   clientFormulaMappedFields,
   model: InitialStaffDto,
 };
+
+export default tableEditorData;

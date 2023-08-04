@@ -80,7 +80,7 @@ function RightSideFormModal({
     setFormChanged({ ...formChanged, [v.name]: v.value });
   };
   const handleValidate = () => {
-    return false;
+    return true;
   };
   const handleSubmit = (e) => {
     e.preventDefault();

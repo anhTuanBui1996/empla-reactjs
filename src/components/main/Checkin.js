@@ -301,7 +301,7 @@ function Checkin() {
                     tableName="Checkin"
                     fieldList={fieldList}
                     tableMappedRecords={recordList}
-                    isHasSettings
+                    hasSettings
                   />,
                 ]}
                 noBodyPadding

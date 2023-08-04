@@ -40,9 +40,11 @@ export class InitialRoleDto {
   }
 }
 
-export default {
+const tableEditorData = {
   isReadOnlyFields,
   isRequiredFields,
   clientFormulaMappedFields,
   model: InitialRoleDto,
 };
+
+export default tableEditorData;

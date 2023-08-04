@@ -131,7 +131,8 @@ function TableEditorCard({ cardLabel, tableInfoArr }) {
               fieldList={fieldList}
               originalRecords={tableRecords}
               tableMappedRecords={tableMappedRecords}
-              isHasSettings
+              hasSettings
+              hasSearching
               onRecordClick={handleOpenRightSideModalForEdit}
               onCreateNewBtnClick={handleOpenRightSideModalForCreate}
               onRefreshDataBtnClick={handleClickRefreshButton}

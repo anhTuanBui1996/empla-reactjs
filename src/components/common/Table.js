@@ -9,13 +9,16 @@ import Col from "../layout/Col";
 import Row from "../layout/Row";
 import Dropdown from "./Dropdown";
 import { setSelectedRowData } from "../../features/editorSlice";
+import Search from "./Search";
+import Container from "../layout/Container";
 
 function Table({
   metadata,
   fieldList,
   tableMappedRecords,
   originalRecords,
-  isHasSettings,
+  hasSettings,
+  hasSearching,
   onRecordClick,
   onCreateNewBtnClick,
   onRefreshDataBtnClick,
@@ -27,6 +30,7 @@ function Table({
   const tableRef = useRef(null);
   const innerWidth = useSelector(selectInnerWidth);
 
+  const [searchValue, setSearchValue] = useState("");
   const [activePageIndex, setActivePageIndex] = useState(1);
   const [recordsPerPage, setRecordPerPage] = useState(recordPerPage);
   const pageAmount = useMemo(() => {
@@ -56,7 +60,9 @@ function Table({
     }
   };
 
-  // Effects when trigger page index, page record feature
+  const handleSearchSubmit = () => {};
+
+  // Effects when trigger page index, page record amount feature
   useEffect(() => {
     let currentRecordsOfPage = [];
     tableMappedRecords.forEach((recordData, recordIndex) => {
@@ -114,106 +120,120 @@ function Table({
 
   return (
     <>
-      {isHasSettings && (
-        <Row className="justify-content-between flex-nowrap px-3">
+      <div className="px-4">
+        <Row className="justify-content-between flex-nowrap">
           <Col
             columnSize={["10", "md-auto"]}
             className="d-flex align-items-center py-2"
           >
-            <button
-              className="btn btn-success px-0 py-0 mr-2"
-              style={{ width: "30px", height: "30px" }}
-              onClick={onCreateNewBtnClick}
-            >
-              <MdLibraryAdd size={20} />
-            </button>
-            <button
-              className="btn btn-primary px-0 py-0 mr-2"
-              style={{ width: "30px", height: "30px" }}
-              onClick={onRefreshDataBtnClick}
-            >
-              <MdRefresh size={20} />
-            </button>
-          </Col>
-          <Col
-            columnSize={["auto"]}
-            className="d-flex align-items-center"
-            style={{ height: "52px" }}
-          >
-            <div className="dropdown">
+            {onCreateNewBtnClick && (
               <button
-                className="btn btn-link rounded px-0 py-0"
-                onClick={() => setShowSettings(true)}
+                className="btn btn-success d-flex px-1 py-1 mr-2"
+                style={{ width: "30px", height: "30px" }}
+                onClick={onCreateNewBtnClick}
               >
-                <MdSettings size={20} />
+                <MdLibraryAdd size={20} style={{ margin: "auto" }} />
               </button>
-              <Outclick onOutClick={() => setShowSettings(false)}>
-                <div
-                  className={`shadow dropdown-menu px-3 dropdown-menu-right${
-                    showSettings ? " d-block" : ""
-                  }`}
-                  style={{ width: "248px" }}
-                >
-                  <Row>
-                    <Col columnSize={["12"]}>
-                      <div className="form-group d-flex flex-nowrap justify-content-between align-items-center mb-0">
-                        <label className="mb-0" htmlFor="max-record-per-page">
-                          Records/page
-                        </label>
-                        <input
-                          id="max-record-per-page"
-                          className="form-control ml-4"
-                          type="number"
-                          value={recordsPerPage}
-                          onChange={(e) => {
-                            setActivePageIndex(1);
-                            e.target.value > 0 && e.target.value !== ""
-                              ? setRecordPerPage(e.target.value)
-                              : setRecordPerPage(1);
-                          }}
-                        />
-                      </div>
-                    </Col>
-                  </Row>
-                  <Row>
-                    <Col columnSize={["12"]}>
-                      <div className="form-group d-flex flex-nowrap justify-content-between align-items-center mb-0">
-                        <label
-                          className="mb-0"
-                          htmlFor="go-to-page"
-                          style={{ whiteSpace: "nowrap" }}
-                        >
-                          Go to page
-                        </label>
-                        <input
-                          id="go-to-page"
-                          className="form-control ml-4"
-                          type="number"
-                          placeholder={activePageIndex}
-                          onChange={(e) => {
-                            const { value } = e.target;
-                            if (value) {
-                              if (parseInt(value) < 1) {
-                                setActivePageIndex(1);
-                              } else if (parseInt(value) > pageAmount) {
-                                setActivePageIndex(pageAmount);
-                              } else {
-                                setActivePageIndex(parseInt(value));
-                              }
-                            } else {
-                              setActivePageIndex(1);
-                            }
-                          }}
-                        />
-                      </div>
-                    </Col>
-                  </Row>
-                </div>
-              </Outclick>
-            </div>
+            )}
+            {onRefreshDataBtnClick && (
+              <button
+                className="btn btn-primary d-flex px-1 py-1 mr-2"
+                style={{ width: "30px", height: "30px" }}
+                onClick={onRefreshDataBtnClick}
+              >
+                <MdRefresh size={20} />
+              </button>
+            )}
+            {hasSearching && (
+              <Search
+                placeholder="Search..."
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                onSubmit={handleSearchSubmit}
+              />
+            )}
           </Col>
+          {hasSettings && (
+            <Col
+              columnSize={["auto"]}
+              className="d-flex align-items-center"
+              style={{ height: "52px" }}
+            >
+              <div className="dropdown">
+                <button
+                  className="btn btn-link rounded px-0 py-0"
+                  onClick={() => setShowSettings(true)}
+                >
+                  <MdSettings size={20} />
+                </button>
+                <Outclick onOutClick={() => setShowSettings(false)}>
+                  <div
+                    className={`shadow dropdown-menu px-3 dropdown-menu-right${
+                      showSettings ? " d-block" : ""
+                    }`}
+                    style={{ width: "248px" }}
+                  >
+                    <Row>
+                      <Col columnSize={["12"]}>
+                        <div className="form-group d-flex flex-nowrap justify-content-between align-items-center mb-0">
+                          <label className="mb-0" htmlFor="max-record-per-page">
+                            Records/page
+                          </label>
+                          <input
+                            id="max-record-per-page"
+                            className="form-control ml-4"
+                            type="number"
+                            value={recordsPerPage}
+                            onChange={(e) => {
+                              setActivePageIndex(1);
+                              e.target.value > 0 && e.target.value !== ""
+                                ? setRecordPerPage(e.target.value)
+                                : setRecordPerPage(1);
+                            }}
+                          />
+                        </div>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col columnSize={["12"]}>
+                        <div className="form-group d-flex flex-nowrap justify-content-between align-items-center mb-0">
+                          <label
+                            className="mb-0"
+                            htmlFor="go-to-page"
+                            style={{ whiteSpace: "nowrap" }}
+                          >
+                            Go to page
+                          </label>
+                          <input
+                            id="go-to-page"
+                            className="form-control ml-4"
+                            type="number"
+                            placeholder={activePageIndex}
+                            onChange={(e) => {
+                              const { value } = e.target;
+                              if (value) {
+                                if (parseInt(value) < 1) {
+                                  setActivePageIndex(1);
+                                } else if (parseInt(value) > pageAmount) {
+                                  setActivePageIndex(pageAmount);
+                                } else {
+                                  setActivePageIndex(parseInt(value));
+                                }
+                              } else {
+                                setActivePageIndex(1);
+                              }
+                            }}
+                          />
+                        </div>
+                      </Col>
+                    </Row>
+                  </div>
+                </Outclick>
+              </div>
+            </Col>
+          )}
         </Row>
-      )}
+      </div>
       <div
         className="table-responsive mb-0 border-bottom"
         ref={tableRef}
@@ -510,7 +530,8 @@ Table.propTypes = {
       id: PropTypes.string,
     })
   ),
-  isHasSettings: PropTypes.bool,
+  hasSettings: PropTypes.bool,
+  hasSearching: PropTypes.bool,
   onRecordClick: PropTypes.func,
   onCreateNewBtnClick: PropTypes.func,
   onRefreshDataBtnClick: PropTypes.func,

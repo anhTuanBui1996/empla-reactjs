@@ -21,7 +21,6 @@ function FileUploader({
   onDrop,
 }) {
   const [componentAvailable, setComponentAvailable] = useState(true);
-  const [isImagePreviewLoaded, setIsImagePreviewLoaded] = useState(false);
   const dispatch = useDispatch();
   const formSubmit = useSelector(selectFormSubmit);
 
@@ -101,8 +100,8 @@ function FileUploader({
       while (newFiles.length > maxFiles) {
         newFiles.shift();
       }
-      setDisplayFiles(newFiles);
     }
+    setDisplayFiles(newFiles);
     // eslint-disable-next-line
   }, [existedFiles, localFiles]);
 
@@ -114,7 +113,7 @@ function FileUploader({
           let id = file.id;
           let thumbnails = Object.values(file.thumbnails);
           let fileType = file.type;
-          if (!id) {
+          if (!id && !fileType.startsWith("image/")) {
             // file on local
             let srcImg = thumbnailForType[fileType];
             if (srcImg) {
@@ -163,7 +162,6 @@ function FileUploader({
                       className="image-previewer avatar-img rounded w-100"
                       src={imagePreviews[currentFileDisplayIndex]}
                       alt="previewer"
-                      onLoadCapture={() => setIsImagePreviewLoaded(true)}
                     />
                     <ImageHover tabIndex={tabIndex} className="hover-blur">
                       Change attachment file
