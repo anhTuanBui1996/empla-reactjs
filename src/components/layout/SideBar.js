@@ -141,9 +141,8 @@ function SideBarContent({
             overflowY: innerWidth <= 767 ? "auto" : "",
           }}
         >
-          <form className="mb-3 d-md-flex">
+          <form className={`mb-3 d-md-flex${isPositionFixedAtTop ? "" : " px-4"}`}>
             <Search
-              className={`${isPositionFixedAtTop ? "" : "px-4"}`}
               placeholder="Search..."
             />
           </form>

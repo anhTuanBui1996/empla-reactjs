@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { MdSearch, MdSend } from "react-icons/md";
+import { MdClose, MdSearch, MdSend } from "react-icons/md";
 import PropTypes from "prop-types";
+import styled from "styled-components";
 
 function Search({
   className,
@@ -8,6 +9,7 @@ function Search({
   value,
   placeholder,
   onChange,
+  onClear,
   onSubmit,
   style,
 }) {
@@ -15,14 +17,13 @@ function Search({
   const onKeyPress = (e) => {
     if (e.key === "Enter") {
       if (onSubmit) {
-        onSubmit(value);
-        if (value !== "" || value === null || value === undefined) {
+        onSubmit();
+        if (value !== "") {
           setIsSearching(true);
         } else {
           setIsSearching(false);
         }
       } else {
-        e.preventDefault();
         return false;
       }
     }
@@ -30,15 +31,21 @@ function Search({
   const onButtonSearchClicked = (e) => {
     e.preventDefault();
     if (onSubmit) {
-      onSubmit(value);
-      if (value !== "" || value === null || value === undefined) {
+      onSubmit();
+      if (value !== "") {
         setIsSearching(true);
       } else {
         setIsSearching(false);
       }
     } else {
-      e.preventDefault();
       return false;
+    }
+  };
+  const onClearButtonClicked = (e) => {
+    e.preventDefault();
+    if (onClear) {
+      onClear();
+      setIsSearching(false);
     }
   };
   return (
@@ -50,12 +57,13 @@ function Search({
     >
       <input
         type="text"
-        className={` search form-control form-control-rounded form-control-prepended form-control-appended${
+        className={`search-menu form-control form-control-rounded form-control-prepended form-control-appended${
           noBorder ? " border-0" : ""
-        } ${isSearching ? " border-primary" : ""}`}
+        } ${isSearching ? " border-primary" : ""} pr-4`}
         placeholder={placeholder}
         onChange={onChange}
         onKeyPress={onKeyPress}
+        onBlur={onButtonSearchClicked}
         value={value}
         autoComplete="off"
       />
@@ -71,11 +79,14 @@ function Search({
           <MdSearch size={20} color={`${isSearching ? "#fff" : ""}`} />
         </div>
       </div>
+      <ClearButton onClick={onClearButtonClicked}>
+        <MdClose size={20} />
+      </ClearButton>
       <div className="input-group-append">
         <div
-          className={`input-group-text pl-3 ${noBorder ? " border-0" : ""} ${
-            isSearching ? " border-primary" : ""
-          }`}
+          className={`btn btn-light input-group-text pl-3 ${
+            noBorder ? " border-0" : ""
+          } ${isSearching ? " border-primary" : ""}`}
           style={{
             cursor: "pointer",
             backgroundColor: isSearching ? "#2c7be5" : "",
@@ -101,8 +112,27 @@ Search.propTypes = {
   noBorder: PropTypes.bool,
   placeholder: PropTypes.string,
   onChange: PropTypes.func,
+  onClear: PropTypes.func,
   onSubmit: PropTypes.func,
   style: PropTypes.object,
 };
+
+const ClearButton = styled.button`
+  line-height: 1;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 50px;
+  padding: 0 !important;
+  color: #ff1919e7 !important;
+  border-radius: 4px;
+  border: none;
+  background: none;
+  z-index: 4;
+  :hover {
+    background-color: #ff1919e7 !important;
+    color: #fff !important;
+  }
+`;
 
 export default Search;

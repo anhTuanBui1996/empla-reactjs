@@ -65,24 +65,29 @@ function Table({
       onRecordClick(recordSelectedForEdit);
     }
   };
-  const handleSearchSubmit = (val) => {
-    if (val) {
+  const handleChangeSearchValue = (e) => setSearchValue(e.target.value);
+  const handleSearchSubmit = () => {
+    if (searchValue) {
       let filteredRecords = tableMappedRecords.filter((record) => {
         let dataArr = record.data;
         for (const dataItem of dataArr) {
           let { cellData } = dataItem;
-          console.log(cellData);
-          // if (typeof cellData === "string") {
-          //   if (cellData.contains(val)) {
-          //     return true;
-          //   }
-          // }
+          if (typeof cellData === "string") {
+            if (cellData.includes(searchValue) || searchValue === "") {
+              return true;
+            }
+          }
         }
         return false;
       });
       setTableMappedRecords(filteredRecords);
+    } else {
+      setTableMappedRecords(mappedRecords);
     }
   };
+  const handleClearSearchResult = () => {
+    setSearchValue("");
+  }
 
   // Add feature tracking method here
   // Effects when trigger feature
@@ -142,6 +147,14 @@ function Table({
     setTableMappedRecords(mappedRecords);
   }, [mappedRecords]);
 
+  // Auto submit search again if search value empty
+  useEffect(() => {
+    if (searchValue === "" || searchValue === null || searchValue === undefined) {
+      handleSearchSubmit();
+    }
+    // eslint-disable-next-line
+  }, [searchValue])
+
   // Get cardWidth when windowWidth change and set pagination alignment
   useEffect(() => {
     tableRef.current && tableRef.current.clientWidth < 435
@@ -177,8 +190,9 @@ function Table({
           <Search
             placeholder="Search..."
             value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
+            onChange={handleChangeSearchValue}
             onSubmit={handleSearchSubmit}
+            onClear={handleClearSearchResult}
           />
         )}
         {hasSettings && (
