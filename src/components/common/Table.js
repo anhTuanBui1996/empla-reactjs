@@ -1,6 +1,12 @@
 import PropTypes from "prop-types";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { MdLibraryAdd, MdRefresh, MdSettings } from "react-icons/md";
+import {
+  MdKeyboardArrowDown,
+  MdKeyboardArrowUp,
+  MdLibraryAdd,
+  MdRefresh,
+  MdSettings,
+} from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import { selectInnerWidth } from "../../features/windowSlice";
@@ -34,7 +40,7 @@ function Table({
   const [recordTableInCurrentPage, setRecordTableInCurrentPage] =
     useState(tableMappedRecords);
 
-  // Searching and pagigation
+  // Searching and pagigation state
   const [searchValue, setSearchValue] = useState("");
   const [activePageIndex, setActivePageIndex] = useState(1);
   const [recordsPerPage, setRecordPerPage] = useState(recordPerPage);
@@ -48,6 +54,9 @@ function Table({
     pageStart: false,
     pageEnd: false,
   });
+
+  // Sorting state
+  const [sorting, setSorting] = useState([]);
 
   // Table settings state
   const [showSettings, setShowSettings] = useState(false);
@@ -87,7 +96,44 @@ function Table({
   };
   const handleClearSearchResult = () => {
     setSearchValue("");
-  }
+  };
+  const handleSortingRecords = (i) => {
+    let selectedField = sorting.find((item) => item.index === i);
+    if (selectedField) {
+      switch (selectedField.fieldSort) {
+        case "ascending":
+          setSorting(
+            sorting.map((sortItem) => {
+              if (sortItem.index === i) {
+                return {
+                  index: i,
+                  fieldSort: "descending",
+                };
+              }
+              return sortItem;
+            })
+          );
+          break;
+        case "descending":
+          setSorting(
+            sorting.map((sortItem) => {
+              if (sortItem.index === i) {
+                return {
+                  index: i,
+                  fieldSort: "ascending",
+                };
+              }
+              return sortItem;
+            })
+          );
+          break;
+        default:
+          break;
+      }
+    } else {
+      setSorting([...sorting, { index: i, fieldSort: "ascending" }]);
+    }
+  };
 
   // Add feature tracking method here
   // Effects when trigger feature
@@ -95,6 +141,57 @@ function Table({
   // - page record amount
   useEffect(() => {
     let currentRecordsOfPage = [];
+    // Sort the records
+    tableMappedRecords.sort((a, b) => {
+      let firstRowData = a.data;
+      let secondRowData = b.data;
+      sorting.forEach((sortItem) => {
+        let { index, fieldSort } = sortItem;
+        let { cellData: firstCellData, dataType } = firstRowData[index];
+        let secondCellData = secondRowData[index];
+        if (fieldSort === "ascending") {
+          switch (dataType) {
+            case "singleLineText":
+              firstCellData.localeCompare(secondCellData);
+              break;
+            case "multilineText":
+              break;
+            case "singleSelect":
+              break;
+            case "email":
+              break;
+            case "multipleSelect":
+              break;
+            case "longText":
+              break;
+            case "multipleAttachments":
+              break;
+            case "date":
+              break;
+            case "dateTime":
+              break;
+            case "createdTime":
+              break;
+            case "lastModifiedTime":
+              break;
+            case "checkbox":
+              break;
+            case "multipleLookupValues":
+              break;
+            case "formula":
+              break;
+            case "multipleRecordLinks":
+              // list of linked record, rarely used...
+              break;
+            default:
+              console.error("Error while sorting table", dataType);
+              break;
+          }
+        } else {
+        }
+      });
+    });
+    // Display records for current page index
     tableMappedRecords.forEach((recordData, recordIndex) => {
       const recordIndexMin = recordsPerPage * (activePageIndex - 1);
       const recordIndexMax = recordsPerPage * activePageIndex - 1;
@@ -140,20 +237,24 @@ function Table({
       return newState;
     });
     // eslint-disable-next-line
-  }, [tableMappedRecords, recordsPerPage, activePageIndex]);
+  }, [tableMappedRecords, recordsPerPage, activePageIndex, sorting]);
 
-  // Changes original mapped record handler
+  // Reset search value effect
   useEffect(() => {
     setTableMappedRecords(mappedRecords);
   }, [mappedRecords]);
 
   // Auto submit search again if search value empty
   useEffect(() => {
-    if (searchValue === "" || searchValue === null || searchValue === undefined) {
+    if (
+      searchValue === "" ||
+      searchValue === null ||
+      searchValue === undefined
+    ) {
       handleSearchSubmit();
     }
     // eslint-disable-next-line
-  }, [searchValue])
+  }, [searchValue]);
 
   // Get cardWidth when windowWidth change and set pagination alignment
   useEffect(() => {
@@ -287,6 +388,32 @@ function Table({
                 {fieldList.map((fieldItem, i) => (
                   <th style={{ minWidth: 160 }} key={i}>
                     <span className="text-muted">{fieldItem}</span>
+                    <div
+                      className="position-relative d-inline ml-2"
+                      style={{
+                        cursor: "pointer",
+                      }}
+                      onClick={() => handleSortingRecords(i)}
+                    >
+                      <MdKeyboardArrowUp
+                        style={{
+                          position: "absolute",
+                          top: -6,
+                        }}
+                        size={15}
+                        color={`${sorting[i] === "ascending" ? "#2c7be5" : ""}`}
+                      />
+                      <MdKeyboardArrowDown
+                        style={{
+                          position: "absolute",
+                          top: 4,
+                        }}
+                        size={15}
+                        color={`${
+                          sorting[i] === "descending" ? "#2c7be5" : ""
+                        }`}
+                      />
+                    </div>
                   </th>
                 ))}
               </tr>
