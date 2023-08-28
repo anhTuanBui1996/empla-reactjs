@@ -273,7 +273,7 @@ function GoogleMapCard({
 
 const CurrentPositionToggle = styledComponents.button`
   position: absolute;
-  z-index: 10;
+  z-index: 1;
   width: 40px;
   height: 40px;
   display: flex;

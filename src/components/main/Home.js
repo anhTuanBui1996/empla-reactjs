@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { selectLoading } from "../../features/checkinSlice";
+import { selectLoading } from "../../features/tables/checkinSlice";
 import { selectUserInfo } from "../../features/userSlice";
 import Loader from "../common/Loader";
 import useTimeCounter from "../hooks/useTimeCounter";

@@ -23,7 +23,7 @@ import Search from "../common/Search";
 import { selectInnerWidth } from "../../features/windowSlice";
 import Outclick from "../../hoc/Outclick";
 import avatarDummy from "../../assets/images/avatar-dummy.png";
-import { createNewLog } from "../../features/logsSlice";
+import { createNewLog } from "../../features/tables/logsSlice";
 import { useToasts } from "react-toast-notifications";
 import { browserDetect } from "../../utils/userAgentUtils";
 
@@ -143,6 +143,7 @@ function SideBarContent({
         >
           <form className={`mb-3 d-md-flex${isPositionFixedAtTop ? "" : " px-4"}`}>
             <Search
+              id={`sidebar-search`}
               placeholder="Search..."
             />
           </form>

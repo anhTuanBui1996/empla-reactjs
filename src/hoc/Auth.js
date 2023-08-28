@@ -14,7 +14,7 @@ import {
   setLastRoute,
 } from "../features/userSlice";
 import { useLocation, useNavigate } from "react-router";
-import { createNewLog } from "../features/logsSlice";
+import { createNewLog } from "../features/tables/logsSlice";
 import { useToasts } from "react-toast-notifications";
 import { browserDetect } from "../utils/userAgentUtils";
 import Loader from "../components/common/Loader";

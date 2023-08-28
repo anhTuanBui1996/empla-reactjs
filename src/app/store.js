@@ -2,11 +2,11 @@ import { configureStore } from "@reduxjs/toolkit";
 import userReducer from "./../features/userSlice";
 import windowReducer from "./../features/windowSlice";
 import timeReducer from "../features/timeSlice";
-import staffReducer from "../features/staffSlice";
-import checkinReducer from "../features/checkinSlice";
+import staffReducer from "../features/tables/staffSlice";
+import checkinReducer from "../features/tables/checkinSlice";
 import geolocationSlice from "../features/geolocationSlice";
-import roleSlice from "../features/roleSlice";
-import logsSlice from "../features/logsSlice";
+import roleSlice from "../features/tables/roleSlice";
+import logsSlice from "../features/tables/logsSlice";
 import metadataSlice from "../features/metadataSlice";
 import editorSlice from "../features/editorSlice";
 

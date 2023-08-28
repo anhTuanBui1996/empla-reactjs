@@ -85,6 +85,7 @@ function ReactCalendar(props) {
           onClick={() => {
             setShowPickerBox(true);
           }}
+          onBlur={props.onBlur}
           isReadOnly={props.isReadOnly}
           readOnly
         />
@@ -164,6 +165,7 @@ const DatePickerPopper = styled.div`
   z-index: 3000;
 `;
 const DateClearButton = styled.button`
+  z-index: 100;
   line-height: 1;
   position: absolute;
   top: 50%;

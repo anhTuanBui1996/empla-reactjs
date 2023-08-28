@@ -1,31 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
-import useAutoGenerate from "../hooks/useAutoGenerate";
 
-function CustomSwitch({ tabIndex, inputValue, onSwitchChange }) {
-  const [toggleId, setToggleId] = useState("");
-  const generate = useAutoGenerate();
-  /* eslint-disable */
-  useEffect(() => {
-    setToggleId(generate(5));
-  }, []);
+function CustomSwitch({ id, tabIndex, inputValue, onSwitchChange }) {
   return (
-    <CustomSwitchWrapper className="custom-control custom-switch">
+    <CustomSwitchWrapper
+      className="custom-control custom-switch"
+      onClick={onSwitchChange}
+    >
       <input
         tabIndex={tabIndex}
         type="checkbox"
         className="custom-control-input"
-        id={`customSwitch_${toggleId}`}
+        id={id}
         checked={inputValue ? true : false}
-        onChange={(e) => {
-          onSwitchChange(e.target.checked);
-        }}
+        readOnly
       />
-      <CustomLabel
-        className="custom-control-label"
-        htmlFor={`customSwitch_${toggleId}`}
-      />
+      <CustomLabel className="custom-control-label" htmlFor={id} />
     </CustomSwitchWrapper>
   );
 }
@@ -42,6 +33,7 @@ const CustomLabel = styled.label`
 `;
 
 CustomSwitch.propTypes = {
+  id: PropTypes.string,
   tabIndex: PropTypes.number,
   inputValue: PropTypes.bool,
   onSwitchChange: PropTypes.func.isRequired,

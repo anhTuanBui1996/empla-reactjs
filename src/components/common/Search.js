@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import styled from "styled-components";
 
 function Search({
+  id,
   className,
   noBorder,
   value,
@@ -56,6 +57,7 @@ function Search({
       style={style}
     >
       <input
+        id={id}
         type="text"
         className={`search-menu form-control form-control-rounded form-control-prepended form-control-appended${
           noBorder ? " border-0" : ""
@@ -101,6 +103,7 @@ function Search({
 }
 
 Search.propTypes = {
+  id: PropTypes.string,
   className: PropTypes.string,
   dataType: PropTypes.oneOf([
     "singleLineText",

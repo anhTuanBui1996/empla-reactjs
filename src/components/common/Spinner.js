@@ -1,8 +1,8 @@
 import React from "react";
-import { SpinnerCircular } from "spinners-react";
+import { SpinnerDotted } from "spinners-react";
 
 function Spinner({ size, color }) {
-  return <SpinnerDiamond size={size} color={color} className="mx-2" />;
+  return <SpinnerDotted size={size} color={color} className="mx-2" />;
 }
 
 export default Spinner;

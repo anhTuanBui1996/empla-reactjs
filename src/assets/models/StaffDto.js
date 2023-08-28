@@ -1,23 +1,35 @@
 // define the data object that used for display and upload to airtable
 
+import { retrieveAllData } from "../../services/airtable.service";
 import convertFullNameToUsername from "../../utils/convertToUsername";
 
 export const isRequiredFields = [
   "FullName",
   "Gender",
   "DateOfBirth",
-  "RoleType",
-  "Company",
+  "Role",
+  "Collaboratory",
+  "WorkingPlace",
 ];
+
+// read only field on client, that can be generate from other fields
 export const isReadOnlyFields = ["Username"];
 // auto generate field on client
 export const clientFormulaMappedFields = [
   {
     sourceField: "FullName",
     mappedField: "Username",
-    generateFunction: convertFullNameToUsername,
+    generateFunction: async (fullName) => {
+      let convertedUsername = convertFullNameToUsername(fullName);
+      let resultUsername = await retrieveAllData(
+        "Staff",
+        `NOT(SEARCH("${convertedUsername}", {Username}) = "") `
+      );
+      console.log(resultUsername);
+    },
   },
 ];
+
 export class InitialStaffDto {
   // form for Staff table
   constructor(fieldData) {
@@ -45,6 +57,17 @@ export class InitialStaffDto {
     this.Password = fieldData?.Password;
     this.AccountStatus = fieldData?.AccountStatus;
     this.Avatar = fieldData?.Avatar;
+    this.Collaboratory = fieldData?.Collaboratory;
+    this.Role = fieldData?.Role;
+    this.Checkin = fieldData?.Checkin;
+    this.WorkingPlace = fieldData?.WorkingPlace;
+    this["Tasks (AssignedTo)"] = fieldData
+      ? fieldData["Tasks (AssignedTo)"]
+      : undefined;
+    this["Tasks (Supervisor)"] = fieldData
+      ? fieldData["Tasks (Supervisor)"]
+      : undefined;
+    this.Tokens = fieldData?.Tokens;
   }
 }
 

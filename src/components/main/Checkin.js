@@ -17,7 +17,7 @@ import {
   selectError,
   selectIsSuccess,
   selectLoading,
-} from "../../features/checkinSlice";
+} from "../../features/tables/checkinSlice";
 import QuickCheckinCard from "../specific/QuickCheckinCard";
 import BigCalendar from "../specific/BigCalendar";
 import { MdArticle, MdSummarize, MdTableView } from "react-icons/md";

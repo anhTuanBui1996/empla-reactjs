@@ -7,10 +7,7 @@ function Outclick({ children, onOutClick }) {
     const handleOutClick = (e) => {
       e.stopPropagation();
       const { target } = e;
-      if (
-        !outClickRef.current.contains(target) &&
-        !document.getElementById("__filestack-picker")
-      ) {
+      if (!outClickRef.current.contains(target)) {
         onOutClick();
       }
     };

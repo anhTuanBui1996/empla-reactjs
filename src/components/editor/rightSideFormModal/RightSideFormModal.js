@@ -22,6 +22,9 @@ import TextArea from "./FormControl/TextArea";
 import DatePicker from "./FormControl/DatePicker";
 import FilePicker from "./FormControl/FilePicker";
 import FormSelect from "./FormControl/FormSelect";
+import LookUpValues from "./FormControl/LookUpValues";
+import CheckBox from "./FormControl/CheckBox";
+import LinkRecordPicker from "./FormControl/LinkRecordPicker";
 
 function RightSideFormModal({
   formName, // table name of Airtable
@@ -79,13 +82,14 @@ function RightSideFormModal({
   const handleFormControlValueChanged = (v) => {
     setFormChanged({ ...formChanged, [v.name]: v.value });
   };
-  const handleValidate = () => {
+  const handleValidateBeforeSubmit = () => {
+    console.log(formChanged, formSubmit);
     return true;
   };
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(formChanged, formSubmit);
-    if (handleValidate()) {
+    if (handleValidateBeforeSubmit()) {
+      // submit action
       if (onFormSubmitted) {
         onFormSubmitted();
       }
@@ -93,6 +97,10 @@ function RightSideFormModal({
   };
   const handleDelete = (e) => {
     e.preventDefault();
+    // delete action
+    if (onFormSubmitted) {
+      onFormSubmitted();
+    }
   };
 
   return (
@@ -121,7 +129,7 @@ function RightSideFormModal({
           setFormControlValueChanged={handleFormControlValueChanged}
         />
         <hr className="navbar-divider" />
-        <Row className="justify-content-center mt-5">
+        <Row className="justify-content-center mt-3">
           <Col columnSize={["12"]}>
             <Button
               bgHoverColor="#0049c7"
@@ -313,8 +321,50 @@ const FormContent = ({
           />
         );
         break;
+      case "checkbox":
+        formControl = (
+          <CheckBox
+            key={i}
+            tabIndex={i + 1}
+            table={formName}
+            name={fieldName}
+            label={fieldLable}
+            value={fieldValue}
+            onValueChange={setFormControlValueChanged}
+          />
+        );
+        break;
+      case "multipleLookupValues":
+        formControl = (
+          <LookUpValues
+            key={i}
+            tabIndex={i + 1}
+            table={formName}
+            name={fieldName}
+            label={fieldLable}
+            value={fieldValue}
+            fieldMetadata={fieldMetadata}
+          />
+        );
+        break;
+      case "multipleRecordLinks":
+        formControl = (
+          <LinkRecordPicker
+            key={i}
+            tabIndex={i + 1}
+            table={formName}
+            name={fieldName}
+            label={fieldLable}
+            value={fieldValue}
+            onValueChange={setFormControlValueChanged}
+            fieldMetadata={fieldMetadata}
+            isRequired={isRequiredField}
+            readOnly={isReadOnlyField}
+          />
+        );
+        break;
       default:
-        // console.error(`New field type detected: ${fieldType}`);
+        console.error(`New field type detected: ${fieldType} (${fieldName})`);
         break;
     }
 

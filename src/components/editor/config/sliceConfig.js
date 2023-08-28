@@ -1,4 +1,4 @@
-import { staffSliceForTableEditor } from "../../../features/staffSlice";
+import { staffSliceForTableEditor } from "../../../features/tables/staffSlice";
 
 const slice = {
   Staff: staffSliceForTableEditor,

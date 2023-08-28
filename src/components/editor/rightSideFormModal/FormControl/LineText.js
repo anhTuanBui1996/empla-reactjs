@@ -114,12 +114,14 @@ export default function LineText({
                 borderBottomRightRadius: "0.375rem",
               }}
             >
-              <MdRemoveRedEye
-                size={20}
-                onClick={() => setIsShowPassword(!isShowPassword)}
-                style={{ cursor: "pointer" }}
-                color={!isShowPassword ? "#1e81b0" : ""}
-              />
+              {isPassword && (
+                <MdRemoveRedEye
+                  size={20}
+                  onClick={() => setIsShowPassword(!isShowPassword)}
+                  style={{ cursor: "pointer" }}
+                  color={!isShowPassword ? "#1e81b0" : ""}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -130,7 +132,7 @@ export default function LineText({
           autoComplete="off"
           ref={inputRef}
           name={name}
-          className="form-control"
+          className={`form-control${readOnly ? " bg-light" : ""}`}
           disabled={readOnly}
           type="text"
           value={displayValue}

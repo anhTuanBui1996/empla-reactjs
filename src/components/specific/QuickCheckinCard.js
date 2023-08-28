@@ -12,7 +12,7 @@ import {
   createNewCheckin,
   retrieveCheckinList,
   setNewCheckinData,
-} from "../../features/checkinSlice";
+} from "../../features/tables/checkinSlice";
 import Card from "../common/Card";
 import Col from "../layout/Col";
 import Row from "../layout/Row";

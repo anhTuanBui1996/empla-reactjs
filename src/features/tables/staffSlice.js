@@ -4,7 +4,7 @@ import {
   deleteRecord,
   retrieveAllData,
   updateRecord,
-} from "../services/airtable.service";
+} from "../../services/airtable.service";
 
 const initialState = {
   loading: false,

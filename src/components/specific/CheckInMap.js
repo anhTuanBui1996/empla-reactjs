@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { useSelector } from "react-redux";
-import { selectCheckinTableData } from "../../features/checkinSlice";
+import { selectCheckinTableData } from "../../features/tables/checkinSlice";
 import GoogleMapCard from "./GoogleMapCard";
 
 function CheckInMap({ onDataSelected }) {

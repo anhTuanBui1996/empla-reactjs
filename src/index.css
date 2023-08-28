@@ -2,11 +2,11 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: 'Readex Pro', sans-serif;
+  font-family: "Readex Pro", sans-serif;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
 
@@ -35,6 +35,25 @@ ul {
   position: relative;
   z-index: 0;
   opacity: 1;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  background: none;
+  width: 6px;
+  height: 6px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  visibility: hidden;
+}
+
+/* Handle on hover */
+*:hover::-webkit-scrollbar-thumb, ::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 124, 124, 0.815);
+  visibility: visible;
 }
 
 @media only screen and (max-width: 767px) {

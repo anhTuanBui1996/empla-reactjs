@@ -9,7 +9,7 @@ import { useSelector } from "react-redux";
 import BirthdayScheduler from "../specific/BirthdayScheduler";
 import { MdCelebration } from "react-icons/md";
 import TableEditorCard from "../editor/TableEditorCard";
-import { selectStaffTableData } from "../../features/staffSlice";
+import { selectStaffTableData } from "../../features/tables/staffSlice";
 
 function Staff() {
   const staff_retrieveResult = useSelector(selectStaffTableData);
@@ -63,7 +63,6 @@ function Staff() {
                       "Username",
                       "Domain",
                       "Account",
-                      "Password",
                       "Avatar",
                       "CreatedTime",
                       "LastModifiedTime",

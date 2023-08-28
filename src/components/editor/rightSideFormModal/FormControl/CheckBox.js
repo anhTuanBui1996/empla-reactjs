@@ -1,10 +1,10 @@
 import { useDispatch, useSelector } from "react-redux";
-import CustomSwitch from "../../../common/CustomSwitch";
 import PropTypes from "prop-types";
 import {
   selectFormSubmit,
   setFormSubmit,
 } from "../../../../features/editorSlice";
+import { useState, useRef } from "react";
 
 export default function CheckBox({
   tabIndex,
@@ -14,6 +14,7 @@ export default function CheckBox({
   value,
   onValueChange,
 }) {
+  const labelRef = useRef(null);
   const dispatch = useDispatch();
   const formSubmit = useSelector(selectFormSubmit);
   const [displayValue, setDisplayValue] = useState(value);
@@ -36,12 +37,21 @@ export default function CheckBox({
     }
   };
   return (
-    <div id={`CheckBox_${table}_${name}`} className="form-control">
-      {label}
-      <CustomSwitch
+    <div id={`CheckBox_${table}_${name}`} className="form-group">
+      <label
+        htmlFor={`CheckBox_${table}_${name}`}
+        ref={labelRef}
+        style={{ display: "inline-block", marginBottom: "0.5rem" }}
+      >
+        {`${label} `}
+      </label>
+      <input
+        className="ml-3"
+        id={`CheckBox_${table}_${name}`}
+        type="checkbox"
         tabIndex={tabIndex}
-        inputValue={displayValue}
-        onSwitchChange={onSwitchChange}
+        checked={displayValue ? true : false}
+        onChange={onSwitchChange}
       />
     </div>
   );

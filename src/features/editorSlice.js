@@ -5,7 +5,7 @@ const initialState = {
   formData: null, // { <fieldName>: <fieldValue> } : Initial<TableName>Form
   formError: null, // { hasError: <boolean>, fieldError: <fieldName>, errorMsg: <string> }
   formSubmit: null, // { <fieldName>: <fieldValue> } object that use to submit to Airtable
-  formClientFormular: []
+  formClientFormular: [],
 };
 
 export const editorSlice = createSlice({

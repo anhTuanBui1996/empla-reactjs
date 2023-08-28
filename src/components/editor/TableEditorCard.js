@@ -11,7 +11,9 @@ import { selectMetadata } from "../../features/metadataSlice";
 import { useEffect } from "react";
 import { MdArticle, MdTableView } from "react-icons/md";
 
-// remmember importing new Dto/slices if having any changes in Airtable schema
+/**
+ * Remmember importing new Dto/slices if having any changes in Airtable schema
+ */
 function TableEditorCard({ cardLabel, tableInfoArr }) {
   const dispatch = useDispatch();
 
@@ -125,14 +127,16 @@ function TableEditorCard({ cardLabel, tableInfoArr }) {
           navList: tableArr.map(({ tableLabel }) => tableLabel),
         }}
         elementList={tableArr.map(
-          ({ tableMetadata, tableRecords, mappedRecords, fieldList }) => (
+          ({ tableMetadata, tableRecords, mappedRecords, fieldList }, i) => (
             <Table
+              tableId={`table-editor-${i}`}
               metadata={tableMetadata}
               fieldList={fieldList}
               originalRecords={tableRecords}
               mappedRecords={mappedRecords}
               hasSettings
               hasSearching
+              hasSorting
               onRecordClick={handleOpenRightSideModalForEdit}
               onCreateNewBtnClick={handleOpenRightSideModalForCreate}
               onRefreshDataBtnClick={handleClickRefreshButton}

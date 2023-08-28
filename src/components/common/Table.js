@@ -16,23 +16,33 @@ import Row from "../layout/Row";
 import Dropdown from "./Dropdown";
 import { setSelectedRowData } from "../../features/editorSlice";
 import Search from "./Search";
+import Select from "react-select";
+import { setBadgeTheme } from "../../utils/setBadgeTheme";
 
 function Table({
+  tableId,
   metadata,
   fieldList,
   mappedRecords,
   originalRecords,
   hasSettings,
   hasSearching,
+  hasSorting,
   onRecordClick,
   onCreateNewBtnClick,
   onRefreshDataBtnClick,
   recordPerPage,
   maxPageDisplay,
   tableStyle,
+  isReferenceBox,
+  currentReferenceBoxValue,
+  onSelectAllRow,
+  onUnselectAllRow,
+  onUndoInitialSelectedRow,
 }) {
   const dispatch = useDispatch();
   const tableRef = useRef(null);
+  const footerNavRef = useRef(null);
   const innerWidth = useSelector(selectInnerWidth);
 
   // Mapped record list / Display records in current page
@@ -60,6 +70,8 @@ function Table({
 
   // Table settings state
   const [showSettings, setShowSettings] = useState(false);
+
+  // Base on responsive width to set footerNav center
   const [isPaginationCenter, setIsPaginationCenter] = useState(false);
 
   // Handlers
@@ -115,17 +127,7 @@ function Table({
           );
           break;
         case "descending":
-          setSorting(
-            sorting.map((sortItem) => {
-              if (sortItem.index === i) {
-                return {
-                  index: i,
-                  fieldSort: "ascending",
-                };
-              }
-              return sortItem;
-            })
-          );
+          setSorting(sorting.filter((s) => s.index !== i));
           break;
         default:
           break;
@@ -134,65 +136,161 @@ function Table({
       setSorting([...sorting, { index: i, fieldSort: "ascending" }]);
     }
   };
+  const handleRefreshData = () => {
+    if (onRefreshDataBtnClick) {
+      onRefreshDataBtnClick();
+      if (onUndoInitialSelectedRow) {
+        onUndoInitialSelectedRow();
+      }
+    }
+  };
+  const handleSelectSortingFieldInSettingsBox = (e) => {
+    document
+      .querySelectorAll(`#${tableId} thead th`)
+      [e.value].scrollIntoView({ behavior: "smooth" });
+  };
+  const handleSelectAllRowClicked = (e) => {
+    let isChecked = e.target.checked;
+    if (isChecked) {
+      onSelectAllRow();
+    } else {
+      onUnselectAllRow();
+    }
+  };
 
   // Add feature tracking method here
   // Effects when trigger feature
   // - page index
   // - page record amount
+  // - sorting
   useEffect(() => {
     let currentRecordsOfPage = [];
     // Sort the records
-    tableMappedRecords.sort((a, b) => {
+    let sortedTableMappedRecords = tableMappedRecords.sort((a, b) => {
       let firstRowData = a.data;
       let secondRowData = b.data;
-      sorting.forEach((sortItem) => {
+      // Array of compare value (-1, 0 and 1)
+      let compareCriteriaArr = sorting.map((sortItem) => {
         let { index, fieldSort } = sortItem;
         let { cellData: firstCellData, dataType } = firstRowData[index];
-        let secondCellData = secondRowData[index];
+        let secondCellData = secondRowData[index].cellData;
         if (fieldSort === "ascending") {
           switch (dataType) {
             case "singleLineText":
-              firstCellData.localeCompare(secondCellData);
-              break;
             case "multilineText":
-              break;
             case "singleSelect":
-              break;
             case "email":
-              break;
-            case "multipleSelect":
-              break;
             case "longText":
-              break;
-            case "multipleAttachments":
-              break;
-            case "date":
-              break;
-            case "dateTime":
-              break;
-            case "createdTime":
-              break;
-            case "lastModifiedTime":
-              break;
-            case "checkbox":
-              break;
-            case "multipleLookupValues":
-              break;
             case "formula":
-              break;
+              if (!firstCellData) {
+                return -1;
+              } else if (!secondCellData) {
+                return 1;
+              }
+              return firstCellData.localeCompare(secondCellData);
+            case "multipleSelect":
+            case "multipleAttachments":
+            case "multipleLookupValues":
             case "multipleRecordLinks":
-              // list of linked record, rarely used...
-              break;
+              if (firstCellData.length - secondCellData.length > 0) {
+                return 1;
+              } else if (firstCellData.length - secondCellData.length === 0) {
+                return 0;
+              } else {
+                return -1;
+              }
+            case "date":
+            case "dateTime":
+            case "createdTime":
+            case "lastModifiedTime":
+              let firstDate = new Date(firstCellData);
+              let secondDate = new Date(secondCellData);
+              if (firstDate - secondDate > 0) {
+                return 1;
+              } else if (firstDate - secondDate === 0) {
+                return 0;
+              } else {
+                return -1;
+              }
+            case "checkbox":
+              if (
+                (firstCellData && secondCellData) ||
+                (!firstCellData && !secondCellData)
+              ) {
+                return 0;
+              } else if (firstCellData && !secondCellData) {
+                return 1;
+              } else {
+                return -1;
+              }
             default:
               console.error("Error while sorting table", dataType);
               break;
           }
         } else {
+          switch (dataType) {
+            case "singleLineText":
+            case "multilineText":
+            case "singleSelect":
+            case "email":
+            case "longText":
+            case "formula":
+              if (!firstCellData) {
+                return 1;
+              } else if (!secondCellData) {
+                return -1;
+              }
+              return secondCellData.localeCompare(firstCellData);
+            case "multipleSelect":
+            case "multipleAttachments":
+            case "multipleLookupValues":
+            case "multipleRecordLinks":
+              if (secondCellData.length - firstCellData.length > 0) {
+                return 1;
+              } else if (secondCellData.length - firstCellData.length === 0) {
+                return 0;
+              } else {
+                return -1;
+              }
+            case "date":
+            case "dateTime":
+            case "createdTime":
+            case "lastModifiedTime":
+              let firstDate = new Date(firstCellData);
+              let secondDate = new Date(secondCellData);
+              if (secondDate - firstDate > 0) {
+                return 1;
+              } else if (secondDate - firstDate === 0) {
+                return 0;
+              } else {
+                return -1;
+              }
+            case "checkbox":
+              if (
+                (firstCellData && secondCellData) ||
+                (!firstCellData && !secondCellData)
+              ) {
+                return 0;
+              } else if (secondCellData && !firstCellData) {
+                return 1;
+              } else {
+                return -1;
+              }
+            default:
+              console.error("Error while sorting table", dataType);
+              break;
+          }
         }
+        return 0;
       });
+      let sumCompareVal = 0;
+      compareCriteriaArr.forEach((val) => {
+        sumCompareVal += val;
+      });
+      return sumCompareVal;
     });
     // Display records for current page index
-    tableMappedRecords.forEach((recordData, recordIndex) => {
+    sortedTableMappedRecords.forEach((recordData, recordIndex) => {
       const recordIndexMin = recordsPerPage * (activePageIndex - 1);
       const recordIndexMax = recordsPerPage * activePageIndex - 1;
       if (recordIndex >= recordIndexMin && recordIndex <= recordIndexMax) {
@@ -256,23 +354,30 @@ function Table({
     // eslint-disable-next-line
   }, [searchValue]);
 
-  // Get cardWidth when windowWidth change and set pagination alignment
+  // Responsive for footer
   useEffect(() => {
-    tableRef.current && tableRef.current.clientWidth < 435
-      ? setIsPaginationCenter(true)
-      : setIsPaginationCenter(false);
-  }, []);
+    if (footerNavRef.current?.clientHeight > 41) {
+      setIsPaginationCenter(true);
+    } else if (footerNavRef.current?.clientHeight > 0) {
+      setIsPaginationCenter(false);
+    }
+  }, [innerWidth]);
 
   return (
     <>
       <div
         className="card-header justify-content-between align-items-center flex-nowrap py-1"
-        style={{ gap: "5px", paddingRight: "5px", height: "auto" }}
+        style={{
+          gap: "5px",
+          paddingRight: "5px",
+          height: "auto",
+          paddingLeft: isReferenceBox ? 0 : undefined,
+        }}
       >
         {onCreateNewBtnClick && (
           <button
             className="btn btn-success d-flex px-1 py-1 mr-2"
-            style={{ width: "30px", height: "30px" }}
+            style={{ width: "30px", height: "28px" }}
             onClick={onCreateNewBtnClick}
           >
             <MdLibraryAdd size={20} style={{ margin: "auto" }} />
@@ -281,14 +386,15 @@ function Table({
         {onRefreshDataBtnClick && (
           <button
             className="btn btn-primary d-flex px-1 py-1 mr-2"
-            style={{ width: "30px", height: "30px" }}
-            onClick={onRefreshDataBtnClick}
+            style={{ width: "30px", height: "28px" }}
+            onClick={handleRefreshData}
           >
             <MdRefresh size={20} />
           </button>
         )}
         {hasSearching && (
           <Search
+            id={`table-search-${tableId}`}
             placeholder="Search..."
             value={searchValue}
             onChange={handleChangeSearchValue}
@@ -300,7 +406,10 @@ function Table({
           <Col
             columnSize={["auto"]}
             className="d-flex align-items-center"
-            style={{ height: "52px" }}
+            style={{
+              height: "52px",
+              paddingRight: isReferenceBox ? 0 : undefined,
+            }}
           >
             <div className="dropdown">
               <button
@@ -314,19 +423,23 @@ function Table({
                   className={`shadow dropdown-menu px-3 dropdown-menu-right${
                     showSettings ? " d-block" : ""
                   }`}
-                  style={{ width: "248px" }}
+                  style={{ width: "280px" }}
                 >
                   <Row>
                     <Col columnSize={["12"]}>
                       <div className="form-group d-flex flex-nowrap justify-content-between align-items-center mb-0">
-                        <label className="mb-0" htmlFor="max-record-per-page">
+                        <label
+                          className="mb-0"
+                          htmlFor={`max-record-per-page_${tableId}`}
+                        >
                           Records/page
                         </label>
                         <input
-                          id="max-record-per-page"
-                          className="form-control ml-4"
+                          id={`max-record-per-page_${tableId}`}
+                          className="form-control"
                           type="number"
                           value={recordsPerPage}
+                          style={{ marginLeft: "100px" }}
                           onChange={(e) => {
                             setActivePageIndex(1);
                             e.target.value > 0 && e.target.value !== ""
@@ -342,16 +455,17 @@ function Table({
                       <div className="form-group d-flex flex-nowrap justify-content-between align-items-center mb-0">
                         <label
                           className="mb-0"
-                          htmlFor="go-to-page"
+                          htmlFor={`go-to-page_${tableId}`}
                           style={{ whiteSpace: "nowrap" }}
                         >
                           Go to page
                         </label>
                         <input
-                          id="go-to-page"
-                          className="form-control ml-4"
+                          id={`go-to-page_${tableId}`}
+                          className="form-control"
                           type="number"
                           placeholder={activePageIndex}
+                          style={{ marginLeft: "110px" }}
                           onChange={(e) => {
                             const { value } = e.target;
                             if (value) {
@@ -370,6 +484,36 @@ function Table({
                       </div>
                     </Col>
                   </Row>
+                  {hasSorting && (
+                    <Row>
+                      <Col columnSize={["12"]}>
+                        <div className="form-group d-flex flex-nowrap justify-content-between align-items-center mb-0">
+                          <label
+                            className="mb-0"
+                            htmlFor={`go-to-page-select_${tableId}`}
+                            style={{ whiteSpace: "nowrap" }}
+                          >
+                            Sorting list
+                          </label>
+                          <Select
+                            inputId={`go-to-page-select_${tableId}`}
+                            placeholder="Order list..."
+                            noOptionsMessage={() => (
+                              <span>No sorted field</span>
+                            )}
+                            className="ml-4"
+                            options={sorting.map((s, i) => ({
+                              label: `${i + 1}: ${fieldList[s.index]} (${
+                                s.fieldSort
+                              })`,
+                              value: s.index,
+                            }))}
+                            onChange={handleSelectSortingFieldInSettingsBox}
+                          />
+                        </div>
+                      </Col>
+                    </Row>
+                  )}
                 </div>
               </Outclick>
             </div>
@@ -377,56 +521,155 @@ function Table({
         )}
       </div>
       <div
-        className="table-responsive mb-0 border-bottom"
+        className="table-responsive mb-0 border-bottom position-relative"
         ref={tableRef}
         style={tableStyle}
       >
         {recordTableInCurrentPage.length ? (
-          <table className="table table-sm table-nowrap card-table">
+          <table
+            className="table table-sm table-nowrap table-bordered card-table"
+            id={tableId}
+            style={
+              isReferenceBox
+                ? {
+                    borderCollapse: "separate",
+                    borderSpacing: 0,
+                  }
+                : undefined
+            }
+          >
             <thead>
               <tr>
+                {isReferenceBox && (
+                  <th
+                    style={{
+                      position: "sticky",
+                      top: 0,
+                      left: 0,
+                      display: "flex",
+                      paddingRight: "1.5rem",
+                      height: "48px",
+                      zIndex: 1,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      id={`table-reference-select-all-row_${tableId}`}
+                      onChange={handleSelectAllRowClicked}
+                    />
+                  </th>
+                )}
                 {fieldList.map((fieldItem, i) => (
-                  <th style={{ minWidth: 160 }} key={i}>
-                    <span className="text-muted">{fieldItem}</span>
-                    <div
-                      className="position-relative d-inline ml-2"
-                      style={{
-                        cursor: "pointer",
-                      }}
-                      onClick={() => handleSortingRecords(i)}
-                    >
-                      <MdKeyboardArrowUp
+                  <th key={i} className="position-relative">
+                    <span className="text-muted mr-5">{fieldItem}</span>
+                    {hasSorting && (
+                      <div
+                        className="position-absolute d-inline-block ml-2"
                         style={{
-                          position: "absolute",
-                          top: -6,
+                          cursor: "pointer",
+                          width: "30px",
+                          right: "12px",
                         }}
-                        size={15}
-                        color={`${sorting[i] === "ascending" ? "#2c7be5" : ""}`}
-                      />
-                      <MdKeyboardArrowDown
-                        style={{
-                          position: "absolute",
-                          top: 4,
-                        }}
-                        size={15}
-                        color={`${
-                          sorting[i] === "descending" ? "#2c7be5" : ""
-                        }`}
-                      />
-                    </div>
+                        onClick={() => handleSortingRecords(i)}
+                      >
+                        <MdKeyboardArrowUp
+                          style={{
+                            position: "absolute",
+                            top: -7,
+                            border: "1px solid #95aac9",
+                            borderTopLeftRadius: "3px",
+                            borderTopRightRadius: "3px",
+                            backgroundColor:
+                              sorting.find((s) => s.index === i)?.fieldSort ===
+                              "ascending"
+                                ? "#2c7be5"
+                                : "",
+                          }}
+                          size={15}
+                          color={
+                            sorting.find((s) => s.index === i)?.fieldSort ===
+                            "ascending"
+                              ? "#fff"
+                              : ""
+                          }
+                        />
+                        <MdKeyboardArrowDown
+                          style={{
+                            position: "absolute",
+                            top: 7,
+                            border: "1px solid #95aac9",
+                            borderBottomLeftRadius: "3px",
+                            borderBottomRightRadius: "3px",
+                            backgroundColor:
+                              sorting.find((s) => s.index === i)?.fieldSort ===
+                              "descending"
+                                ? "#2c7be5"
+                                : "",
+                          }}
+                          size={15}
+                          color={
+                            sorting.find((s) => s.index === i)?.fieldSort ===
+                            "descending"
+                              ? "#fff"
+                              : ""
+                          }
+                        />
+                      </div>
+                    )}
+                    {sorting.findIndex((s) => s.index === i) > -1 && (
+                      <span style={{ position: "absolute", right: 15 }}>
+                        {sorting.findIndex((s) => s.index === i) + 1}
+                      </span>
+                    )}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody className="list">
-              {recordTableInCurrentPage.map((recordData) => (
+              {recordTableInCurrentPage.map((recordData, rowIndex) => (
                 <RowHover
                   key={recordData.rowId}
                   onClick={(e) => handleEditRecord(e, recordData)}
                 >
+                  {isReferenceBox && (
+                    <td
+                      style={{
+                        position: "fixed",
+                        top: "auto",
+                        left: 25,
+                        display: "flex",
+                        paddingRight: "1.5rem",
+                        height: "74px",
+                        backgroundColor: "white",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        id={`table-reference-select-row_${tableId}_${rowIndex}`}
+                        checked={
+                          currentReferenceBoxValue?.find(
+                            (v) => v === recordData.rowId
+                          )
+                            ? true
+                            : false
+                        }
+                        readOnly
+                      />
+                    </td>
+                  )}
                   {recordData.data.map((value, cellRowIndex) => (
-                    <td style={{ minWidth: 160 }} key={cellRowIndex}>
-                      {injectDataToJSX(value)}
+                    <td
+                      style={{
+                        minWidth: 160,
+                      }}
+                      key={cellRowIndex}
+                    >
+                      {injectDataToJSX(
+                        value,
+                        metadata.fields.find(
+                          (f) => f.name === fieldList[cellRowIndex]
+                        )
+                      )}
                     </td>
                   ))}
                 </RowHover>
@@ -448,12 +691,11 @@ function Table({
         )}
       </div>
       <nav
-        className={`d-flex align-items-center flex-wrap px-3 py-1 ${
-          isPaginationCenter
-            ? "justify-content-center"
-            : "justify-content-between"
+        className={`d-flex align-items-center flex-wrap px-3 py-1 justify-content-${
+          isPaginationCenter ? "center" : "between"
         }`}
         style={{ gap: "5px", marginTop: "5px" }}
+        ref={footerNavRef}
       >
         <span
           className={`badge badge-success${innerWidth < 330 ? " my-3" : ""}`}
@@ -463,6 +705,13 @@ function Table({
             tableMappedRecords.length > 1 ? "records" : "record"
           } in total`}
         </span>
+        {currentReferenceBoxValue?.length > 0 && (
+          <span className="badge badge-primary" style={{ lineHeight: "1.5" }}>
+            {`${currentReferenceBoxValue.length} ${
+              currentReferenceBoxValue.length > 1 ? "records" : "record"
+            } selected`}
+          </span>
+        )}
         {tableMappedRecords.length > 0 && (
           <ul className="pagination mb-0">
             <li
@@ -472,7 +721,9 @@ function Table({
               }}
               style={{ cursor: "pointer" }}
             >
-              <button className="rounded page-link border-0">Previous</button>
+              <button className="rounded page-link border-0 bg-transparent">
+                Previous
+              </button>
             </li>
             {isPageListExceed.pageStart && (
               <li className="page-item start-exceed d-flex align-items-center">
@@ -506,7 +757,9 @@ function Table({
               }}
               style={{ cursor: "pointer" }}
             >
-              <button className="rounded page-link border-0">Next</button>
+              <button className="rounded page-link border-0 bg-transparent">
+                Next
+              </button>
             </li>
           </ul>
         )}
@@ -524,12 +777,33 @@ function Table({
  * @returns if isSourceTypeKnown=true then return a displayData only (injected again to this function),
  * otherwise return a cellJSX ready to render
  */
-function injectDataToJSX(cell) {
+function injectDataToJSX(cell, metadata) {
   let displayData = null; // the cell data has been injected to an JSX to render
   let { cellData, dataType } = cell;
   switch (dataType) {
     case "singleLineText":
+    case "email":
+    case "longText":
+    case "formula":
       displayData = cellData;
+      break;
+    case "singleSelect":
+      let foundColorName = metadata?.options?.choices?.find(
+        (c) => c.name === cellData
+      );
+      if (foundColorName) {
+        let styles = {};
+        displayData = (
+          <span
+            className="badge"
+            style={setBadgeTheme(foundColorName.color, styles)}
+          >
+            {cellData}
+          </span>
+        );
+      } else {
+        displayData = cellData;
+      }
       break;
     case "multilineText":
       Array.isArray(cellData)
@@ -539,17 +813,13 @@ function injectDataToJSX(cell) {
           cellData !== undefined &&
           (displayData = <CellDetail>{cellData}</CellDetail>);
       break;
-    case "singleSelect":
-      displayData = cellData;
-      break;
-    case "email":
-      displayData = cellData;
-      break;
-    case "multipleSelect":
-      displayData = <CellDetail>{cellData}</CellDetail>;
-      break;
-    case "longText":
-      displayData = cellData;
+    case "multipleSelects":
+    case "multipleLookupValues":
+      displayData = (
+        <CellDetail isMultiValue meta={metadata}>
+          {cellData}
+        </CellDetail>
+      );
       break;
     case "multipleAttachments":
       displayData = cellData.map((item, i) => (
@@ -567,40 +837,35 @@ function injectDataToJSX(cell) {
       ));
       break;
     case "date":
-      displayData = new Date(cellData).toLocaleDateString("en-GB");
+      displayData = cellData
+        ? new Date(cellData).toLocaleDateString("en-GB")
+        : null;
       break;
     case "dateTime":
-      displayData = new Date(cellData).toLocaleString("en-GB", {
-        timeZone: "Asia/Bangkok",
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      });
-      break;
     case "createdTime":
-      displayData = new Date(cellData).toLocaleString();
-      break;
     case "lastModifiedTime":
-      displayData = new Date(cellData).toLocaleString();
+      displayData = cellData
+        ? new Date(cellData).toLocaleString("en-GB", {
+            timeZone: "Asia/Bangkok",
+            year: "numeric",
+            month: "numeric",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          })
+        : null;
       break;
     case "checkbox":
       displayData = (
         <input
+          name="table-checkbox"
           className="cell-checkbox mr-3"
           type="checkbox"
-          checked
+          checked={cellData ? true : false}
           readOnly
         />
       );
-      break;
-    case "multipleLookupValues":
-      displayData = <CellDetail>{cellData}</CellDetail>;
-      break;
-    case "formula":
-      displayData = cellData;
       break;
     case "multipleRecordLinks":
       // list of linked record, rarely used...
@@ -624,15 +889,37 @@ function injectDataToJSX(cell) {
 }
 
 const RowHover = styled.tr`
+  position: relative;
   cursor: pointer;
   :hover {
     background-color: aliceblue;
   }
 `;
-function CellDetail({ children }) {
-  return (
+function CellDetail({ children, isMultiValue, meta }) {
+  // only set badge for multiSelects type
+  let colorChoices = undefined;
+  let styles = undefined;
+  if (meta) {
+    if (meta.type === "multipleSelects") {
+      colorChoices = meta.options.choices;
+    }
+  }
+  if (colorChoices && Array.isArray(children)) {
+    let selectedColor = colorChoices.find((c) => c.name === children[0])?.color;
+    if (selectedColor) {
+      styles = {};
+      styles = setBadgeTheme(
+        colorChoices.find((c) => c.name === children[0])?.color,
+        styles
+      );
+    }
+  }
+  return Array.isArray(children) && children.length ? (
     <div className="d-flex justify-content-start align-items-center">
-      <span className="cell-preview mr-2">
+      <span
+        className={`cell-preview mr-2${isMultiValue && styles ? " badge" : ""}`}
+        style={styles}
+      >
         {Array.isArray(children)
           ? children[0]
           : children !== null &&
@@ -647,14 +934,32 @@ function CellDetail({ children }) {
       >
         <div
           className="cell-detail d-flex flex-column"
-          style={{ maxWidth: "400px" }}
+          style={{ maxWidth: "400px", gap: "5px" }}
         >
           {Array.isArray(children)
-            ? children.map((item, i) => (
-                <div key={i} className="cell-detail-item py-1 px-3">
-                  {item}
-                </div>
-              ))
+            ? children.map((item, i) => {
+                let isBadged = false;
+                if (colorChoices && Array.isArray(children)) {
+                  let selectedColor = colorChoices.find(
+                    (c) => c.name === item
+                  )?.color;
+                  if (selectedColor) {
+                    styles = {};
+                    isBadged = true;
+                    styles = setBadgeTheme(selectedColor, styles);
+                  }
+                }
+                return (
+                  <div key={i} className="cell-detail-item py-1 px-3">
+                    <span
+                      className={`${isBadged ? "badge" : ""}`}
+                      style={styles}
+                    >
+                      {item}
+                    </span>
+                  </div>
+                );
+              })
             : children !== null &&
               children !== undefined && (
                 <div className="cell-detail-item py-1 px-3">{children}</div>
@@ -662,7 +967,7 @@ function CellDetail({ children }) {
         </div>
       </Dropdown>
     </div>
-  );
+  ) : null;
 }
 
 Table.defaultProps = {
@@ -670,11 +975,10 @@ Table.defaultProps = {
   maxPageDisplay: 4,
 };
 Table.propTypes = {
+  tableId: PropTypes.string,
   metadata: PropTypes.object,
   /**
-   * If you use the ***forFormEditor*** props, the ***syncField*** of forFormEditor
-   * must is the first field of fieldList. The ***syncField*** is the field
-   * that all tables in the **Card** have.
+   * The list of field that's displayed in the table
    */
   fieldList: PropTypes.arrayOf(PropTypes.string).isRequired,
   /**
@@ -700,12 +1004,33 @@ Table.propTypes = {
   ),
   hasSettings: PropTypes.bool,
   hasSearching: PropTypes.bool,
+  hasSorting: PropTypes.bool,
   onRecordClick: PropTypes.func,
   onCreateNewBtnClick: PropTypes.func,
   onRefreshDataBtnClick: PropTypes.func,
   recordPerPage: PropTypes.number,
   maxPageDisplay: PropTypes.number,
   tableStyle: PropTypes.object,
+  /**
+   * Used for Reference Box, set to true if this table is used in LinkRecordPicker
+   */
+  isReferenceBox: PropTypes.bool,
+  /**
+   * Used for Reference Box, current array of recordId state { rowId: string, checked: boolean } is selected
+   */
+  currentReferenceBoxValue: PropTypes.arrayOf(PropTypes.string),
+  /**
+   * Used for Reference Box, select all row
+   */
+  onSelectAllRow: PropTypes.func,
+  /**
+   * Used for Reference Box, unselect all row
+   */
+  onUnselectAllRow: PropTypes.func,
+  /**
+   * Used for Reference Box, undo to initial/default selected row
+   */
+  onUndoInitialSelectedRow: PropTypes.func,
 };
 
 export default Table;

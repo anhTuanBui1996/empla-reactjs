@@ -49,16 +49,10 @@ function BirthdayScheduler({ events }) {
     false,
   ]);
 
-  /* eslint-disable */
   useEffect(() => {
-    setDateArr((state) => {
-      const newState = state;
-      newState.forEach((item) => {
-        item.event = [];
-        item.count = 0;
-      });
-      return newState;
-    });
+    setDateArr(
+      dateArr.map((itemDate) => ({ ...itemDate, event: [], count: 0 }))
+    );
     if (birthdayList) {
       birthdayList.forEach((itemBirthdate) => {
         const newBirthday = new Date(itemBirthdate.birthday);
@@ -67,17 +61,23 @@ function BirthdayScheduler({ events }) {
             (itemDate) => itemDate.date === newBirthday.getDate()
           );
           if (findInDateArr !== -1) {
-            setDateArr((state) => {
-              const newState = state;
-              newState[findInDateArr].event.push(itemBirthdate);
-              newState[findInDateArr].count++;
-              return newState;
-            });
+            setDateArr(
+              dateArr.map((itemDate, i) =>
+                findInDateArr === i
+                  ? {
+                      ...itemDate,
+                      event: [...itemDate.event, itemBirthdate],
+                      count: ++itemDate.count,
+                    }
+                  : { ...itemDate }
+              )
+            );
           }
         }
       });
     }
-  }, [birthdayList]);
+    // eslint-disable-next-line
+  }, [birthdayList, currentMonth]);
 
   return (
     <SchedulerContainer className="custom-scheduler">
@@ -131,9 +131,7 @@ function BirthdayScheduler({ events }) {
                     <div
                       className="dropdown"
                       onMouseLeave={() =>
-                        setShowDetail((state) =>
-                          state.map((itemDetail) => (itemDetail = false))
-                        )
+                        setShowDetail((state) => state.map(() => false))
                       }
                     >
                       <CellEvent
@@ -143,9 +141,9 @@ function BirthdayScheduler({ events }) {
                           setShowDetail((state) =>
                             state.map((itemDetail, i) => {
                               if (i === index) {
-                                itemDetail = true;
+                                return true;
                               }
-                              return itemDetail
+                              return false;
                             })
                           )
                         }
@@ -175,7 +173,7 @@ function BirthdayScheduler({ events }) {
   );
 }
 
-Scheduler.propTypes = {
+BirthdayScheduler.propTypes = {
   events: PropTypes.arrayOf(PropTypes.object),
 };
 
@@ -207,7 +205,6 @@ const CellDay = styled.td`
   width: 100px;
 `;
 const CellEvent = styled.div`
-  max-width: 100px;
   cursor: pointer;
 `;
 
