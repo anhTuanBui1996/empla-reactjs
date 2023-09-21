@@ -17,11 +17,6 @@ export const GOOGLE = {
   MAP_JAVASCRIPT_KEY: process.env.REACT_APP_GOOGLE_MAP_API_KEY,
 };
 
-export const FILEPREVIEWS = {
-  API_KEY: process.env.REACT_APP_FILEPREVIEWS_API_KEY,
-  API_SECRET: process.env.REACT_APP_FILEPREVIEWS_API_SECRET,
-};
-
 export const SIDENAV = [
   { label: "Homepage", path: "/", icon: <MdHouse /> },
   { label: "Staff", path: "/staff", icon: <MdSupervisorAccount /> },

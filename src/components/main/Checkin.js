@@ -319,6 +319,7 @@ function Checkin() {
                 }}
                 elementList={[
                   <Table
+                    metadata={tableMetadata}
                     tableName="Checkin"
                     fieldList={fieldList}
                     mappedRecords={recordList}

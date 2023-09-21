@@ -119,7 +119,6 @@ function GoogleMapCard({
     e.stopPropagation();
     setCloseLocationList(true);
     handleSelectCheckInItemOnMap(index);
-    console.log(locationList[index]);
     setTimeout(() => setCloseLocationList(false), 100);
   };
 

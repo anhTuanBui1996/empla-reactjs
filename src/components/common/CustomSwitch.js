@@ -4,10 +4,7 @@ import styled from "styled-components";
 
 function CustomSwitch({ id, tabIndex, inputValue, onSwitchChange }) {
   return (
-    <CustomSwitchWrapper
-      className="custom-control custom-switch"
-      onClick={onSwitchChange}
-    >
+    <CustomSwitchWrapper className="custom-control custom-switch">
       <input
         tabIndex={tabIndex}
         type="checkbox"
@@ -16,7 +13,11 @@ function CustomSwitch({ id, tabIndex, inputValue, onSwitchChange }) {
         checked={inputValue ? true : false}
         readOnly
       />
-      <CustomLabel className="custom-control-label" htmlFor={id} />
+      <CustomLabel
+        className="custom-control-label"
+        htmlFor={id}
+        onClickCapture={onSwitchChange}
+      />
     </CustomSwitchWrapper>
   );
 }

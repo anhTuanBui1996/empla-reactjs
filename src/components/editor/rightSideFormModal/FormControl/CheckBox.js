@@ -4,7 +4,8 @@ import {
   selectFormSubmit,
   setFormSubmit,
 } from "../../../../features/editorSlice";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import CustomSwitch from "../../../common/CustomSwitch";
 
 export default function CheckBox({
   tabIndex,
@@ -17,14 +18,16 @@ export default function CheckBox({
   const labelRef = useRef(null);
   const dispatch = useDispatch();
   const formSubmit = useSelector(selectFormSubmit);
-  const [displayValue, setDisplayValue] = useState(value);
-  const onSwitchChange = () => {
-    let newValue = !displayValue;
-    setDisplayValue(newValue);
+  const [displayValue, setDisplayValue] = useState(value ? true : false);
+  const onSwitchChange = (e) => {
+    e.stopPropagation();
+    setDisplayValue(!displayValue);
+  };
+  useEffect(() => {
     if (onValueChange) {
       if (displayValue !== value) {
         onValueChange({ name, value: true });
-        dispatch(setFormSubmit({ ...formSubmit, [name]: newValue }));
+        dispatch(setFormSubmit({ ...formSubmit, [name]: displayValue }));
       } else {
         onValueChange({ name, value: false });
         let newObj = {};
@@ -35,23 +38,21 @@ export default function CheckBox({
         dispatch(setFormSubmit({ ...newObj }));
       }
     }
-  };
+    // eslint-disable-next-line
+  }, [displayValue]);
   return (
-    <div id={`CheckBox_${table}_${name}`} className="form-group">
-      <label
-        htmlFor={`CheckBox_${table}_${name}`}
+    <div className="form-group">
+      <span
         ref={labelRef}
         style={{ display: "inline-block", marginBottom: "0.5rem" }}
       >
         {`${label} `}
-      </label>
-      <input
-        className="ml-3"
-        id={`CheckBox_${table}_${name}`}
-        type="checkbox"
+      </span>
+      <CustomSwitch
         tabIndex={tabIndex}
-        checked={displayValue ? true : false}
-        onChange={onSwitchChange}
+        id={`CheckBox_${table}_${name}`}
+        inputValue={displayValue ? true : false}
+        onSwitchChange={onSwitchChange}
       />
     </div>
   );

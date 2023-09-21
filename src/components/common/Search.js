@@ -81,9 +81,11 @@ function Search({
           <MdSearch size={20} color={`${isSearching ? "#fff" : ""}`} />
         </div>
       </div>
-      <ClearButton onClick={onClearButtonClicked}>
-        <MdClose size={20} />
-      </ClearButton>
+      {value !== "" && (
+        <ClearButton onClick={onClearButtonClicked}>
+          <MdClose size={20} />
+        </ClearButton>
+      )}
       <div className="input-group-append">
         <div
           className={`btn btn-light input-group-text pl-3 ${

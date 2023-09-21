@@ -37,6 +37,7 @@ function LookUpValues({ tabIndex, table, name, label, value, fieldMetadata }) {
   // eslint-disable-next-line
   useEffect(() => handleFetchingData(), []);
 
+  // render lookup values base on formSubmit
   useEffect(() => {
     let linkedFieldId = fieldMetadata.options.recordLinkFieldId;
     let linkedFieldName = tableMetadata.fields.find(
@@ -50,12 +51,14 @@ function LookUpValues({ tabIndex, table, name, label, value, fieldMetadata }) {
         let lookupFieldNameInLinkedTable = linkedTableMetadata?.fields.find(
           (fld) => fld.id === fieldMetadata?.options.fieldIdInLinkedTable
         )?.name;
-        console.log(selectedRecords);
         setDisplayValue(
-          selectedRecords?.map((rec) => rec.fields[lookupFieldNameInLinkedTable])
+          selectedRecords?.map(
+            (rec) => rec.fields[lookupFieldNameInLinkedTable]
+          )
         );
       }
     }
+    // eslint-disable-next-line
   }, [
     formSubmit,
     fieldMetadata.options.recordLinkFieldId,
@@ -88,11 +91,7 @@ function LookUpValues({ tabIndex, table, name, label, value, fieldMetadata }) {
           className="form-control position-relative"
           readOnly
           disabled
-          style={{
-            height: "fit-content",
-            maxHeight: "85.5px",
-            overflow: "auto",
-          }}
+          style={{ height: "85.5px" }}
         >
           {isFetching ? (
             <span
@@ -101,72 +100,74 @@ function LookUpValues({ tabIndex, table, name, label, value, fieldMetadata }) {
               aria-hidden="true"
             ></span>
           ) : (
-            displayValue?.map((item, i) => {
-              let sourceType = fieldMetadata.options.result.type;
-              switch (sourceType) {
-                case "singleLineText":
-                case "longText":
-                  return <div key={i}>{item}</div>;
-                case "singleSelect":
-                  let foundColorName =
-                    fieldMetadata.options.result.options.choices.find(
-                      (c) => c.name === item
-                    )?.color;
-                  let styles = {};
-                  return (
-                    <div key={i}>
-                      <span
-                        className="badge"
-                        style={setBadgeTheme(foundColorName, styles)}
-                      >
-                        {item}
-                      </span>
-                      <br />
-                    </div>
-                  );
-                case "multipleSelects":
-                  return (
-                    <div key={i}>
-                      {item.map((subItem, j) => (
+            <div className="w-100 h-100" style={{ overflow: "auto" }}>
+              {displayValue?.map((item, i) => {
+                let sourceType = fieldMetadata.options.result.type;
+                switch (sourceType) {
+                  case "singleLineText":
+                  case "longText":
+                    return <div key={i}>{item}</div>;
+                  case "singleSelect":
+                    let foundColorName =
+                      fieldMetadata.options.result.options.choices.find(
+                        (c) => c.name === item
+                      )?.color;
+                    let styles = {};
+                    return (
+                      <div key={i}>
                         <span
-                          key={j}
-                          className="badge mr-1"
+                          className="badge"
                           style={setBadgeTheme(foundColorName, styles)}
                         >
-                          {subItem}
+                          {item}
                         </span>
-                      ))}
-                      <br />
-                    </div>
-                  );
-                case "checkbox":
-                  return (
-                    <input
-                      type="checkbox"
-                      key={i}
-                      readOnly
-                      disabled
-                      checked={item ? true : false}
-                    />
-                  );
-                default:
-                  console.error(
-                    "Unknown source type in LookUpValues form control",
-                    sourceType
-                  );
-                  return <div key={i}></div>;
-              }
-            })
+                        <br />
+                      </div>
+                    );
+                  case "multipleSelects":
+                    return (
+                      <div key={i}>
+                        {item.map((subItem, j) => (
+                          <span
+                            key={j}
+                            className="badge mr-1"
+                            style={setBadgeTheme(foundColorName, styles)}
+                          >
+                            {subItem}
+                          </span>
+                        ))}
+                        <br />
+                      </div>
+                    );
+                  case "checkbox":
+                    return (
+                      <input
+                        type="checkbox"
+                        key={i}
+                        readOnly
+                        disabled
+                        checked={item ? true : false}
+                      />
+                    );
+                  default:
+                    console.error(
+                      "Unknown source type in LookUpValues form control",
+                      sourceType
+                    );
+                    return <div key={i}></div>;
+                }
+              })}
+            </div>
           )}
           <button
-            className="btn btn-primary d-flex justify-content-center align-items-center px-0 py-0"
+            className="btn btn-primary d-flex justify-content-center align-items-center px-0 py-0 mx-0 my-0"
             style={{
               width: "22px",
               height: "22px",
-              position: "sticky",
+              position: "absolute",
               top: "50%",
               transform: "translateY(-50%)",
-              right: "10px",
+              left: "calc(100% - 30px)",
             }}
             onClick={handleFetchingData}
           >
