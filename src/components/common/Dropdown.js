@@ -16,6 +16,7 @@ function Dropdown({
   isForceClose,
   onClose,
   children,
+  dropDirection,
 }) {
   const [isOpened, setOpen] = useState(false);
   const handleClose = () => {
@@ -33,9 +34,12 @@ function Dropdown({
     }
   }, [isForceClose]);
   return (
-    <div className="dropdown" style={style ? style : null}>
+    <div
+      className={`drop${dropDirection}${className ? ` ${className}` : ""}`}
+      style={style ? style : null}
+    >
       <ToggleButton
-        className={`btn btn-${variant} h5 mb-0 px-2 py-2${
+        className={`drop${dropDirection}-btn btn btn-${variant} h5 mb-0 px-2 py-2${
           className ? ` ${className}` : ""
         }`}
         style={toggleStyle ? toggleStyle : null}
@@ -43,13 +47,13 @@ function Dropdown({
         onMouseEnter={toggleOnHover ? handleToggle : undefined}
         onMouseLeave={toggleOnHover ? handleToggle : undefined}
       >
-        {title || <MdArrowDropDown size={1.5} />}
+        {title || <MdArrowDropDown size={1.5} className={className} />}
       </ToggleButton>
-      <Outclick onOutClick={handleClose}>
+      <Outclick className={className} onOutClick={handleClose}>
         <div
-          className={`shadow dropdown-menu dropdown-menu-${position}${
+          className={`dropdown-menu dropdown-menu-${position} shadow${
             isOpened ? " d-flex" : ""
-          }`}
+          }${className ? ` ${className}` : ""}`}
           style={boxStyle ? boxStyle : null}
           onMouseLeave={toggleOnHover ? handleToggle : undefined}
         >
@@ -98,6 +102,7 @@ Dropdown.propTypes = {
    * Handler when the dropbox is closed
    */
   onClose: PropTypes.func,
+  dropDirection: PropTypes.oneOf(["down", "up", "left", "right"]),
 };
 Dropdown.defaultProps = {
   variant: "primary",

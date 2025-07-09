@@ -2,19 +2,23 @@ import React from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
 
-function CustomSwitch({ id, tabIndex, inputValue, onSwitchChange }) {
+function CustomSwitch({ id, tabIndex, inputValue, onSwitchChange, className }) {
   return (
-    <CustomSwitchWrapper className="custom-control custom-switch">
+    <CustomSwitchWrapper
+      className={`${
+        className ? `${className} ` : ""
+      }custom-control custom-switch`}
+    >
       <input
         tabIndex={tabIndex}
         type="checkbox"
-        className="custom-control-input"
+        className={`${className ? `${className} ` : ""}custom-control-input`}
         id={id}
         checked={inputValue ? true : false}
         readOnly
       />
       <CustomLabel
-        className="custom-control-label"
+        className={`${className ? `${className} ` : ""}custom-control-label`}
         htmlFor={id}
         onClickCapture={onSwitchChange}
       />
@@ -38,6 +42,7 @@ CustomSwitch.propTypes = {
   tabIndex: PropTypes.number,
   inputValue: PropTypes.bool,
   onSwitchChange: PropTypes.func.isRequired,
+  className: PropTypes.string,
 };
 
 export default CustomSwitch;

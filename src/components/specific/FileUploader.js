@@ -151,15 +151,26 @@ function FileUploader({
   return (
     <div {...getRootProps({ className: "dropzone" })}>
       <input {...getInputProps({ name, id })} />
-      <div className="dz-processing dz-image-preview position-relative mt-1">
+      <div
+        className="dz-processing dz-image-preview position-relative mt-1"
+        style={{
+          borderRadius: "5px",
+          borderStyle: "dashed",
+          borderColor: "#cbc2c2",
+        }}
+      >
         <Row className="row align-items-center thumbnail-preview-dropzone position-relative">
-          <Col columnSize={["12"]}>
-            <ImageBg className="image-bg">
+          <Col
+            columnSize={["12"]}
+            style={{ display: "flex", justifyContent: "center" }}
+            className={"py-0"}
+          >
+            <ImageBg className="image-bg w-100 d-flex justify-content-center align-items-center">
               {imagePreviews ? (
                 <>
                   <div className="dropzone-preview position-relative">
                     <ImageViewer
-                      className="image-previewer avatar-img rounded w-100"
+                      className="image-previewer avatar-img rounded"
                       src={imagePreviews[currentFileDisplayIndex]}
                       alt="previewer"
                     />
@@ -223,7 +234,7 @@ function FileUploader({
               ) : (
                 <div
                   id={id}
-                  className="dropzone dropzone-multiple dz-clickable position-relative"
+                  className="dropzone dropzone-multiple dz-clickable position-relative w-100"
                 >
                   <div className="dz-default dz-message">
                     <button
@@ -245,6 +256,7 @@ function FileUploader({
 }
 
 const ImageBg = styled.div`
+  cursor: pointer;
   &:hover {
     .hover-blur {
       opacity: 1;
@@ -257,10 +269,12 @@ const ImageBg = styled.div`
   }
 `;
 const ImageViewer = styled.img`
-  cursor: pointer;
   transition: 0.3s all;
+  width: 100%;
+  max-width: 700px;
 `;
 const ImageHover = styled.div`
+  text-align: center;
   opacity: 0;
   position: absolute;
   top: 0;

@@ -59,14 +59,9 @@ export class InitialStaffDto {
     this.Avatar = fieldData?.Avatar;
     this.Collaboratory = fieldData?.Collaboratory;
     this.Role = fieldData?.Role;
-    this.Checkin = fieldData?.Checkin;
     this.WorkingPlace = fieldData?.WorkingPlace;
-    this["Tasks (AssignedTo)"] = fieldData
-      ? fieldData["Tasks (AssignedTo)"]
-      : undefined;
-    this["Tasks (Supervisor)"] = fieldData
-      ? fieldData["Tasks (Supervisor)"]
-      : undefined;
+    this.Tasks_AssignedTo = fieldData?.Tasks_AssignedTo;
+    this.Tasks_Supervisor = fieldData?.Tasks_Supervisor;
     this.Tokens = fieldData?.Tokens;
   }
 }

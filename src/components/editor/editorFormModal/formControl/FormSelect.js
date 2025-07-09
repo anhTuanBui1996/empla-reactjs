@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import { useDispatch, useSelector } from "react-redux";
 import Select from "react-select";
 import { useEffect, useRef, useState } from "react";
-import { compareTwoArrayOfObject } from "../../../../utils/arrayUtils";
+import { compareTwoArrayOfString } from "../../../../utils/arrayUtils";
 import {
   selectFormSubmit,
   setFormSubmit,
@@ -17,7 +17,6 @@ export default function FormSelect({
   label,
   value,
   fieldMetadata,
-  onValueChange,
   isMulti,
   isRequired,
   isReadOnly,
@@ -39,9 +38,13 @@ export default function FormSelect({
 
   useEffect(() => {
     if (isMulti) {
-      setDisplayValue(
-        options.filter((opt) => value?.indexOf(opt.value) !== -1)
-      );
+      if (value) {
+        setDisplayValue(
+          options.filter((opt) => value?.indexOf(opt.value) !== -1)
+        );
+      } else {
+        setDisplayValue([]);
+      }
     } else {
       setDisplayValue(options.find((opt) => opt.value === value));
     }
@@ -54,25 +57,19 @@ export default function FormSelect({
     } else {
       dispatch(setFormSubmit({ ...formSubmit, [name]: e?.value }));
     }
-    if (onValueChange) {
-      if (
-        isMulti
-          ? !compareTwoArrayOfObject(
-              e.map((v) => v.value),
-              value
-            )
-          : e?.value !== value
-      ) {
-        onValueChange({ name, value: true });
-      } else {
-        onValueChange({ name, value: false });
-        let newObj = {};
-        Object.assign(newObj, formSubmit);
-        if (newObj[name]) {
-          delete newObj[name];
-        }
-        dispatch(setFormSubmit({ ...newObj }));
-      }
+    if (
+      isMulti
+        ? compareTwoArrayOfString(
+            e.map((v) => v.value),
+            value
+          ) ||
+          (value === undefined && e.length === 0)
+        : e?.value === value
+    ) {
+      let newObj = {};
+      Object.assign(newObj, formSubmit);
+      delete newObj[name];
+      dispatch(setFormSubmit({ ...newObj }));
     }
   };
 
@@ -83,14 +80,14 @@ export default function FormSelect({
           !displayValue.length &&
             setError({
               hasError: true,
-              errorMsg: "This field cannot be empty",
+              errorMsg: `${label} cannot be empty`,
             });
         }
       } else {
         if (!displayValue) {
           setError({
             hasError: true,
-            errorMsg: "This field cannot be empty",
+            errorMsg: `${label} cannot be empty`,
           });
         }
       }

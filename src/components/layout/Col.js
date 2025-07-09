@@ -7,7 +7,7 @@ function Col({ columnSize, children, className, style }) {
     columnSize?.forEach((colItem) => {
       returnString += "col-" + colItem + " ";
     });
-    className && (returnString += className);
+    className && (returnString = className + " " + returnString);
     return returnString.trim();
   }, [columnSize, className]);
 

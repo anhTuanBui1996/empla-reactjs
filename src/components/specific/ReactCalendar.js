@@ -9,8 +9,23 @@ import { useMemo } from "react";
 import ReactTimePicker from "./ReactTimePicker";
 import { MdClose } from "react-icons/md";
 
-function ReactCalendar(props) {
-  const [referenceElement, setReferenceElement] = useState(props.ref);
+function ReactCalendar({
+  id,
+  name,
+  className,
+  ref,
+  value,
+  isDisplayTime,
+  readOnly,
+  onChange,
+  onBlur,
+  styleForFilterRow,
+}) {
+  const isFilterRow = useMemo(() => {
+    if (!className) return false;
+    return className.includes("filter-row");
+  }, [className]);
+  const [referenceElement, setReferenceElement] = useState(ref);
   const [popperElement, setPopperElement] = useState(null);
   const [arrowElement, setArrowElement] = useState(null);
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
@@ -18,10 +33,7 @@ function ReactCalendar(props) {
   });
 
   const [showPickerBox, setShowPickerBox] = useState(false);
-  const dateValue = useMemo(
-    () => props.value && new Date(props.value),
-    [props.value]
-  );
+  const dateValue = useMemo(() => value && new Date(value), [value]);
   const dateLabel = useMemo(
     () =>
       dateValue
@@ -30,74 +42,87 @@ function ReactCalendar(props) {
             year: "numeric",
             month: "numeric",
             day: "numeric",
-            hour: props.isDisplayTime ? "2-digit" : undefined,
-            minute: props.isDisplayTime ? "2-digit" : undefined,
-            second: props.isDisplayTime ? "2-digit" : undefined,
+            hour: isDisplayTime ? "2-digit" : undefined,
+            minute: isDisplayTime ? "2-digit" : undefined,
+            second: isDisplayTime ? "2-digit" : undefined,
           })
         : "",
-    [dateValue, props.isDisplayTime]
+    [dateValue, isDisplayTime]
   );
 
-  const handleClearDate = () => props.onChange("");
+  const handleClearDate = () => onChange("");
 
   const [timeValue, setTimeValue] = useState(
-    dateValue && props.isDisplayTime
+    dateValue && isDisplayTime
       ? {
           hour: dateValue?.getHours(),
           minute: dateValue?.getMinutes(),
           second: dateValue?.getSeconds(),
         }
-      : null
+      : {
+          hour: 0,
+          minute: 0,
+          second: 0,
+        }
   );
 
-  return props.readOnly ? (
+  return readOnly ? (
     <DatePickerInput
-      id={props.id}
+      id={id}
       ref={setReferenceElement}
-      name={props.name}
-      className={`react-custom-calendar${
-        props.className ? " " + props.className : ""
-      }`}
+      name={name}
+      className={`react-custom-calendar${className ? " " + className : ""}`}
       type="text"
       value={dateLabel}
+      placeholder="dd/MM/yyyy"
+      data-inputmask="'mask': '99/99/9999'"
       readOnly
+      style={{ ...styleForFilterRow }}
     />
   ) : (
     <Outclick
       onOutClick={() => {
         setShowPickerBox(false);
-        props.onBlur();
+        onBlur && onBlur();
       }}
     >
       <div
-        className="input-group input-group-rounded input-group-merge"
+        className={`input-group input-group-rounded input-group-merge${
+          className ? " " + className : ""
+        }`}
         ref={setReferenceElement}
+        style={{ ...styleForFilterRow }}
       >
         <DatePickerInput
-          id={props.id}
-          name={props.name}
+          id={id}
+          name={name}
           className={`react-custom-calendar form-control form-control-appended${
-            props.className ? " " + props.className : ""
+            className ? " " + className : ""
           }`}
           type="text"
           value={dateLabel ? dateLabel : ""}
-          placeholder="Click to pick a day..."
+          placeholder={`dd/MM/yyyy${isDisplayTime ? " HH:mm:ss" : ""}`}
           onClick={() => {
             setShowPickerBox(true);
           }}
-          onBlur={props.onBlur}
-          isReadOnly={props.isReadOnly}
+          onBlur={onBlur}
+          isReadOnly={readOnly}
+          style={{
+            ...styleForFilterRow,
+            width: isFilterRow ? (isDisplayTime ? "210px" : "140px") : "",
+          }}
           readOnly
         />
-        <div className="input-group-append">
+        <div className="input-group-append" style={{ ...styleForFilterRow }}>
           <div
             className="input-group-text"
             style={{
+              ...styleForFilterRow,
               borderTopRightRadius: "0.375rem",
               borderBottomRightRadius: "0.375rem",
             }}
           >
-            {props.value && (
+            {value && (
               <DateClearButton>
                 <MdClose
                   size={20}
@@ -126,11 +151,11 @@ function ReactCalendar(props) {
                 newDateValue.setMinutes(minute);
                 newDateValue.setSeconds(second);
               }
-              props.onChange(newDateValue.toISOString());
+              onChange(newDateValue.toISOString());
               setShowPickerBox(false);
             }}
           />
-          {props.isDisplayTime && (
+          {isDisplayTime && (
             <ReactTimePicker
               timeValue={timeValue}
               setTimeValue={setTimeValue}
@@ -153,6 +178,7 @@ ReactCalendar.propTypes = {
   onBlur: PropTypes.func,
   value: PropTypes.any,
   isDisplayTime: PropTypes.bool,
+  styleForFilterRow: PropTypes.object,
 };
 
 const DatePickerInput = styled.input.attrs((props) => ({

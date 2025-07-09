@@ -5,7 +5,6 @@ import {
   MdSocialDistance,
   MdFolderShared,
   MdHomeWork,
-  MdSchema,
 } from "react-icons/md";
 
 export const AIRTABLE = {
@@ -22,8 +21,7 @@ export const SIDENAV = [
   { label: "Staff", path: "/staff", icon: <MdSupervisorAccount /> },
   { label: "Role", path: "/role", icon: <MdFolderShared /> },
   { label: "Tasks", path: "/tasks", icon: <MdSocialDistance /> },
-  { label: "Working Place", path: "/workingplace", icon: <MdHomeWork /> },
-  { label: "Collaboratory", path: "/collaboratory", icon: <MdSchema /> },
+  { label: "Departments", path: "/departments", icon: <MdHomeWork /> },
   { label: "Check-in", path: "/checkin", icon: <MdStickyNote2 /> },
 ];
 

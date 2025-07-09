@@ -5,7 +5,8 @@ import styled from "styled-components";
 
 function Search({
   id,
-  className,
+  classNamePrefix,
+  containerClassName,
   noBorder,
   value,
   placeholder,
@@ -17,6 +18,7 @@ function Search({
   const [isSearching, setIsSearching] = useState(false);
   const onKeyPress = (e) => {
     if (e.key === "Enter") {
+      e.preventDefault();
       if (onSubmit) {
         onSubmit();
         if (value !== "") {
@@ -52,8 +54,8 @@ function Search({
   return (
     <div
       className={`input-group input-group-rounded input-group-merge${
-        className ? ` ${className}` : ""
-      }`}
+        classNamePrefix ? ` ${classNamePrefix}` : ""
+      }${containerClassName ? ` ${containerClassName}` : ""}`}
       style={style}
     >
       <input
@@ -61,7 +63,9 @@ function Search({
         type="text"
         className={`search-menu form-control form-control-rounded form-control-prepended form-control-appended${
           noBorder ? " border-0" : ""
-        } ${isSearching ? " border-primary" : ""} pr-4`}
+        } ${isSearching ? " border-primary" : ""} pr-4${
+          classNamePrefix ? ` ${classNamePrefix}` : ""
+        }`}
         placeholder={placeholder}
         onChange={onChange}
         onKeyPress={onKeyPress}
@@ -69,35 +73,45 @@ function Search({
         value={value}
         autoComplete="off"
       />
-      <div className="input-group-prepend">
+      <div className={`input-group-prepend${classNamePrefix ? ` ${classNamePrefix}` : ""}`}>
         <div
           className={`input-group-text pr-3 ${noBorder ? " border-0" : ""} ${
             isSearching ? " border-primary" : ""
-          }`}
+          }${classNamePrefix ? ` ${classNamePrefix}` : ""}`}
           style={{
             backgroundColor: isSearching ? "#2c7be5" : "",
           }}
         >
-          <MdSearch size={20} color={`${isSearching ? "#fff" : ""}`} />
+          <MdSearch
+            size={20}
+            color={`${isSearching ? "#fff" : ""}`}
+            className={classNamePrefix}
+          />
         </div>
       </div>
       {value !== "" && (
-        <ClearButton onClick={onClearButtonClicked}>
-          <MdClose size={20} />
+        <ClearButton onClick={onClearButtonClicked} className={classNamePrefix}>
+          <MdClose size={20} className={classNamePrefix} />
         </ClearButton>
       )}
-      <div className="input-group-append">
+      <div className={`input-group-append${classNamePrefix ? ` ${classNamePrefix}` : ""}`}>
         <div
-          className={`btn btn-light input-group-text pl-3 ${
+          className={`btn btn-light input-group-text pl-3${
             noBorder ? " border-0" : ""
-          } ${isSearching ? " border-primary" : ""}`}
+          }${isSearching ? " border-primary" : ""}${
+            classNamePrefix ? ` ${classNamePrefix}` : ""
+          }`}
           style={{
             cursor: "pointer",
             backgroundColor: isSearching ? "#2c7be5" : "",
           }}
           onClick={onButtonSearchClicked}
         >
-          <MdSend size={20} color={`${isSearching ? "#fff" : ""}`} />
+          <MdSend
+            size={20}
+            color={`${isSearching ? "#fff" : ""}`}
+            className={classNamePrefix}
+          />
         </div>
       </div>
     </div>
@@ -106,7 +120,8 @@ function Search({
 
 Search.propTypes = {
   id: PropTypes.string,
-  className: PropTypes.string,
+  classNamePrefix: PropTypes.string,
+  containerClassName: PropTypes.string,
   dataType: PropTypes.oneOf([
     "singleLineText",
     "longText",
@@ -116,6 +131,7 @@ Search.propTypes = {
   ]),
   noBorder: PropTypes.bool,
   placeholder: PropTypes.string,
+  onClick: PropTypes.func,
   onChange: PropTypes.func,
   onClear: PropTypes.func,
   onSubmit: PropTypes.func,

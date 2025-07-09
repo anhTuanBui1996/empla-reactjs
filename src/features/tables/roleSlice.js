@@ -123,4 +123,25 @@ export const selectSelectedRoleData = (state) => state.role.selectedRoleData;
 export const selectDeletedRoleData = (state) => state.role.deletedRoleData;
 export const selectError = (state) => state.role.error;
 
+export const roleSliceForTableEditor = {
+  actions: roleSlice.actions,
+  selections: {
+    state: selectStateOfSlice,
+    loading: selectLoading,
+    isSuccess: selectIsSuccess,
+    progressing: selectProgressing,
+    tableData: selectRoleTableData,
+    newRecord: selectNewRoleData,
+    updatedRecord: selectUpdatedRoleData,
+    deletedRecord: selectDeletedRoleData,
+    error: selectError,
+  },
+  cruds: {
+    create: createNewRole,
+    read: retrieveRoleList,
+    update: updateExistingRole,
+    delete: deleteExistingRole,
+  },
+};
+
 export default roleSlice.reducer;

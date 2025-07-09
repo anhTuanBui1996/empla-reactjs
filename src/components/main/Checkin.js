@@ -6,7 +6,7 @@ import Card, { ExtensionItemBtn } from "../common/Card";
 import Col from "../layout/Col";
 import Row from "../layout/Row";
 import Container from "../layout/Container";
-import Table from "../common/Table";
+import Table from "../common/Table/Table";
 import { mapResultToTableData } from "../../services/airtable.service";
 import { selectUserInfo } from "../../features/userSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -33,7 +33,7 @@ function Checkin() {
     return ["CreatedDate", "Type", "Notes"];
   }, []);
   const [recordList, setRecordList] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(undefined);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const userInfo = useSelector(selectUserInfo);
   const innerWidth = useSelector(selectInnerWidth);
@@ -270,36 +270,21 @@ function Checkin() {
                 display: "flex",
                 flexDirection: "column",
                 gap: "20px",
+                justifyContent: "space-between",
               }}
             >
               <Row>
-                <Col columnSize={["12"]}>
+                <Col columnSize={["12"]} style={{ paddingTop: 0 }}>
                   <QuickCheckinCard />
                 </Col>
               </Row>
               <Row>
-                <Col columnSize={["12"]}>
+                <Col columnSize={["12"]} style={{ paddingBottom: 0 }}>
                   <CheckInMap onDataSelected={handleSelectCheckinDateOnMap} />
                 </Col>
               </Row>
             </Col>
-            <Col
-              columnSize={["12", "lg-6"]}
-              style={{ paddingTop: "24px", paddingBottom: "24px" }}
-            >
-              <BigCalendar
-                title={
-                  <span className="working-day-summary">
-                    Working Day Summary <MdSummarize color="blue" />
-                  </span>
-                }
-                events={eventList}
-                dateSelected={selectedDate}
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col columnSize={["12"]}>
+            <Col columnSize={["12", "lg-6"]}>
               <Card
                 isLoading={loading}
                 cardHeader={{
@@ -328,9 +313,29 @@ function Checkin() {
                     onRecordClick={handleSelectCheckinDateOnTable}
                     hasSearching
                     hasSettings
+                    tableStyle={{
+                      height: innerWidth < 992 ? "" : "648px",
+                    }}
                   />,
                 ]}
                 noBodyPadding
+              />
+            </Col>
+          </Row>
+          <Row>
+            <Col
+              columnSize={["12"]}
+              style={{ paddingTop: "24px", paddingBottom: "24px" }}
+            >
+              <BigCalendar
+                title={
+                  <span className="working-day-summary">
+                    Working Day Summary <MdSummarize color="blue" />
+                  </span>
+                }
+                events={eventList}
+                dateSelected={selectedDate}
+                onDateSelected={setSelectedDate}
               />
             </Col>
           </Row>

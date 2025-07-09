@@ -248,6 +248,11 @@ function GoogleMapCard({
                           className={`map-checkin-type font-weight-bold text-center 
                             py-2 mb-2 mr-1 border border-1 border-primary rounded
                           `}
+                          style={{
+                            width: "calc(100% - 48px - 25px)",
+                            position: "absolute",
+                            top: "10px",
+                          }}
                         >
                           {item.header}
                         </div>

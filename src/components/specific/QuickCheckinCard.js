@@ -54,7 +54,7 @@ function QuickCheckinCard() {
           }
         }
         // the Type's index is 2 in the fieldList
-        if (lastCheck.fields.Type === "Checkin") {
+        if (lastCheck.fields.Type === "Check-in") {
           setCheckIn(false);
         } else {
           setCheckIn(true);
@@ -99,9 +99,9 @@ function QuickCheckinCard() {
     const { lat, lng } = currentPosition;
     dispatch(
       createNewCheckin({
-        Type: "Checkin",
+        Type: "Check-in",
         Notes: notes,
-        Staff: userInfoFields?.Staff,
+        Staff: [userInfo?.id],
         CoordinatePosition: `${lat} ${lng}`,
       })
     );
@@ -114,7 +114,7 @@ function QuickCheckinCard() {
       createNewCheckin({
         Type: "Check-out",
         Notes: notes,
-        Staff: userInfoFields?.Staff,
+        Staff: [userInfo?.id],
         CoordinatePosition: `${lat} ${lng}`,
       })
     );
@@ -130,7 +130,8 @@ function QuickCheckinCard() {
           <Dropdown
             title={<MdNoteAdd size="20px" />}
             variant="link"
-            position="right"
+            position="left"
+            dropDirection="right"
             style={{
               marginRight: "3px",
             }}
@@ -160,7 +161,7 @@ function QuickCheckinCard() {
                     isCheckIn ? "in" : "out"
                   } for today before working`
                 : `You have processed the check recently, last check ${
-                    isCheckIn ? "out" : "in"
+                    isCheckIn ? "in" : "out"
                   }: ${lastCheckTime}`}
             </p>
           </Row>
@@ -182,6 +183,8 @@ function QuickCheckinCard() {
 
 const TextAreaForNotes = styled.textarea`
   padding: 5px 8px;
+  resize: none;
+  height: 200px;
   &:active,
   &:focus {
     outline: none !important;

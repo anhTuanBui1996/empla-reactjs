@@ -1,15 +1,16 @@
 import React, { useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import Card, { ExtensionItemBtn } from "../common/Card";
-import Table from "../common/Table";
+import Table from "../common/Table/Table";
 import dto from "./config/dtoConfig";
 import slice from "./config/sliceConfig";
-import RightSideFormModal from "./rightSideFormModal/RightSideFormModal";
+import FormModal from "./editorFormModal/FormModal";
 import { useDispatch, useSelector } from "react-redux";
 import { mapResultToTableData } from "../../services/airtable.service";
 import { selectMetadata } from "../../features/metadataSlice";
 import { useEffect } from "react";
 import { MdArticle, MdTableView } from "react-icons/md";
+import LinkReferenceBox from "./editorFormModal/formControl/LinkReferenceBox";
 
 /**
  * Remmember importing new Dto/slices if having any changes in Airtable schema
@@ -20,8 +21,24 @@ function TableEditorCard({ cardLabel, tableInfoArr }) {
   // retrieve and loading selectors
   const selectors = {
     Staff: {
-      records: useSelector(slice.Staff.selections.selectStaffTableData),
-      loading: useSelector(slice.Staff.selections.selectLoading),
+      records: useSelector(slice.Staff.selections.tableData),
+      loading: useSelector(slice.Staff.selections.loading),
+    },
+    Role: {
+      records: useSelector(slice.Role.selections.tableData),
+      loading: useSelector(slice.Role.selections.loading),
+    },
+    WorkingPlace: {
+      records: useSelector(slice.WorkingPlace.selections.tableData),
+      loading: useSelector(slice.WorkingPlace.selections.loading),
+    },
+    Collaboratory: {
+      records: useSelector(slice.Collaboratory.selections.tableData),
+      loading: useSelector(slice.Collaboratory.selections.loading),
+    },
+    Tasks: {
+      records: useSelector(slice.Tasks.selections.tableData),
+      loading: useSelector(slice.Tasks.selections.loading),
     },
   };
   const baseMetadata = useSelector(selectMetadata);
@@ -29,7 +46,7 @@ function TableEditorCard({ cardLabel, tableInfoArr }) {
   // run all table get table record data async thunk when initializing
   useEffect(() => {
     tableInfoArr.forEach(({ tableName }) => {
-      dispatch(slice[tableName].cruds.retrieve());
+      dispatch(slice[tableName].cruds.read());
     });
     // eslint-disable-next-line
   }, []);
@@ -48,9 +65,9 @@ function TableEditorCard({ cardLabel, tableInfoArr }) {
         let tableModel = dto[tableName].model;
         let isRequiredFields = dto[tableName].isRequiredFields;
         let isReadOnlyFields = dto[tableName].isReadOnlyFields;
-        let createNew = slice[tableName].cruds.createNewStaff;
-        let updateExisting = slice[tableName].cruds.updateExistingStaff;
-        let deleteExisting = slice[tableName].cruds.deleteExistingStaff;
+        let createNew = slice[tableName].cruds.create;
+        let updateExisting = slice[tableName].cruds.update;
+        let deleteExisting = slice[tableName].cruds.delete;
 
         let tableRecords = selectors[tableName].records;
         let mappedRecords = tableRecords
@@ -62,13 +79,6 @@ function TableEditorCard({ cardLabel, tableInfoArr }) {
             )
           : [];
         let isLoading = selectors[tableName].loading;
-        switch (tableName) {
-          case "Staff":
-            break;
-          default:
-            console.error("Doesn't find any table of" + tableName);
-            break;
-        }
         return {
           tableMetadata,
           tableLabel,
@@ -89,23 +99,26 @@ function TableEditorCard({ cardLabel, tableInfoArr }) {
     [tableInfoArr, selectors]
   );
 
-  // Handlers
+  // Handlers for Table
   const handleClickRefreshButton = () => {
-    dispatch(slice[tableArr[cardTabActice].tableName].cruds.retrieve());
+    dispatch(slice[tableArr[cardTabActice].tableName].cruds.read());
   };
-  const handleOpenRightSideModalForCreate = () => {
+  const handleOpenFormModalForCreate = () => {
     setModalType("create");
     setIsModalDisplay(true);
   };
-  const handleOpenRightSideModalForEdit = () => {
+  const handleOpenFormModalForEdit = () => {
     setModalType("edit");
     setIsModalDisplay(true);
   };
-  const handleCloseRightSideModal = () => {
-    setModalType("create");
+  const handleCloseFormModal = () => {
     setIsModalDisplay(false);
+    setModalType("create");
   };
-  const handleRightSideModalFormSubmitted = () => {};
+  const handleFormModalFormSubmitted = () => {
+    handleCloseFormModal();
+    handleClickRefreshButton();
+  };
 
   return (
     <>
@@ -137,8 +150,9 @@ function TableEditorCard({ cardLabel, tableInfoArr }) {
               hasSettings
               hasSearching
               hasSorting
-              onRecordClick={handleOpenRightSideModalForEdit}
-              onCreateNewBtnClick={handleOpenRightSideModalForCreate}
+              hasFilterRow
+              onRecordClick={handleOpenFormModalForEdit}
+              onCreateNewBtnClick={handleOpenFormModalForCreate}
               onRefreshDataBtnClick={handleClickRefreshButton}
             />
           )
@@ -147,15 +161,15 @@ function TableEditorCard({ cardLabel, tableInfoArr }) {
         noBodyPadding
         onChangeTab={setCardTabActive}
       />
-      <RightSideFormModal
+      <FormModal
         formName={tableArr[cardTabActice].tableName}
         model={tableArr[cardTabActice].tableModel}
         requiredFields={tableArr[cardTabActice].isRequiredFields}
         readOnlyFields={tableArr[cardTabActice].isReadOnlyFields}
         isModalDisplay={isModalDisplay}
         type={modalType}
-        handleCloseForm={handleCloseRightSideModal}
-        onFormSubmitted={handleRightSideModalFormSubmitted}
+        handleCloseForm={handleCloseFormModal}
+        onFormSubmitted={handleFormModalFormSubmitted}
         createAndModifySlice={
           modalType === "create"
             ? tableArr[cardTabActice].createNew
@@ -163,6 +177,7 @@ function TableEditorCard({ cardLabel, tableInfoArr }) {
         }
         deleteSlice={tableArr[cardTabActice].deleteExisting}
       />
+      <LinkReferenceBox />
     </>
   );
 }

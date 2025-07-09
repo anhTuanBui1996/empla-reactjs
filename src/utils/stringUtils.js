@@ -27,5 +27,8 @@ export function parseFieldName(fieldName) {
       newString += character;
     }
   }
+  if (newString.indexOf("_") !== -1) {
+    newString = newString.replace("_", "(") + ")";
+  }
   return newString;
 }

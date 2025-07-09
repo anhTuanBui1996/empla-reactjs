@@ -75,6 +75,7 @@ function Card({
             <Dropdown
               variant="link"
               position="right"
+              dropDirection="down"
               title={<MdMoreVert size="20px" />}
             >
               <ExtensionBox className="extension-box">

@@ -135,7 +135,7 @@ function BirthdayScheduler({ events }) {
                       }
                     >
                       <CellEvent
-                        className="bg-secondary text-light rounded"
+                        className="bg-secondary text-light rounded mt-4"
                         event={item.event}
                         onMouseEnter={() =>
                           setShowDetail((state) =>
@@ -201,7 +201,7 @@ const SchedulerContainer = styled.div`
   }
 `;
 const CellDay = styled.td`
-  height: 100px;
+  height: 60px;
   width: 100px;
 `;
 const CellEvent = styled.div`

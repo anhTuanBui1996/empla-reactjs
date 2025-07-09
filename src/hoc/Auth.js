@@ -19,7 +19,6 @@ import { useToasts } from "react-toast-notifications";
 import { browserDetect } from "../utils/userAgentUtils";
 import Loader from "../components/common/Loader";
 import { setLocalUser } from "../services/localStorage.service";
-import { retrieveAllData } from "../services/airtable.service";
 
 function Auth({ children }) {
   const location = useLocation();
@@ -94,33 +93,6 @@ function Auth({ children }) {
             // The token retrieved from userCredential is valid
             // Retrieving the user info by account
             dispatch(retrieveUserInfo(userCredential.Account));
-            retrieveAllData("Staff", `{Account} = "${userCredential.Account}"`)
-              .then((res) => {
-                const currentUserInfo = res[0];
-                dispatch(
-                  createNewLog({
-                    Actions: "Login",
-                    Account: currentUserInfo.fields.Account,
-                    RecordAffected: currentUserInfo.id,
-                    IdAffected: currentUserInfo.fields.StaffId,
-                    TableAffected: "Staff",
-                    Notes: `Browser: ${browserDetect()}, login with token ${
-                      userCredential.Token
-                    }`,
-                  })
-                );
-                addToast("Login successfully!", {
-                  appearance: "success",
-                });
-                navigate(
-                  location.pathname === "/login" ? "/" : location.pathname
-                );
-              })
-              .catch(() => {
-                addToast("Unknown error, please try again!", {
-                  appearance: "error",
-                });
-              });
           }
         } else {
           // Retrieving user info by token
@@ -135,9 +107,6 @@ function Auth({ children }) {
       dispatch(setLastRoute(location.pathname));
       setIsRetrievedUserInfoAlready(true);
       navigate("/login");
-    }
-    return () => {
-
     }
     // eslint-disable-next-line
   }, [

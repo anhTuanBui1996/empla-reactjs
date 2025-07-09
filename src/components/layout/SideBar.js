@@ -99,6 +99,23 @@ function SideBarContent({
     return userInfo?.fields;
   }, [userInfo]);
 
+  const [menuFilter, setMenuFilter] = useState("");
+  const [isFilterMenu, setIsFilterMenu] = useState(false);
+  const handleChangeMenuFilter = (e) => {
+    setMenuFilter(e.target.value);
+  };
+  const handleFilterMenu = () => {
+    if (menuFilter !== "") {
+      setIsFilterMenu(true);
+    } else {
+      setIsFilterMenu(false);
+    }
+  };
+  const handleClearMenuFilter = () => {
+    setMenuFilter("");
+    setIsFilterMenu(false);
+  };
+
   const avatarUrl = userInfoFields?.Avatar
     ? userInfoFields.Avatar[0].url
     : avatarDummy;
@@ -141,10 +158,16 @@ function SideBarContent({
             overflowY: innerWidth <= 767 ? "auto" : "",
           }}
         >
-          <form className={`mb-3 d-md-flex${isPositionFixedAtTop ? "" : " px-4"}`}>
+          <form
+            className={`mb-3 d-md-flex${isPositionFixedAtTop ? "" : " px-4"}`}
+          >
             <Search
               id={`sidebar-search`}
               placeholder="Search..."
+              value={menuFilter}
+              onChange={handleChangeMenuFilter}
+              onClear={handleClearMenuFilter}
+              onSubmit={handleFilterMenu}
             />
           </form>
           <div
@@ -161,8 +184,11 @@ function SideBarContent({
                     isAdminAccess === null &&
                     privateRoutes.includes(route.path)
                   ) {
-                    return false;
-                  } else
+                    return <React.Fragment key={route.path}></React.Fragment>;
+                  } else {
+                    if (isFilterMenu && !route.label.includes(menuFilter)) {
+                      return <React.Fragment key={route.path}></React.Fragment>;
+                    }
                     return (
                       <li className="nav-item" key={route.path}>
                         <NavLink
@@ -183,6 +209,7 @@ function SideBarContent({
                         </NavLink>
                       </li>
                     );
+                  }
                 })}
                 {innerWidth <= 767 && (
                   <>

@@ -14,11 +14,14 @@ import Notifications from "./components/main/Notifications";
 import AdminCheck from "./hoc/AdminCheck";
 import useGeolocation from "./components/hooks/useGeolocation";
 import Role from "./components/main/Role";
-import WorkingPlace from "./components/main/WorkingPlace";
-import Collaboratory from "./components/main/Collaboratory";
+import Departments from "./components/main/Departments";
 import Nomatch from "./components/main/Nomatch";
 import AirtableMetadata from "./hoc/AirtableMetadata";
+import { registerLicense } from '@syncfusion/ej2-base';
+
 require("dotenv").config();
+// Registering Syncfusion license key
+registerLicense('Ngo9BigBOggjHTQxAR8/V1NMaF5cXmBCf1FpR2dGfV5ycEVHYVZVQXxcS00SNHVRdkdnWH1fd3VUQmVfWExzWkU=');
 
 function App() {
   useGeolocation();
@@ -44,8 +47,7 @@ function App() {
                  * Private routes
                  */}
                 <Route path="/role" element={<Role />} />
-                <Route path="/workingplace" element={<WorkingPlace />} />
-                <Route path="/collaboratory" element={<Collaboratory />} />
+                <Route path="/departments" element={<Departments />} />
 
                 {/**
                  * Public routes

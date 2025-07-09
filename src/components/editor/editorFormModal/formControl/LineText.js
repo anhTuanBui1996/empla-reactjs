@@ -13,13 +13,13 @@ export default function LineText({
   name,
   label,
   value,
-  onValueChange,
   readOnly,
   isRequired,
   additionRegex,
   maxLength,
   minLength,
   isPassword,
+  inputMaskPlaceholder,
 }) {
   const dispatch = useDispatch();
   const formSubmit = useSelector(selectFormSubmit);
@@ -35,18 +35,13 @@ export default function LineText({
     let currentValue = e.target.value;
     setDisplayValue(currentValue);
     dispatch(setFormSubmit({ ...formSubmit, [name]: currentValue }));
-    if (onValueChange) {
-      if (currentValue !== value) {
-        onValueChange({ name, value: true });
-      } else {
-        onValueChange({ name, value: false });
-        let newObj = {};
-        Object.assign(newObj, formSubmit);
-        if (newObj[name]) {
-          delete newObj[name];
-        }
-        dispatch(setFormSubmit({ ...newObj }));
+    if (currentValue === value) {
+      let newObj = {};
+      Object.assign(newObj, formSubmit);
+      if (newObj[name]) {
+        delete newObj[name];
       }
+      dispatch(setFormSubmit({ ...newObj }));
     }
   };
   const handleValidate = () => {
@@ -104,7 +99,9 @@ export default function LineText({
             value={displayValue}
             onChange={handleChange}
             onBlur={handleValidate}
-            placeholder={`Enter ${label}...`}
+            placeholder={
+              inputMaskPlaceholder ? inputMaskPlaceholder : `Enter ${label}...`
+            }
           />
           <div className="input-group-append">
             <div
@@ -138,10 +135,11 @@ export default function LineText({
           value={displayValue}
           onChange={handleChange}
           onBlur={handleValidate}
-          placeholder={`Enter ${label}...`}
+          placeholder={
+            inputMaskPlaceholder ? inputMaskPlaceholder : `Enter ${label}...`
+          }
         />
       )}
-
       {error.hasError && (
         <div className="err-text text-danger mt-1">{error.errorMsg}</div>
       )}
@@ -162,4 +160,5 @@ LineText.propTypes = {
   maxLength: PropTypes.number,
   minLength: PropTypes.number,
   isPassword: PropTypes.bool,
+  inputMaskPlaceholder: PropTypes.string,
 };

@@ -2,14 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import Outclick from "../../hoc/Outclick";
 import Button from "./Button";
-import { MdArrowRight } from "react-icons/md";
+import { MdClose } from "react-icons/md";
 import PropTypes from "prop-types";
 
 function Modal({ children, onModalHide, isModalDisplay }) {
   const modalRef = useRef();
   const [isDisplay, setDisplay] = useState(false);
   const handleHideModal = () => {
-    setDisplay(false);
     onModalHide && onModalHide();
   };
   useEffect(() => {
@@ -27,16 +26,16 @@ function Modal({ children, onModalHide, isModalDisplay }) {
                 width: "30px",
                 height: "30px",
                 position: "absolute",
-                left: 0,
-                top: 0,
-                borderTopLeftRadius: 0,
-                borderTopRightRadius: 0,
-                borderBottomLeftRadius: 0,
+                right: "10px",
+                top: "10px",
+                borderRadius: 7,
               }}
               className="py-1"
               onClick={handleHideModal}
+              bgColor={"#ff0000"}
+              bgHoverColor={"#d53e3e"}
             >
-              <MdArrowRight size="20px" />
+              <MdClose size="20px" />
             </Button>
             {children}
           </ModalBody>
@@ -56,41 +55,41 @@ export const ModalWrapper = styled.div`
   z-index: 2000;
   width: 100%;
   height: 100%;
-  transition: opacity 0.5s linear, visibility 0.5s linear;
+  transition: opacity 0.2s linear, visibility 0.2s linear;
 `;
 export const ModalContent = styled.div`
   position: absolute;
   display: flex;
   flex-direction: column;
-  width: 28%;
-  max-width: 350px;
-  height: 100%;
+  min-width: 400px;
+  width: 80%;
+  min-height: 400px;
+  height: 80%;
   padding: 0 2em;
   background: #fff;
   aligh-items: center;
   overflow-y: scroll;
   scroll-behavior: smooth;
-  right: ${(props) => (props.isDisplay ? "0" : "-100%")};
+  top: ${(props) => (props.isDisplay ? "50%" : "30%")};
+  left: 50%;
   @media (max-width: 1150px) {
     width: 30%;
-    right: ${(props) => (props.isDisplay ? "0" : "-30%")};
   }
   @media (max-width: 1000px) {
     width: 40%;
-    right: ${(props) => (props.isDisplay ? "0" : "-40%")};
   }
   @media (max-width: 768px) {
     width: 50%;
-    right: ${(props) => (props.isDisplay ? "0" : "-50%")};
   }
   @media (max-width: 600px) {
     width: 60%;
-    right: ${(props) => (props.isDisplay ? "0" : "-60%")};
   }
   @media (max-width: 468px) {
     width: 100%;
   }
-  transition: all 0.5s ease-in-out;
+  transform: translate(-50%, -50%);
+  transition: all 0.3s ease-in-out;
+  border-radius: 10px;
 `;
 export const ModalBody = styled.div`
   margin: 1.5em 0;

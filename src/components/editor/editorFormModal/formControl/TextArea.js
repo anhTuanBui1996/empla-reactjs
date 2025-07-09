@@ -12,7 +12,6 @@ export default function TextArea({
   name,
   label,
   value,
-  onValueChange,
   readOnly,
   isRequired,
   additionRegex,
@@ -30,18 +29,13 @@ export default function TextArea({
     let currentValue = e.target.value;
     setDisplayValue(currentValue);
     dispatch(setFormSubmit({ ...formSubmit, [name]: currentValue }));
-    if (onValueChange) {
-      if (currentValue !== value) {
-        onValueChange({ name, value: true });
-      } else {
-        onValueChange({ name, value: false });
-        let newObj = {};
-        Object.assign(newObj, formSubmit);
-        if (newObj[name]) {
-          delete newObj[name];
-        }
-        dispatch(setFormSubmit({ ...newObj }));
+    if (currentValue === value) {
+      let newObj = {};
+      Object.assign(newObj, formSubmit);
+      if (newObj[name]) {
+        delete newObj[name];
       }
+      dispatch(setFormSubmit({ ...newObj }));
     }
   };
   const handleValidate = () => {
@@ -81,7 +75,7 @@ export default function TextArea({
         placeholder={`Enter ${label}...`}
         style={{
           resize: "none",
-          height: "200px"
+          height: "200px",
         }}
       />
       {error.hasError && (

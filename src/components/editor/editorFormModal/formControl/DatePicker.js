@@ -13,7 +13,6 @@ export default function DatePicker({
   name,
   label,
   value,
-  onValueChange,
   isDisplayTime,
   readOnly,
   isRequired,
@@ -29,19 +28,15 @@ export default function DatePicker({
   const handleChange = (dateValue) => {
     let currentValue = dateValue;
     setDisplayValue(currentValue);
-    dispatch(setFormSubmit({ ...formSubmit, [name]: currentValue }));
-    if (onValueChange) {
-      if (currentValue !== value) {
-        onValueChange({ name, value: true });
-      } else {
-        onValueChange({ name, value: false });
-        let newObj = {};
-        Object.assign(newObj, formSubmit);
-        if (newObj[name]) {
-          delete newObj[name];
-        }
-        dispatch(setFormSubmit({ ...newObj }));
+    if (currentValue !== value) {
+      dispatch(setFormSubmit({ ...formSubmit, [name]: currentValue }));
+    } else {
+      let newObj = {};
+      Object.assign(newObj, formSubmit);
+      if (newObj[name]) {
+        delete newObj[name];
       }
+      dispatch(setFormSubmit({ ...newObj }));
     }
   };
   const handleValidate = () => {
@@ -62,7 +57,6 @@ export default function DatePicker({
       <ReactCalendar
         id={`DatePicker_${table}_${name}`}
         tabIndex={tabIndex}
-        className="form-control"
         name={name}
         value={displayValue}
         isDisplayTime={isDisplayTime}

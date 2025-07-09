@@ -1,12 +1,18 @@
-import { Calendar, momentLocalizer } from "react-big-calendar";
+import { Calendar, momentLocalizer, Navigate } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import PropTypes from "prop-types";
 import Card from "../common/Card";
 
 const localizer = momentLocalizer(moment);
-function BigCalendar({ title, events, dateSelected }) {
-  const handleNavigate = () => {};
+function BigCalendar({ title, events, dateSelected, onDateSelected }) {
+  const handleNavigate = (newDate, views, action) => {
+    if (action === Navigate.TODAY) {
+      onDateSelected(new Date());
+    } else {
+      onDateSelected(newDate);
+    }
+  };
 
   return (
     <Card
@@ -17,10 +23,10 @@ function BigCalendar({ title, events, dateSelected }) {
       elementList={[
         <Calendar
           date={dateSelected}
+          getNow={() => new Date()}
           onNavigate={handleNavigate}
           defaultView={"week"}
           views={["month", "week", "day"]}
-          getNow={() => new Date()}
           localizer={localizer}
           events={events}
           eventPropGetter={(event) =>
@@ -61,6 +67,8 @@ BigCalendar.propTypes = {
       resource: PropTypes.any,
     })
   ).isRequired,
+  dateSelected: PropTypes.any,
+  onDateSelected: PropTypes.func,
 };
 
 export default BigCalendar;

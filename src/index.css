@@ -1,3 +1,12 @@
+@import "../node_modules/@syncfusion/ej2-base/styles/bootstrap5.css";
+@import '../node_modules/@syncfusion/ej2-buttons/styles/bootstrap5.css';
+@import "../node_modules/@syncfusion/ej2-layouts/styles/bootstrap5.css";
+@import '../node_modules/@syncfusion/ej2-dropdowns/styles/bootstrap5.css';
+@import '../node_modules/@syncfusion/ej2-inputs/styles/bootstrap5.css';
+@import "../node_modules/@syncfusion/ej2-navigations/styles/bootstrap5.css";
+@import "../node_modules/@syncfusion/ej2-popups/styles/bootstrap5.css";
+@import "../node_modules/@syncfusion/ej2-react-kanban/styles/bootstrap5.css";
+
 body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
@@ -51,9 +60,208 @@ ul {
 }
 
 /* Handle on hover */
-*:hover::-webkit-scrollbar-thumb, ::-webkit-scrollbar-thumb:hover {
+*:hover::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-thumb:hover {
   background: rgba(124, 124, 124, 0.815);
   visibility: visible;
+}
+
+/* Custom checkbox for table (cell checkbox) */
+.cell-checkbox .table-checkbox-label {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+.cell-checkbox .table-checkbox-label span {
+  display: inline-block;
+  vertical-align: middle;
+  transform: translate3d(0, 0, 0);
+}
+.cell-checkbox .table-checkbox-label span:first-child {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  transform: scale(1);
+  vertical-align: middle;
+  border: 1px solid #b9b8c3;
+  transition: all 0.2s ease;
+}
+.cell-checkbox .table-checkbox-label span:first-child svg {
+  position: absolute;
+  z-index: 1;
+  top: 7px;
+  left: 5px;
+  fill: none;
+  stroke: white;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 16px;
+  stroke-dashoffset: 16px;
+  transition: all 0.3s ease;
+  transition-delay: 0.1s;
+  transform: translate3d(0, 0, 0);
+}
+.cell-checkbox .table-checkbox-label span:first-child:before {
+  content: "";
+  width: 100%;
+  height: 100%;
+  background: #506eec;
+  display: block;
+  transform: scale(0);
+  opacity: 1;
+  border-radius: 50%;
+  transition-delay: 0.2s;
+}
+.cell-checkbox .table-checkbox-label span:last-child {
+  margin-left: 8px;
+}
+.cell-checkbox .table-checkbox-label:hover span:first-child {
+  border-color: #3c53c7;
+}
+.cell-checkbox
+  .table-checkbox:checked
+  + .table-checkbox-label
+  span:first-child {
+  border-color: #3c53c7;
+  background: #3c53c7;
+  animation: check-15 0.6s ease;
+}
+.cell-checkbox
+  .table-checkbox:checked
+  + .table-checkbox-label
+  span:first-child
+  svg {
+  stroke-dashoffset: 0;
+}
+.cell-checkbox
+  .table-checkbox:checked
+  + .table-checkbox-label
+  span:first-child:before {
+  transform: scale(2.2);
+  opacity: 0;
+  transition: all 0.6s ease;
+}
+.cell-checkbox .table-checkbox:checked + .table-checkbox-label span:last-child {
+  color: #b9b8c3;
+  transition: all 0.3s ease;
+}
+
+@keyframes check-15 {
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+/* Custom checkbox for table (row select checkbox) */
+.row-select-checkbox * {
+  box-sizing: border-box;
+}
+.row-select-checkbox .cbx {
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  display: inline-block;
+  margin: 0 !important;
+}
+.row-select-checkbox .cbx:not(:last-child) {
+  margin-right: 6px;
+}
+.row-select-checkbox .cbx:hover {
+  background: rgba(0, 119, 255, 0.06);
+}
+.row-select-checkbox .cbx span {
+  float: left;
+  vertical-align: middle;
+  transform: translate3d(0, 0, 0);
+}
+.row-select-checkbox .cbx span:first-child {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  transform: scale(1);
+  border: 1px solid #cccfdb;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 1px rgba(0, 16, 75, 0.05);
+}
+.row-select-checkbox .cbx span:first-child svg {
+  position: absolute;
+  top: 3px;
+  left: 2px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 16px;
+  stroke-dashoffset: 16px;
+  transition: all 0.3s ease;
+  transition-delay: 0.1s;
+  transform: translate3d(0, 0, 0);
+}
+.row-select-checkbox .cbx span:last-child {
+  padding-left: 8px;
+  line-height: 18px;
+}
+.row-select-checkbox .cbx:hover span:first-child {
+  border-color: #07f;
+}
+.row-select-checkbox .row-select-inp-cbx {
+  position: absolute;
+  visibility: hidden;
+}
+.row-select-checkbox .row-select-inp-cbx:checked + .cbx span:first-child {
+  background: #07f;
+  border-color: #07f;
+  animation: wave-4 0.4s ease;
+}
+.row-select-checkbox .row-select-inp-cbx:checked + .cbx span:first-child svg {
+  stroke-dashoffset: 0;
+}
+.row-select-checkbox .inline-svg {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  user-select: none;
+}
+@media screen and (max-width: 640px) {
+  .row-select-checkbox .cbx {
+    width: 100%;
+    display: inline-block;
+  }
+}
+@-moz-keyframes wave-4 {
+  50% {
+    transform: scale(0.9);
+  }
+}
+@-webkit-keyframes wave-4 {
+  50% {
+    transform: scale(0.9);
+  }
+}
+@-o-keyframes wave-4 {
+  50% {
+    transform: scale(0.9);
+  }
+}
+@keyframes wave-4 {
+  50% {
+    transform: scale(0.9);
+  }
+}
+
+/* Custom Calendar */
+.rbc-event-label {
+  width: 100%;
 }
 
 @media only screen and (max-width: 767px) {
@@ -73,5 +281,31 @@ ul {
   .main-content {
     position: relative;
     top: 78.422px;
+  }
+}
+
+@media (max-width: 1150px) {
+  .modal.link-reference-box-close .modal-content {
+    width: 30%;
+  }
+}
+@media (max-width: 1000px) {
+  .modal.link-reference-box-close .modal-content {
+    width: 40%;
+  }
+}
+@media (max-width: 768px) {
+  .modal.link-reference-box-close .modal-content {
+    width: 50%;
+  }
+}
+@media (max-width: 600px) {
+  .modal.link-reference-box-close .modal-content {
+    width: 60%;
+  }
+}
+@media (max-width: 468px) {
+  .modal.link-reference-box-close .modal-content {
+    width: 100%;
   }
 }

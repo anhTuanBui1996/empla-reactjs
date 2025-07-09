@@ -6,9 +6,10 @@ import { selectMetadata } from "../../../../features/metadataSlice";
 import { selectFormSubmit } from "../../../../features/editorSlice";
 import { useEffect } from "react";
 import { retrieveAllData } from "../../../../services/airtable.service";
-import { MdRefresh } from "react-icons/md";
 
 function LookUpValues({ tabIndex, table, name, label, value, fieldMetadata }) {
+  const [isMounted, setIsMounted] = useState(true);
+
   const labelRef = useRef(null);
   const formSubmit = useSelector(selectFormSubmit);
 
@@ -34,8 +35,12 @@ function LookUpValues({ tabIndex, table, name, label, value, fieldMetadata }) {
   const [isFetching, setIsFetching] = useState(false);
   const [originalRecords, setOriginalRecords] = useState(null);
 
+  useEffect(() => {
+    setIsMounted(true);
+    handleFetchingData();
+    return () => setIsMounted(false);
   // eslint-disable-next-line
-  useEffect(() => handleFetchingData(), []);
+  }, []);
 
   // render lookup values base on formSubmit
   useEffect(() => {
@@ -69,8 +74,10 @@ function LookUpValues({ tabIndex, table, name, label, value, fieldMetadata }) {
     setIsFetching(true);
     retrieveAllData(linkedTableMetadata.name)
       .then((data) => {
-        setOriginalRecords(data);
-        setIsFetching(false);
+        if (isMounted) {
+          setOriginalRecords(data);
+          setIsFetching(false);
+        }
       })
       .catch((err) => console.error(err));
   };
@@ -88,7 +95,7 @@ function LookUpValues({ tabIndex, table, name, label, value, fieldMetadata }) {
         <div
           id={`LookUpValues_${table}_${name}`}
           tabIndex={tabIndex}
-          className="form-control position-relative"
+          className="form-control position-relative bg-light"
           readOnly
           disabled
           style={{ height: "85.5px" }}
@@ -159,20 +166,6 @@ function LookUpValues({ tabIndex, table, name, label, value, fieldMetadata }) {
               })}
             </div>
           )}
-          <button
-            className="btn btn-primary d-flex justify-content-center align-items-center px-0 py-0 mx-0 my-0"
-            style={{
-              width: "22px",
-              height: "22px",
-              position: "absolute",
-              top: "50%",
-              transform: "translateY(-50%)",
-              left: "calc(100% - 30px)",
-            }}
-            onClick={handleFetchingData}
-          >
-            <MdRefresh />
-          </button>
         </div>
       </div>
     </>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import Modal from "../../common/Modal";
 import Row from "../../layout/Row";
@@ -17,16 +17,16 @@ import {
 import { parseFieldName } from "../../../utils/stringUtils";
 import { selectMetadata } from "../../../features/metadataSlice";
 import { VALIDATE_RULE } from "../../../constants";
-import LineText from "./FormControl/LineText";
-import TextArea from "./FormControl/TextArea";
-import DatePicker from "./FormControl/DatePicker";
-import FilePicker from "./FormControl/FilePicker";
-import FormSelect from "./FormControl/FormSelect";
-import LookUpValues from "./FormControl/LookUpValues";
-import CheckBox from "./FormControl/CheckBox";
-import LinkRecordPicker from "./FormControl/LinkRecordPicker";
+import LineText from "./formControl/LineText";
+import TextArea from "./formControl/TextArea";
+import DatePicker from "./formControl/DatePicker";
+import FilePicker from "./formControl/FilePicker";
+import FormSelect from "./formControl/FormSelect";
+import LookUpValues from "./formControl/LookUpValues";
+import CheckBox from "./formControl/CheckBox";
+import LinkRecordPicker from "./formControl/LinkRecordPicker";
 
-function RightSideFormModal({
+function FormModal({
   formName, // table name of Airtable
   model,
   requiredFields,
@@ -41,17 +41,14 @@ function RightSideFormModal({
   const dispatch = useDispatch();
   const { removeAllToasts } = useToasts();
 
-  const editorFormData = useSelector(selectFormData);
   const selectedRowFormData = useSelector(selectSelectedRowData);
+  const formData = useSelector(selectFormData);
   const formSubmit = useSelector(selectFormSubmit);
 
   // Form State
-  const [formChanged, setFormChanged] = useState({});
   const isFormChanged = useMemo(() => {
-    let isChanged = false;
-    Object.values(formChanged).forEach((v) => v && (isChanged = true));
-    return isChanged;
-  }, [formChanged]);
+    return formSubmit && Object.keys(formSubmit).length > 0;
+  }, [formSubmit]);
 
   // Get the metadata of base
   const baseMetadata = useSelector(selectMetadata);
@@ -70,20 +67,15 @@ function RightSideFormModal({
         dispatch(setFormData(new model(selectedRowFormData.fields)));
       }
     } else {
-      setTimeout(() => {
-        removeAllToasts();
-        dispatch(resetFormData());
-      }, 500);
+      removeAllToasts();
+      dispatch(resetFormData());
     }
     // eslint-disable-next-line
   }, [type, model, isModalDisplay]);
 
   // Handlers
-  const handleFormControlValueChanged = (v) => {
-    setFormChanged({ ...formChanged, [v.name]: v.value });
-  };
   const handleValidateBeforeSubmit = () => {
-    console.log(formChanged, formSubmit);
+    console.log(formData, formSubmit);
     return true;
   };
   const handleSubmit = (e) => {
@@ -91,6 +83,7 @@ function RightSideFormModal({
     if (handleValidateBeforeSubmit()) {
       // submit action
       if (onFormSubmitted) {
+        createAndModifySlice(formSubmit);
         onFormSubmitted();
       }
     }
@@ -99,12 +92,17 @@ function RightSideFormModal({
     e.preventDefault();
     // delete action
     if (onFormSubmitted) {
+      deleteSlice(selectedRowFormData.id);
       onFormSubmitted();
     }
   };
+  const handleCloseFormModal = () => {
+    dispatch(resetFormData());
+    handleCloseForm();
+  };
 
   return (
-    <Modal onModalHide={handleCloseForm} isModalDisplay={isModalDisplay}>
+    <Modal onModalHide={handleCloseFormModal} isModalDisplay={isModalDisplay}>
       <Row className="py-4 justify-content-center">
         <Col columnSize={["auto"]}>
           <h1 className="font-weight-bold">
@@ -121,12 +119,11 @@ function RightSideFormModal({
         }}
       >
         <FormContent
-          editorFormData={editorFormData}
+          formData={formData}
           formName={formName}
           readOnlyFields={readOnlyFields}
           requiredFields={requiredFields}
           tableMetadata={tableMetadata}
-          setFormControlValueChanged={handleFormControlValueChanged}
         />
         <hr className="navbar-divider" />
         <Row className="justify-content-center mt-3">
@@ -164,14 +161,13 @@ function RightSideFormModal({
 // Fill to the form content
 const FormContent = ({
   formName,
+  formData,
   tableMetadata,
   requiredFields,
   readOnlyFields,
-  editorFormData,
-  setFormControlValueChanged,
 }) => {
-  if (!editorFormData) return null;
-  return Object.entries(editorFormData).map((field, i) => {
+  if (!formData) return null;
+  return Object.entries(formData).map((field, i) => {
     let formControl = null;
     let fieldName = field[0];
     let fieldValue = field[1];
@@ -194,9 +190,10 @@ const FormContent = ({
             label={fieldLable}
             isRequired={isRequiredField}
             value={fieldValue}
-            onValueChange={setFormControlValueChanged}
             readOnly={isReadOnlyField}
             isPassword={isPassword}
+            inputMaskData={"'mask': '999-999-9999'"}
+            inputMaskPlaceholder={"xxx-xxx-xxxx"}
           />
         );
         break;
@@ -210,7 +207,6 @@ const FormContent = ({
             label={fieldLable}
             isRequired={isRequiredField}
             value={fieldValue}
-            onValueChange={setFormControlValueChanged}
             readOnly={isReadOnlyField}
           />
         );
@@ -225,7 +221,6 @@ const FormContent = ({
             label={fieldLable}
             isRequired={isRequiredField}
             value={fieldValue}
-            onValueChange={setFormControlValueChanged}
             readOnly
           />
         );
@@ -240,11 +235,11 @@ const FormContent = ({
             label={fieldLable}
             isRequired={isRequiredField}
             value={fieldValue}
-            onValueChange={setFormControlValueChanged}
             readOnly={isReadOnlyField}
             additionRegex={VALIDATE_RULE.email.pattern}
             maxLength={VALIDATE_RULE.email.maxLength}
             minLength={VALIDATE_RULE.email.minLength}
+            inputMaskPlaceholder={"...@..."}
           />
         );
         break;
@@ -258,7 +253,6 @@ const FormContent = ({
             label={fieldLable}
             isRequired={isRequiredField}
             value={fieldValue}
-            onValueChange={setFormControlValueChanged}
             readOnly={isReadOnlyField}
           />
         );
@@ -273,7 +267,6 @@ const FormContent = ({
             label={fieldLable}
             isRequired={isRequiredField}
             value={fieldValue}
-            onValueChange={setFormControlValueChanged}
             isDisplayTime
             readOnly={isReadOnlyField}
           />
@@ -288,7 +281,6 @@ const FormContent = ({
             name={fieldName}
             label={fieldLable}
             value={fieldValue}
-            onValueChange={setFormControlValueChanged}
           />
         );
         break;
@@ -302,7 +294,6 @@ const FormContent = ({
             label={fieldLable}
             value={fieldValue}
             fieldMetadata={fieldMetadata}
-            onValueChange={setFormControlValueChanged}
           />
         );
         break;
@@ -317,7 +308,6 @@ const FormContent = ({
             value={fieldValue}
             fieldMetadata={fieldMetadata}
             isMulti
-            onValueChange={setFormControlValueChanged}
           />
         );
         break;
@@ -330,7 +320,6 @@ const FormContent = ({
             name={fieldName}
             label={fieldLable}
             value={fieldValue}
-            onValueChange={setFormControlValueChanged}
           />
         );
         break;
@@ -356,7 +345,6 @@ const FormContent = ({
             name={fieldName}
             label={fieldLable}
             value={fieldValue}
-            onValueChange={setFormControlValueChanged}
             fieldMetadata={fieldMetadata}
             isRequired={isRequiredField}
             readOnly={isReadOnlyField}
@@ -372,7 +360,8 @@ const FormContent = ({
   });
 };
 
-RightSideFormModal.propTypes = {
+FormModal.propTypes = {
+  recordId: PropTypes.string,
   /**
    * Name of table in Airtable
    */
@@ -388,4 +377,13 @@ RightSideFormModal.propTypes = {
   deleteSlice: PropTypes.func,
 };
 
-export default RightSideFormModal;
+FormContent.propTypes = {
+  formName: PropTypes.string,
+  formData: PropTypes.any,
+  tableMetadata: PropTypes.any,
+  requiredFields: PropTypes.array,
+  readOnlyFields: PropTypes.array,
+  setFormControlValueChanged: PropTypes.object,
+};
+
+export default FormModal;
