@@ -690,6 +690,7 @@ function Table({
         )}
         {isFilterRowTurnOn && (
           <FilterGroupBox
+            tableId={tableId}
             tableMetadata={metadata}
             isFilterRowTurnOn={isFilterRowTurnOn}
             fieldList={fieldList}

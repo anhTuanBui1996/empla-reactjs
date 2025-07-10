@@ -43,7 +43,7 @@ export default function FilterExecutionButtonGroup({
             overflow: "hidden",
             transition:
               "visibility .3s ease-out, opacity .3s ease-out, max-height .3s ease-out, padding .3s ease-out, border .3s ease-out",
-            display: "flex",
+            display: "none",//"flex",
             flexDirection: "column",
           }}
         >

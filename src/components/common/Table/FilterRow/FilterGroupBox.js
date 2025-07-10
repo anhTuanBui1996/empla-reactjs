@@ -1,4 +1,4 @@
-import { MdArrowDropDown } from "react-icons/md";
+import { MdArrowDropDown, MdRemoveRedEye } from "react-icons/md";
 import Outclick from "../../../../hoc/Outclick";
 import { Fragment, useMemo, useState } from "react";
 import Card from "../../Card";
@@ -10,6 +10,7 @@ import { setBadgeTheme } from "../../../../utils/setBadgeTheme";
 import CellFilterRowControl from "./CellFilterRowControl";
 
 export default function FilterGroupBox({
+  tableId,
   tableMetadata,
   isFilterRowTurnOn,
   classNamePrefix,
@@ -38,6 +39,18 @@ export default function FilterGroupBox({
     return listedFilterCellArr;
   }, [filterArr]);
   const [isOpened, setOpened] = useState(false);
+  const [columnFocused, setColumnFocused] = useState(null);
+  const handleFocusColumnInFilterBox = (columnIndex) => {
+    if (columnFocused === columnIndex) {
+      setColumnFocused(null);
+    } else {
+      setColumnFocused(columnIndex);
+      document
+        .querySelectorAll(`#${tableId} thead th`)
+        [columnIndex].scrollIntoView({ behavior: "smooth" });
+      setOpened(false);
+    }
+  };
   return (
     <div
       className={`${classNamePrefix ? `${classNamePrefix} ` : ""} dropdown`}
@@ -81,7 +94,7 @@ export default function FilterGroupBox({
               elementList={[
                 <div
                   style={{
-                    height: "400px",
+                    height: "250px",
                     overflowY: "auto",
                     overflowX: "hidden",
                   }}
@@ -158,11 +171,17 @@ export default function FilterGroupBox({
                         <Col
                           className={`${
                             classNamePrefix ? `${classNamePrefix} ` : ""
-                          }d-flex flex-row`}
+                          }d-flex flex-row align-items-center`}
                           columnSize={["12"]}
                           style={{ gap: "10px" }}
                         >
+                          <MdRemoveRedEye
+                            size={20}
+                            style={{ cursor: "pointer", color: columnFocused === j ? "#007bff" : "#728095" }}
+                            onClick={() => handleFocusColumnInFilterBox(j)}
+                          />
                           <Select
+                            isDisabled={true}
                             options={fieldNameOptions}
                             classNamePrefix={`${
                               classNamePrefix ? `${classNamePrefix}` : ""
@@ -217,6 +236,7 @@ export default function FilterGroupBox({
                           />
                           {cell.dataType !== "checkbox" && (
                             <Select
+                              maxMenuHeight={150}
                               options={expressionComparatorOptions}
                               classNamePrefix={`${
                                 classNamePrefix ? `${classNamePrefix}` : ""
